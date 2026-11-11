@@ -1598,3 +1598,110 @@ body {
   cursor: pointer;
 }
 
+/* 100% Offline CBSE AI Reference Book Reader Styles */
+.exp-BookChapterBox {
+  background: #ffffff;
+  border: 2px solid #cbd5e1;
+  border-radius: 12px;
+  padding: 16px;
+  margin: 12px 0;
+  line-height: 1.65;
+  color: #1e293b;
+  font-size: 1.02rem;
+}
+
+.exp-BookChapterBox p {
+  margin-bottom: 12px;
+}
+
+.exp-BookChapterBox p:last-child {
+  margin-bottom: 0;
+}
+
+.exp-ReviewQBox {
+  background: #f8fafc;
+  border-left: 4px solid #2563eb;
+  border-radius: 8px;
+  padding: 12px 14px;
+  margin: 10px 0;
+}
+
+.exp-ReviewQBox summary {
+  font-weight: 800;
+  cursor: pointer;
+  color: #1e3a8a;
+  outline: none;
+}
+
+.exp-ReviewQBox p {
+  margin-top: 8px;
+  font-weight: 600;
+  color: #059669;
+}
+
+/* AI Tutorial Videos & Digital Learning Resources Styles */
+.exp-CheckpointCard {
+  background: #f0fdf4;
+  border: 2px solid #86efac;
+  border-radius: 12px;
+  padding: 14px;
+  margin: 12px 0;
+}
+
+.exp-CheckpointCard--answered {
+  background: #dcfce7;
+  border-color: #22c55e;
+}
+
+.exp-CheckpointTitle {
+  font-weight: 900;
+  font-size: 0.95rem;
+  color: #166534;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.exp-CheckpointOption {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 8px 12px;
+  margin: 6px 0;
+  background: #ffffff;
+  border: 2px solid #bbf7d0;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 0.92rem;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.exp-CheckpointOption:hover {
+  border-color: #22c55e;
+  background: #f0fdf4;
+}
+
+.exp-CheckpointOption--correct {
+  background: #15803d !important;
+  color: #ffffff !important;
+  border-color: #166534 !important;
+}
+
+.exp-CheckpointOption--wrong {
+  background: #fee2e2 !important;
+  color: #991b1b !important;
+  border-color: #fca5a5 !important;
+}
+
+.exp-WorksheetBox {
+  background: #ffffff;
+  border: 2px dashed #64748b;
+  border-radius: 12px;
+  padding: 16px;
+  margin-top: 14px;
+  color: #0f172a;
+}
+
+

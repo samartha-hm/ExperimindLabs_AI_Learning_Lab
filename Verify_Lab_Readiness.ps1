@@ -1,4 +1,4 @@
-﻿# Experimind AI Learning Lab — School Deployment Verification Script
+# Experimind AI Learning Lab — School Deployment Verification Script
 Write-Host "=== Experimind AI Learning Lab Pre-Deployment Verification ===" -ForegroundColor Cyan
 $root = Split-Path -Parent $MyInvocation.MyCommand.Path
 $required = @(

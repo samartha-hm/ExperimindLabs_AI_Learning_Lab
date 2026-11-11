@@ -155,10 +155,6 @@ window.ExperimindApp = (function() {
   }
 
   function updateHeaderBadges() {
-    var starEl = document.getElementById('header-star-badge');
-    if (starEl) {
-      starEl.textContent = '⭐ ' + countTotalStars() + ' Stars Won!';
-    }
     var soundBtn = document.getElementById('header-sound-btn');
     if (soundBtn && window.ExperimindAudio) {
       var on = window.ExperimindAudio.isEnabled();
@@ -529,50 +525,131 @@ window.ExperimindApp = (function() {
 
   function renderVideoHub(mainEl) {
     if (window.ExperimindVideoPlayer) window.ExperimindVideoPlayer.stopAll();
-    var videos = window.EXPERIMIND_VIDEOS || [];
-    var html = '<div style="margin-bottom:24px;">';
-    html += '<span class="sim-EngineBadge">🎬 ANIMATED AI & CODING MOVIE THEATRE</span>';
-    html += '<h2 style="font-size:2rem;font-weight:900;margin:6px 0;">Watch Animated AI & Coding Movies!</h2>';
-    html += '<p style="color:#475569;font-size:1.08rem;">Click <strong>▶️ Play Animated Movie</strong> on any card below to watch our built-in 4-part animated explainer right here (100% offline-ready, with optional voice narration when Sound is ON!).</p>';
+    var allVideos = window.EXPERIMIND_VIDEOS || [];
+    var curBand = state.videoBandFilter || 'all';
+
+    var filtered = allVideos.filter(function(v) {
+      if (curBand === 'all') return true;
+      return v.gradeBand === curBand;
+    });
+
+    var html = '<div class="exp-HeroBand" style="background:linear-gradient(135deg,#4338ca,#3b82f6,#06b6d4);">';
+    html += '<div class="exp-HeroBadge">CBSE CT & AI (2026-27) • CURATED DIGITAL LEARNING ACADEMY</div>';
+    html += '<h1 style="color:#ffffff;">🎥 AI Tutorial Videos & Digital Learning Resources</h1>';
+    html += '<p style="color:#f8fafc;">Watch interactive video tutorials with Sparky the Robot, test your understanding with interactive brain checkpoints, explore digital cheatsheets, and launch matching hands-on lab experiments!</p>';
+    html += '</div>';
+
+    // Filter Tabs
+    html += '<div class="sim-TabRow" style="margin-bottom:20px;overflow-x:auto;padding-bottom:6px;">';
+    [
+      ['all', '🌟 All 12 Video Tutorials (' + allVideos.length + ')'],
+      ['primary', '🌱 Primary (LKG – Class 3)'],
+      ['prep', '🚀 Preparatory (Classes 4–5)'],
+      ['middle', '🧠 Middle Stage (Classes 6–8)']
+    ].forEach(function(tb) {
+      var act = (curBand === tb[0]) ? ' sim-TabBtn--active' : '';
+      html += '<button type="button" class="sim-TabBtn' + act + '" data-video-filter="' + tb[0] + '">' + tb[1] + '</button>';
+    });
     html += '</div>';
 
     html += '<div class="exp-LessonGrid">';
-    videos.forEach(function(v) {
+    filtered.forEach(function(v) {
       var isOpen = !!state.openVideoIds[v.id];
-      html += '<div class="exp-VidCard">';
-      html += '<div class="exp-LessonMetaRow"><span class="exp-LessonNumBadge">' + v.grades + ' • ' + v.duration + '</span><span style="font-size:0.9rem;font-weight:800;color:#4f46e5;">' + v.source + '</span></div>';
-      html += '<h3 style="font-size:1.35rem;font-weight:900;margin-bottom:10px;">' + v.icon + ' ' + v.title + '</h3>';
+      var isWorksheetOpen = !!state.openWorksheetIds && !!state.openWorksheetIds[v.id];
+      var ans = state.checkpointAnswers ? state.checkpointAnswers[v.id] : null;
 
+      html += '<div class="exp-VidCard" style="display:flex;flex-direction:column;justify-content:space-between;">';
+      html += '<div>';
+      html += '<div class="exp-LessonMetaRow"><span class="exp-LessonNumBadge">' + v.grades + ' • ' + v.duration + '</span><span style="font-size:0.9rem;font-weight:800;color:#2563eb;">' + v.source + '</span></div>';
+      html += '<h3 style="font-size:1.32rem;font-weight:900;margin:8px 0 12px 0;color:#0f172a;">' + v.icon + ' ' + v.title + '</h3>';
+
+      // Video Player Stage
       if (isOpen) {
-        html += '<div id="vplayer-mount-' + v.id + '"></div>';
+        html += '<div id="vplayer-mount-' + v.id + '" style="margin-bottom:14px;"></div>';
       } else {
-        html += '<div style="background:linear-gradient(135deg,#1e3a8a,#2563eb,#4f46e5);color:#fff;border-radius:16px;padding:32px 20px;text-align:center;margin-bottom:14px;border-bottom:6px solid #172554;">';
-        html += '<div style="font-size:3.2rem;margin-bottom:8px;">' + v.icon + ' 🎬</div>';
-        html += '<div style="font-weight:800;font-size:1.1rem;margin-bottom:14px;">4-Part Interactive Animated Movie (' + v.duration + ')</div>';
-        html += '<button type="button" class="btn-Primary" style="background:#facc15;color:#0f172a;border-color:#eab308;border-bottom-color:#ca8a04;font-size:1.08rem;" data-toggle-vid="' + v.id + '">▶️ Play Animated Movie Right Here!</button>';
+        html += '<div style="background:linear-gradient(135deg,#1e3a8a,#2563eb,#3b82f6);color:#fff;border-radius:14px;padding:26px 18px;text-align:center;margin-bottom:14px;border-bottom:5px solid #1e3a8a;">';
+        html += '<div style="font-size:2.8rem;margin-bottom:6px;">' + v.icon + ' 🎬</div>';
+        html += '<div style="font-weight:800;font-size:1.05rem;margin-bottom:12px;">4-Part Interactive Video Lesson (' + v.duration + ')</div>';
+        html += '<button type="button" class="btn-Primary" style="background:#facc15;color:#0f172a;border-color:#eab308;border-bottom-color:#ca8a04;font-size:1rem;" data-toggle-vid="' + v.id + '">▶️ Watch Interactive Offline Video Lesson</button>';
         html += '</div>';
       }
 
-      html += '<div style="font-size:0.98rem;margin-bottom:12px;"><strong>🌟 Cool Things You\'ll Learn:</strong><ul style="padding-left:20px;margin-top:6px;">';
-      (v.keyConcepts || []).forEach(function(kc) { html += '<li style="margin-bottom:4px;">' + kc + '</li>'; });
-      html += '</ul></div>';
-
-      html += '<div class="exp-OfflineBox"><strong>🎮 Try This Game With Friends:</strong> ' + v.offlineAlternative + '</div>';
-
-      html += '<div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-top:14px;padding-top:12px;border-top:2px dashed #e2e8f0;">';
-      html += '<button type="button" class="btn-Primary" data-nav="lesson" data-param="' + v.mappedLessonId + '">🎮 Play Matching Game (' + v.mappedLessonId + ')</button>';
-      if (isOpen) {
-        html += '<button type="button" class="btn-Secondary" data-toggle-vid="' + v.id + '">⏹️ Close Movie</button>';
+      // Interactive Brain Checkpoint (Quick Quiz)
+      if (v.checkpoint) {
+        var isAnswered = ans !== null && ans !== undefined;
+        var isCorrect = isAnswered && ans === v.checkpoint.correct;
+        html += '<div class="exp-CheckpointCard' + (isCorrect ? ' exp-CheckpointCard--answered' : '') + '">';
+        html += '<div class="exp-CheckpointTitle">🧠 Quick Brain Checkpoint:</div>';
+        html += '<div style="font-weight:700;font-size:0.92rem;color:#1e293b;margin-bottom:8px;">' + v.checkpoint.q + '</div>';
+        v.checkpoint.options.forEach(function(opt, oIdx) {
+          var optCls = 'exp-CheckpointOption';
+          if (isAnswered) {
+            if (oIdx === v.checkpoint.correct) optCls += ' exp-CheckpointOption--correct';
+            else if (oIdx === ans) optCls += ' exp-CheckpointOption--wrong';
+          }
+          html += '<button type="button" class="' + optCls + '" data-chk-vid="' + v.id + '" data-chk-opt="' + oIdx + '"' + (isCorrect ? ' disabled' : '') + '>' + opt + '</button>';
+        });
+        if (isCorrect) {
+          html += '<div style="margin-top:8px;font-weight:800;font-size:0.88rem;color:#15803d;">' + v.checkpoint.feedback + '</div>';
+        }
+        html += '</div>';
       }
-      html += '<a href="' + v.youtubeUrl + '" target="_blank" rel="noopener noreferrer" referrerpolicy="no-referrer" class="btn-Secondary" style="text-decoration:none;">🌐 Watch on YouTube ↗</a>';
-      html += '</div></div>';
+
+      // Digital Learning Resources & Cheatsheet
+      html += '<div style="background:#f8fafc;border:1.5px solid #e2e8f0;border-radius:12px;padding:12px;margin:12px 0;">';
+      html += '<div style="font-weight:800;font-size:0.9rem;color:#1e3a8a;margin-bottom:6px;">📌 Core Learning Takeaways:</div>';
+      html += '<ul style="padding-left:18px;margin:0;font-size:0.9rem;color:#334155;line-height:1.5;">';
+      (v.keyConcepts || []).forEach(function(kc) { html += '<li style="margin-bottom:4px;">' + kc + '</li>'; });
+      html += '</ul>';
+
+      if (v.learningResource && v.learningResource.notebookNotes) {
+        html += '<div style="margin-top:10px;padding-top:8px;border-top:1px dashed #cbd5e1;">';
+        html += '<div style="font-weight:800;font-size:0.85rem;color:#475569;margin-bottom:4px;">📝 Student Notebook Summary:</div>';
+        v.learningResource.notebookNotes.forEach(function(nt) {
+          html += '<div style="font-size:0.88rem;color:#0f172a;margin-bottom:3px;">• ' + nt + '</div>';
+        });
+        html += '</div>';
+      }
+      html += '</div>';
+
+      // Unplugged Hands-on Activity
+      html += '<div class="exp-OfflineBox" style="margin-bottom:12px;"><strong>🎮 Classroom Hands-On Game:</strong> ' + v.offlineAlternative + '</div>';
+
+      // Expandable Printable Worksheet
+      if (isWorksheetOpen && v.learningResource) {
+        html += '<div class="exp-WorksheetBox">';
+        html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">';
+        html += '<strong style="color:#1e3a8a;font-size:1.05rem;">📄 Digital Study Worksheet — ' + v.title + '</strong>';
+        html += '<button type="button" class="btn-Secondary" style="padding:4px 10px;font-size:0.8rem;" onclick="window.print()">🖨️ Print Sheet</button>';
+        html += '</div>';
+        html += '<p style="font-size:0.9rem;color:#475569;"><strong>Experiment Challenge:</strong> ' + (v.learningResource.labExperiment || 'Complete the matching simulator activity.') + '</p>';
+        html += '<div style="background:#f1f5f9;padding:10px;border-radius:8px;margin-top:8px;font-size:0.88rem;">';
+        html += '<strong>Discussion Question for Class:</strong> How does this AI capability affect everyday life in our city or school?';
+        html += '</div>';
+        html += '</div>';
+      }
+
+      html += '</div>'; // End top half
+
+      // Action Buttons Footer
+      html += '<div style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-top:14px;padding-top:12px;border-top:2px dashed #e2e8f0;">';
+      html += '<button type="button" class="btn-Primary" data-nav="lesson" data-param="' + v.mappedLessonId + '">🎮 Launch Lab Simulator (' + v.mappedLessonId + ')</button>';
+      html += '<button type="button" class="btn-Secondary" data-toggle-worksheet="' + v.id + '">' + (isWorksheetOpen ? '🔼 Hide Worksheet' : '📄 View Worksheet') + '</button>';
+      if (isOpen) {
+        html += '<button type="button" class="btn-Secondary" data-toggle-vid="' + v.id + '">⏹️ Close Video</button>';
+      }
+      html += '<a href="' + v.youtubeUrl + '" target="_blank" rel="noopener noreferrer" referrerpolicy="no-referrer" class="btn-Secondary" style="text-decoration:none;">🌐 YouTube ↗</a>';
+      html += '</div>';
+
+      html += '</div>'; // End Card
     });
     html += '</div>';
 
     mainEl.innerHTML = html;
     bindNavButtons(mainEl);
 
-    videos.forEach(function(v) {
+    // Mount active video players
+    filtered.forEach(function(v) {
       if (state.openVideoIds[v.id]) {
         var mountEl = document.getElementById('vplayer-mount-' + v.id);
         if (mountEl && window.ExperimindVideoPlayer) {
@@ -581,10 +658,48 @@ window.ExperimindApp = (function() {
       }
     });
 
+    // Event Bindings
+    mainEl.querySelectorAll('[data-video-filter]').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        state.videoBandFilter = btn.getAttribute('data-video-filter');
+        if (window.ExperimindAudio) window.ExperimindAudio.click();
+        renderVideoHub(mainEl);
+      });
+    });
+
     mainEl.querySelectorAll('[data-toggle-vid]').forEach(function(btn) {
       btn.addEventListener('click', function() {
         var vid = btn.getAttribute('data-toggle-vid');
         state.openVideoIds[vid] = !state.openVideoIds[vid];
+        if (window.ExperimindAudio) window.ExperimindAudio.pop();
+        renderVideoHub(mainEl);
+      });
+    });
+
+    mainEl.querySelectorAll('[data-toggle-worksheet]').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        var vid = btn.getAttribute('data-toggle-worksheet');
+        if (!state.openWorksheetIds) state.openWorksheetIds = {};
+        state.openWorksheetIds[vid] = !state.openWorksheetIds[vid];
+        if (window.ExperimindAudio) window.ExperimindAudio.click();
+        renderVideoHub(mainEl);
+      });
+    });
+
+    mainEl.querySelectorAll('[data-chk-vid]').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        var vid = btn.getAttribute('data-chk-vid');
+        var opt = parseInt(btn.getAttribute('data-chk-opt'), 10);
+        if (!state.checkpointAnswers) state.checkpointAnswers = {};
+        state.checkpointAnswers[vid] = opt;
+
+        var vObj = allVideos.find(function(item) { return item.id === vid; });
+        if (vObj && vObj.checkpoint && opt === vObj.checkpoint.correct) {
+          if (window.ExperimindAudio) window.ExperimindAudio.fanfare();
+          if (window.ExperimindConfetti) window.ExperimindConfetti.burst();
+        } else {
+          if (window.ExperimindAudio) window.ExperimindAudio.pop();
+        }
         renderVideoHub(mainEl);
       });
     });
@@ -596,9 +711,9 @@ window.ExperimindApp = (function() {
     var currentBook = books.find(function(b) { return b.id === selId; }) || books[0];
 
     var html = '<div class="exp-HeroBand" style="background:linear-gradient(135deg,#1e3a8a,#2563eb,#059669);">';
-    html += '<div class="exp-HeroBadge">OFFICIAL CBSE CURRICULUM • DIGITAL AI REFERENCE LIBRARY</div>';
-    html += '<h1 style="color:#ffffff;">CBSE Artificial Intelligence Reference Books & Handbooks</h1>';
-    html += '<p style="color:#f8fafc;">Official CBSE Student Handbooks (Classes 6, 7, 8), Curriculum Progression Matrix, and Facilitator Manual with matching interactive lab games.</p>';
+    html += '<div class="exp-HeroBadge">OFFICIAL CBSE CURRICULUM • 100% OFFLINE DIGITAL AI REFERENCE LIBRARY</div>';
+    html += '<h1 style="color:#ffffff;">📖 CBSE Artificial Intelligence Reference Books & Handbooks</h1>';
+    html += '<p style="color:#f8fafc;">Read complete official CBSE AI Student Handbooks (Classes 6, 7, 8), Curriculum Progression Frameworks, and Facilitator Manuals right here 100% offline with zero internet required!</p>';
     html += '</div>';
 
     // Tabs for selecting book
@@ -616,34 +731,70 @@ window.ExperimindApp = (function() {
       html += '<h2 style="font-size:1.8rem;font-weight:900;margin:10px 0;">' + currentBook.icon + ' ' + currentBook.title + '</h2>';
       html += '<p style="font-size:1.05rem;color:#475569;margin-bottom:14px;">' + currentBook.description + '</p>';
       html += '<div style="display:flex;gap:12px;flex-wrap:wrap;">';
-      html += '<a href="' + currentBook.officialPdfUrl + '" target="_blank" rel="noopener noreferrer" referrerpolicy="no-referrer" class="btn-Primary" style="text-decoration:none;display:inline-flex;align-items:center;gap:6px;">📥 Official CBSE Academic PDF (cbseacademic.nic.in) ↗</a>';
+      html += '<button type="button" class="btn-Primary" style="background:' + currentBook.color + ';border-color:' + currentBook.color + ';" onclick="window.print()">🖨️ Print / Save Book Study Guide</button>';
+      html += '<a href="' + currentBook.officialPdfUrl + '" target="_blank" rel="noopener noreferrer" referrerpolicy="no-referrer" class="btn-Secondary" style="text-decoration:none;display:inline-flex;align-items:center;gap:6px;">🌐 Online CBSE PDF Backup (cbseacademic.nic.in) ↗</a>';
       html += '</div></div>';
 
-      // Units Grid
-      html += '<h3 style="font-size:1.4rem;font-weight:900;margin:20px 0 14px 0;color:#0f172a;">📚 Curriculum Units & Hands-On Competencies (' + currentBook.units.length + ' Units):</h3>';
-      html += '<div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(360px, 1fr));gap:16px;">';
-      currentBook.units.forEach(function(u) {
-        html += '<div class="exp-VidCard" style="display:flex;flex-direction:column;justify-content:space-between;">';
-        html += '<div>';
-        html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;"><span class="exp-LessonNumBadge">' + u.unitNumber + '</span><span style="font-size:0.85rem;font-weight:800;color:#2563eb;">CBSE Competency</span></div>';
-        html += '<h4 style="font-size:1.2rem;font-weight:900;margin-bottom:8px;color:#1e3a8a;">' + u.title + '</h4>';
-        html += '<p style="font-size:0.95rem;color:#334155;margin-bottom:10px;">' + u.summary + '</p>';
-        html += '<div style="background:#f1f5f9;border-radius:10px;padding:10px;margin-bottom:12px;">';
-        html += '<div style="font-weight:800;font-size:0.85rem;color:#475569;margin-bottom:6px;">🎯 Core Exam Learning Outcomes:</div>';
-        html += '<div style="font-size:0.9rem;color:#0f172a;font-weight:600;">' + u.competencies + '</div>';
+      // Units Grid with Full Offline Reading Chapters
+      html += '<h3 style="font-size:1.4rem;font-weight:900;margin:24px 0 16px 0;color:#0f172a;">📚 Offline Textbook Chapters & Learning Competencies (' + currentBook.units.length + ' Units):</h3>';
+      html += '<div style="display:flex;flex-direction:column;gap:18px;">';
+      currentBook.units.forEach(function(u, uIdx) {
+        html += '<div class="exp-VidCard" style="border-top:4px solid ' + currentBook.color + ';">';
+        html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:8px;">';
+        html += '<span class="exp-LessonNumBadge" style="background:' + currentBook.color + ';color:#fff;">' + u.unitNumber + '</span>';
+        html += '<span style="font-size:0.88rem;font-weight:800;color:' + currentBook.color + ';">CBSE Official Competency Standard</span>';
         html += '</div>';
-        html += '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px;">';
-        (u.keyConcepts || []).forEach(function(kc) {
-          html += '<span class="vis-SampleChip" style="font-size:0.8rem;background:#e0f2fe;color:#0369a1;border-color:#bae6fd;">' + kc + '</span>';
-        });
-        html += '</div></div>';
 
-        if (u.matchingLessonId) {
-          html += '<div style="padding-top:10px;border-top:1px dashed #cbd5e1;">';
-          html += '<button type="button" class="btn-Primary" style="width:100%;font-size:0.95rem;" data-nav="lesson" data-param="' + u.matchingLessonId + '">🎮 Play Matching Game in Lab (' + u.matchingLessonId + ')</button>';
+        html += '<h3 style="font-size:1.35rem;font-weight:900;margin-bottom:10px;color:#1e3a8a;">' + u.title + '</h3>';
+
+        // Summary
+        html += '<p style="font-size:1rem;color:#334155;margin-bottom:12px;line-height:1.6;">' + u.summary + '</p>';
+
+        // Core Exam Learning Outcomes
+        html += '<div style="background:#f1f5f9;border-left:4px solid ' + currentBook.color + ';border-radius:8px;padding:12px 14px;margin-bottom:14px;">';
+        html += '<div style="font-weight:800;font-size:0.88rem;color:#475569;margin-bottom:4px;">🎯 Core CBSE Exam Learning Outcome:</div>';
+        html += '<div style="font-size:0.95rem;color:#0f172a;font-weight:700;">' + u.competencies + '</div>';
+        html += '</div>';
+
+        // Full Textbook Chapter Offline Reading Box
+        if (u.chapterContent && u.chapterContent.length > 0) {
+          html += '<div class="exp-BookChapterBox">';
+          html += '<div style="font-weight:900;font-size:1.05rem;color:#1e3a8a;margin-bottom:10px;display:flex;align-items:center;gap:6px;">📖 Complete Textbook Theory & In-Depth Concepts:</div>';
+          u.chapterContent.forEach(function(para) {
+            html += '<p>' + para + '</p>';
+          });
           html += '</div>';
         }
+
+        // Key Concepts Pills
+        html += '<div style="display:flex;gap:6px;flex-wrap:wrap;margin:12px 0;">';
+        (u.keyConcepts || []).forEach(function(kc) {
+          html += '<span class="vis-SampleChip" style="font-size:0.82rem;background:#e0f2fe;color:#0369a1;border-color:#bae6fd;">' + kc + '</span>';
+        });
         html += '</div>';
+
+        // Review Questions (Accordion)
+        if (u.reviewQuestions && u.reviewQuestions.length > 0) {
+          html += '<div style="margin:14px 0;background:#f8fafc;padding:12px 14px;border-radius:10px;border:1.5px solid #e2e8f0;">';
+          html += '<div style="font-weight:900;font-size:0.92rem;color:#1e3a8a;margin-bottom:8px;">💡 Self-Check Chapter Review Questions (Click to reveal answers):</div>';
+          u.reviewQuestions.forEach(function(rq, qIdx) {
+            html += '<details class="exp-ReviewQBox">';
+            html += '<summary>Q' + (qIdx + 1) + ': ' + rq.q + '</summary>';
+            html += '<p><strong>Ans:</strong> ' + rq.a + '</p>';
+            html += '</details>';
+          });
+          html += '</div>';
+        }
+
+        // Matching Lab Game Launcher Button
+        if (u.matchingLessonId) {
+          html += '<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-top:14px;padding-top:12px;border-top:1px dashed #cbd5e1;">';
+          html += '<button type="button" class="btn-Primary" style="font-size:0.98rem;" data-nav="lesson" data-param="' + u.matchingLessonId + '">🎮 Launch Interactive Lab Simulator (' + u.matchingLessonId + ')</button>';
+          html += '<span style="font-size:0.88rem;color:#64748b;font-weight:700;">Experiential Simulator for this unit</span>';
+          html += '</div>';
+        }
+
+        html += '</div>'; // End Unit Card
       });
       html += '</div>';
     }
