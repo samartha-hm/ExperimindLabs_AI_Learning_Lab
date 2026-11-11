@@ -6,13 +6,33 @@ echo   Company: Experimind Labs - Innovation for Education
 echo   Mode: 100%% Offline-First School Computer Lab Suite (Zero Admin Required)
 echo ============================================================================
 echo.
+
 set "LAB_DIR=%~dp0"
+set "ENTRY_HTML=%LAB_DIR%index.html"
+
+:: Check 64-bit and 32-bit Microsoft Edge installations
+if exist "%ProgramFiles%\Microsoft\Edge\Application\msedge.exe" (
+    start "" "%ProgramFiles%\Microsoft\Edge\Application\msedge.exe" --app="%ENTRY_HTML%"
+    exit /b 0
+)
 if exist "%ProgramFiles(x86)%\Microsoft\Edge\Application\msedge.exe" (
-    start "" "%ProgramFiles(x86)%\Microsoft\Edge\Application\msedge.exe" --new-window "%LAB_DIR%index.html"
+    start "" "%ProgramFiles(x86)%\Microsoft\Edge\Application\msedge.exe" --app="%ENTRY_HTML%"
     exit /b 0
 )
+
+:: Check Google Chrome installations
 if exist "%ProgramFiles%\Google\Chrome\Application\chrome.exe" (
-    start "" "%ProgramFiles%\Google\Chrome\Application\chrome.exe" --new-window "%LAB_DIR%index.html"
+    start "" "%ProgramFiles%\Google\Chrome\Application\chrome.exe" --app="%ENTRY_HTML%"
     exit /b 0
 )
-start "" "%LAB_DIR%index.html"
+if exist "%ProgramFiles(x86)%\Google\Chrome\Application\chrome.exe" (
+    start "" "%ProgramFiles(x86)%\Google\Chrome\Application\chrome.exe" --app="%ENTRY_HTML%"
+    exit /b 0
+)
+if exist "%LocalAppData%\Google\Chrome\Application\chrome.exe" (
+    start "" "%LocalAppData%\Google\Chrome\Application\chrome.exe" --app="%ENTRY_HTML%"
+    exit /b 0
+)
+
+:: Default browser fallback
+start "" "%ENTRY_HTML%"
