@@ -1,0 +1,1630 @@
+/* Experimind AI Learning Lab v4.0 — Big, Tactile, Kid-First Design System */
+:root {
+  --bg-page: #f0f7ff;
+  --bg-surface: #ffffff;
+  --bg-subtle: #f8fafc;
+  --bg-dark: #0f172a;
+  --ink-primary: #0f172a;
+  --ink-secondary: #1e293b;
+  --ink-muted: #475569;
+  --brand-blue: #2563eb;
+  --brand-indigo: #4f46e5;
+  --brand-teal: #0d9488;
+  --brand-amber: #f59e0b;
+  --brand-emerald: #10b981;
+  --brand-rose: #e11d48;
+  --border-light: #cbd5e1;
+  --border-strong: #94a3b8;
+  --radius-xl: 24px;
+  --radius-lg: 20px;
+  --radius-md: 16px;
+  --radius-sm: 12px;
+  --shadow-sm: 0 4px 12px rgba(15, 23, 42, 0.06);
+  --shadow-md: 0 10px 28px rgba(15, 23, 42, 0.10);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Inter', 'Nunito', 'Segoe UI', system-ui, -apple-system, sans-serif;
+  background-color: var(--bg-page);
+  color: var(--ink-primary);
+  font-size: 18px;
+  line-height: 1.6;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* Sticky Widescreen Top Navigation Bar — Big & Easy to Click */
+.exp-TopBar {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: #ffffff;
+  border-bottom: 3px solid #dbeafe;
+  box-shadow: var(--shadow-sm);
+}
+
+.exp-TopBarInner {
+  max-width: 1860px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 14px clamp(20px, 3.5vw, 44px);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.exp-BrandLink {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+}
+
+.exp-LogoImg {
+  height: 54px;
+  width: auto;
+  max-width: 250px;
+  object-fit: contain;
+}
+
+.exp-NavMenu {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.exp-NavBtn {
+  padding: 12px 20px;
+  border-radius: 16px;
+  border: 2px solid #cbd5e1;
+  border-bottom: 4px solid #94a3b8;
+  background: #f8fafc;
+  color: var(--ink-primary);
+  font-weight: 800;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: transform 0.1s ease, background 0.15s ease;
+}
+
+.exp-NavBtn:hover {
+  background: #eff6ff;
+  border-color: #60a5fa;
+  border-bottom-color: #2563eb;
+  color: var(--brand-blue);
+  transform: translateY(-1px);
+}
+
+.exp-NavBtn:active {
+  transform: translateY(2px);
+}
+
+.exp-NavBtn--active {
+  background: var(--brand-blue);
+  color: #ffffff;
+  border-color: #1d4ed8;
+  border-bottom: 4px solid #1e3a8a;
+}
+
+.exp-UtilityCluster {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.exp-StarBadge {
+  background: linear-gradient(135deg, #fef08a, #facc15);
+  color: #78350f;
+  border: 2px solid #f59e0b;
+  border-bottom: 4px solid #d97706;
+  padding: 10px 18px;
+  border-radius: 16px;
+  font-weight: 900;
+  font-size: 1.02rem;
+}
+
+.exp-TogglePill {
+  padding: 10px 18px;
+  border-radius: 16px;
+  border: 2px solid #cbd5e1;
+  border-bottom: 4px solid #94a3b8;
+  background: #ffffff;
+  color: var(--ink-primary);
+  font-weight: 800;
+  font-size: 0.98rem;
+  cursor: pointer;
+}
+
+.exp-TogglePill--on {
+  background: #dcfce7;
+  border-color: #10b981;
+  border-bottom-color: #059669;
+  color: #065f46;
+}
+
+/* Main Fluid Container — Generous Full-Screen Width */
+.exp-MainContainer {
+  max-width: 1860px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 28px clamp(20px, 3.5vw, 48px) 60px;
+}
+
+/* Kid-Friendly Hero Banner */
+.exp-HeroBanner {
+  background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 55%, #4f46e5 100%);
+  color: #ffffff;
+  border-radius: var(--radius-xl);
+  border-bottom: 6px solid #172554;
+  padding: 36px clamp(24px, 3.5vw, 48px);
+  display: grid;
+  grid-template-columns: 1.5fr 1fr;
+  gap: 32px;
+  align-items: center;
+  box-shadow: var(--shadow-md);
+  margin-bottom: 32px;
+}
+
+@media (max-width: 980px) {
+  .exp-HeroBanner {
+    grid-template-columns: 1fr;
+  }
+}
+
+.exp-HeroBadge {
+  display: inline-block;
+  background: #facc15;
+  color: #0f172a;
+  padding: 6px 16px;
+  border-radius: 999px;
+  font-size: 0.9rem;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  margin-bottom: 14px;
+}
+
+.exp-HeroBanner h1 {
+  font-size: clamp(2rem, 3.2vw, 2.85rem);
+  font-weight: 900;
+  line-height: 1.15;
+  margin-bottom: 14px;
+}
+
+.exp-HeroBanner p {
+  color: #e0f2fe;
+  font-size: 1.18rem;
+  font-weight: 500;
+  max-width: 62ch;
+  margin-bottom: 24px;
+}
+
+.exp-HeroActionRow {
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.exp-HeroKpiGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 14px;
+}
+
+.exp-HeroKpiCard {
+  background: rgba(255, 255, 255, 0.14);
+  border: 2px solid rgba(255, 255, 255, 0.28);
+  border-radius: var(--radius-md);
+  padding: 18px;
+  text-align: center;
+}
+
+.exp-HeroKpiCard strong {
+  display: block;
+  font-size: 1.65rem;
+  font-weight: 900;
+  color: #fde047;
+}
+
+.exp-HeroKpiCard span {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+/* Filter & Search Bar */
+.exp-FilterRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 28px;
+}
+
+.exp-BandTabs {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.exp-BandTab {
+  padding: 12px 22px;
+  border-radius: 16px;
+  border: 2px solid #cbd5e1;
+  border-bottom: 4px solid #94a3b8;
+  background: #ffffff;
+  color: var(--ink-primary);
+  font-weight: 800;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+.exp-BandTab--active {
+  background: #0f172a;
+  color: #facc15;
+  border-color: #0f172a;
+  border-bottom-color: #000000;
+}
+
+.exp-SearchInput {
+  padding: 14px 22px;
+  border-radius: 16px;
+  border: 2px solid #94a3b8;
+  min-width: 320px;
+  font-size: 1.05rem;
+  font-weight: 600;
+  background: #ffffff;
+}
+
+/* Big Grade Cards Grid */
+.exp-GradeGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 24px;
+  margin-bottom: 36px;
+}
+
+.exp-GradeCard {
+  background: var(--bg-surface);
+  border-radius: var(--radius-xl);
+  border: 2px solid #cbd5e1;
+  border-bottom: 6px solid #94a3b8;
+  padding: 26px;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.exp-GradeCard:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-md);
+}
+
+.exp-GradeHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+
+.exp-GradeIcon {
+  font-size: 3.1rem;
+}
+
+.exp-GradeAge {
+  font-size: 0.92rem;
+  font-weight: 800;
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: #eff6ff;
+  color: var(--brand-blue);
+}
+
+.exp-GradeCard h3 {
+  font-size: 1.5rem;
+  font-weight: 900;
+  margin-bottom: 6px;
+}
+
+.exp-GradeFramework {
+  font-size: 0.92rem;
+  font-weight: 800;
+  color: var(--brand-indigo);
+  margin-bottom: 10px;
+}
+
+.exp-GradeSummary {
+  font-size: 1.02rem;
+  color: var(--ink-secondary);
+  margin-bottom: 20px;
+}
+
+.exp-GradeFooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding-top: 16px;
+  border-top: 2px dashed #e2e8f0;
+}
+
+/* Big Lesson Tiles Grid */
+.exp-LessonGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+  gap: 24px;
+}
+
+.exp-LessonCard {
+  background: var(--bg-surface);
+  border: 2px solid #cbd5e1;
+  border-bottom: 6px solid #94a3b8;
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  transition: transform 0.15s ease;
+}
+
+.exp-LessonCard:hover {
+  transform: translateY(-3px);
+}
+
+.exp-LessonMetaRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.exp-LessonNumBadge {
+  font-size: 0.9rem;
+  font-weight: 800;
+  padding: 5px 12px;
+  border-radius: 10px;
+  background: #dbeafe;
+  color: #1e40af;
+}
+
+.exp-LessonStarRow {
+  font-size: 1.25rem;
+}
+
+/* SIMULATOR-FIRST LESSON WORKSPACE (#lesson/:id) */
+.exp-LessonSplit {
+  display: grid;
+  grid-template-columns: 7fr 5fr;
+  gap: 28px;
+  align-items: start;
+}
+
+@media (max-width: 1180px) {
+  .exp-LessonSplit {
+    grid-template-columns: 1fr;
+  }
+}
+
+.exp-SimPane {
+  background: #ffffff;
+  border: 3px solid #60a5fa;
+  border-bottom: 7px solid #2563eb;
+  border-radius: var(--radius-xl);
+  padding: 26px;
+  box-shadow: var(--shadow-md);
+}
+
+.exp-TheoryPane {
+  background: var(--bg-surface);
+  border: 2px solid #cbd5e1;
+  border-bottom: 6px solid #94a3b8;
+  border-radius: var(--radius-xl);
+  padding: 26px;
+  box-shadow: var(--shadow-sm);
+}
+
+.exp-ConceptList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 16px 0;
+}
+
+.exp-ConceptItem {
+  background: #f8fafc;
+  border: 2px solid #e2e8f0;
+  border-left: 6px solid var(--brand-blue);
+  padding: 14px 16px;
+  border-radius: 12px;
+  font-size: 1.04rem;
+  font-weight: 600;
+}
+
+.exp-ChallengeBox {
+  background: linear-gradient(135deg, #fef9c3, #fef08a);
+  border: 2px solid #facc15;
+  border-bottom: 5px solid #eab308;
+  border-radius: var(--radius-md);
+  padding: 18px;
+  margin: 18px 0;
+}
+
+.exp-InsightBox {
+  background: #ecfdf5;
+  border: 2px solid #34d399;
+  border-radius: var(--radius-md);
+  padding: 16px;
+  margin-top: 12px;
+  font-size: 1.02rem;
+}
+
+/* Tactile 3D Kid-Friendly Buttons */
+.btn-Primary {
+  background: var(--brand-blue);
+  color: #ffffff;
+  border: 2px solid #1d4ed8;
+  border-bottom: 5px solid #1e3a8a;
+  padding: 13px 22px;
+  border-radius: 14px;
+  font-weight: 800;
+  font-size: 1.02rem;
+  cursor: pointer;
+  transition: transform 0.1s ease, background 0.15s ease;
+}
+
+.btn-Primary:hover {
+  background: #1d4ed8;
+  transform: translateY(-1px);
+}
+
+.btn-Primary:active {
+  transform: translateY(2px);
+}
+
+.btn-Secondary {
+  background: #ffffff;
+  color: var(--ink-primary);
+  border: 2px solid #cbd5e1;
+  border-bottom: 4px solid #94a3b8;
+  padding: 11px 18px;
+  border-radius: 14px;
+  font-weight: 800;
+  font-size: 0.98rem;
+  cursor: pointer;
+}
+
+.btn-Secondary:hover {
+  background: #f1f5f9;
+  border-color: #64748b;
+}
+
+.btn-Danger {
+  background: var(--brand-rose);
+  color: #ffffff;
+  border: 2px solid #be123c;
+  border-bottom: 5px solid #881337;
+  padding: 12px 20px;
+  border-radius: 14px;
+  font-weight: 800;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+/* Simulator Internal Styles — Large & Playful */
+.sim-Card {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.sim-HeaderRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  border-bottom: 2px solid #e2e8f0;
+  padding-bottom: 14px;
+}
+
+.sim-HeaderRow h4 {
+  font-size: 1.4rem;
+  font-weight: 900;
+}
+
+.sim-EngineBadge {
+  display: inline-block;
+  font-size: 0.85rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #1e40af;
+  background: #dbeafe;
+  padding: 5px 12px;
+  border-radius: 8px;
+  margin-bottom: 6px;
+}
+
+.sim-ProgressPill {
+  background: #fef9c3;
+  border: 2px solid #facc15;
+  color: #854d0e;
+  padding: 8px 16px;
+  border-radius: 999px;
+  font-size: 0.98rem;
+  font-weight: 800;
+}
+
+.sim-Instr {
+  font-size: 1.08rem;
+  font-weight: 600;
+  color: var(--ink-secondary);
+  background: #eff6ff;
+  padding: 12px 16px;
+  border-radius: 12px;
+  border-left: 5px solid #3b82f6;
+}
+
+.sim-TokenTray {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 18px;
+  background: #f8fafc;
+  border: 2px dashed #94a3b8;
+  border-radius: var(--radius-md);
+}
+
+.sim-Token {
+  padding: 14px 22px;
+  border-radius: 14px;
+  border: 2px solid #94a3b8;
+  border-bottom: 5px solid #64748b;
+  background: #ffffff;
+  font-size: 1.18rem;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.sim-Token--selected {
+  border-color: var(--brand-blue);
+  border-bottom-color: #1e3a8a;
+  background: #dbeafe;
+  transform: scale(1.05);
+}
+
+.sim-BinGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 16px;
+}
+
+.sim-BinCard {
+  background: #f8fafc;
+  border: 3px solid #cbd5e1;
+  border-bottom: 6px solid #94a3b8;
+  border-radius: var(--radius-md);
+  padding: 18px;
+  min-height: 155px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.sim-BinCard:hover {
+  border-color: var(--brand-blue);
+  background: #eff6ff;
+  transform: translateY(-2px);
+}
+
+.sim-BinTitle {
+  font-weight: 900;
+  font-size: 1.15rem;
+  margin-bottom: 6px;
+}
+
+.sim-BinActionHint {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--brand-blue);
+  margin-bottom: 12px;
+}
+
+.sim-BinItems {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.sim-PlacedChip {
+  background: #dcfce7;
+  color: #065f46;
+  border: 1px solid #34d399;
+  padding: 8px 12px;
+  border-radius: 10px;
+  font-size: 1rem;
+  font-weight: 800;
+}
+
+.sim-TrainTrack {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+  padding: 20px;
+  background: #f8fafc;
+  border: 2px solid #cbd5e1;
+  border-radius: var(--radius-md);
+}
+
+.sim-TrainCar {
+  background: #ffffff;
+  border: 3px solid #94a3b8;
+  border-bottom: 6px solid #64748b;
+  border-radius: 14px;
+  padding: 14px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 92px;
+}
+
+.sim-TrainCar--mystery {
+  border-color: var(--brand-amber);
+  border-bottom-color: #d97706;
+  background: #fef3c7;
+}
+
+.sim-TrainEmoji {
+  font-size: 2.5rem;
+}
+
+.sim-TrainIdx {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--ink-muted);
+}
+
+.sim-OptionGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
+}
+
+.sim-OptionBtn {
+  padding: 16px 20px;
+  border-radius: 14px;
+  border: 2px solid #cbd5e1;
+  border-bottom: 5px solid #94a3b8;
+  background: #ffffff;
+  font-size: 1.1rem;
+  font-weight: 800;
+  cursor: pointer;
+  text-align: left;
+}
+
+.sim-OptionBtn:hover, .sim-OptionBtn--active {
+  border-color: var(--brand-blue);
+  border-bottom-color: #1e3a8a;
+  background: #eff6ff;
+}
+
+.sim-CanvasWrap {
+  width: 100%;
+  overflow: hidden;
+  border-radius: var(--radius-md);
+  border: 3px solid #334155;
+  background: #0f172a;
+  display: flex;
+  justify-content: center;
+}
+
+.sim-CanvasWrap canvas {
+  width: 100%;
+  max-width: 720px;
+  height: auto;
+  display: block;
+}
+
+/* RoboGrid Styles — Bigger Tiles */
+.sim-RoboLayout {
+  display: grid;
+  grid-template-columns: 1.15fr 1fr;
+  gap: 20px;
+  align-items: start;
+}
+
+@media (max-width: 820px) {
+  .sim-RoboLayout {
+    grid-template-columns: 1fr;
+  }
+}
+
+.sim-GridBoard {
+  display: grid;
+  gap: 8px;
+  background: #1e293b;
+  padding: 14px;
+  border-radius: var(--radius-md);
+}
+
+.sim-GridCell {
+  aspect-ratio: 1;
+  background: #f8fafc;
+  border-radius: 10px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 64px;
+}
+
+.sim-GridCell--robot {
+  background: #dbeafe;
+  box-shadow: inset 0 0 0 4px #2563eb;
+}
+
+.sim-GridCell--goal {
+  background: #dcfce7;
+  box-shadow: inset 0 0 0 4px #10b981;
+}
+
+.sim-GridCell--obs {
+  background: #fee2e2;
+}
+
+.sim-CoordTag {
+  position: absolute;
+  top: 4px;
+  left: 6px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #64748b;
+  font-family: monospace;
+}
+
+.sim-CellEmoji {
+  font-size: 2rem;
+}
+
+.sim-CmdBtnRow {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+}
+
+.sim-CmdBtn {
+  padding: 14px 18px;
+  font-size: 1.25rem;
+  font-weight: 900;
+  border-radius: 14px;
+  border: 2px solid #94a3b8;
+  border-bottom: 5px solid #64748b;
+  background: #ffffff;
+  cursor: pointer;
+}
+
+.sim-CmdBtn:hover {
+  background: #eff6ff;
+  border-color: var(--brand-blue);
+}
+
+.sim-QueueStrip {
+  min-height: 78px;
+  background: #f8fafc;
+  border: 2px solid #cbd5e1;
+  border-radius: 14px;
+  padding: 12px;
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+}
+
+.sim-QueueChip {
+  padding: 8px 14px;
+  border-radius: 10px;
+  border: 2px solid #60a5fa;
+  background: #eff6ff;
+  font-weight: 800;
+  font-size: 0.98rem;
+  cursor: pointer;
+}
+
+.sim-QueueChip--active {
+  background: #f59e0b;
+  color: #ffffff;
+  border-color: #d97706;
+  transform: scale(1.08);
+}
+
+.sim-ExecRow, .sim-FooterActions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+/* Binary, Gates & IPO */
+.sim-BinaryRow {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 12px;
+}
+
+.sim-BitCard {
+  padding: 18px 10px;
+  border-radius: var(--radius-md);
+  border: 3px solid #cbd5e1;
+  border-bottom: 6px solid #94a3b8;
+  background: #ffffff;
+  cursor: pointer;
+  text-align: center;
+}
+
+.sim-BitCard--on {
+  background: #fef08a;
+  border-color: #eab308;
+  border-bottom-color: #ca8a04;
+}
+
+.sim-BitBulb {
+  font-size: 1.85rem;
+  font-weight: 900;
+  margin: 8px 0;
+}
+
+.sim-MathReadout {
+  background: #0f172a;
+  color: #fde047;
+  padding: 16px 20px;
+  border-radius: 14px;
+  font-family: monospace;
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+.sim-GateArena {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: 16px;
+  align-items: center;
+  background: #f8fafc;
+  padding: 20px;
+  border-radius: var(--radius-md);
+  border: 2px solid #cbd5e1;
+}
+
+@media (max-width: 720px) {
+  .sim-GateArena {
+    grid-template-columns: 1fr;
+  }
+}
+
+.sim-SwitchBtn {
+  padding: 16px 20px;
+  border-radius: 14px;
+  border: 2px solid #94a3b8;
+  border-bottom: 5px solid #64748b;
+  background: #ffffff;
+  font-weight: 800;
+  font-size: 1.04rem;
+  cursor: pointer;
+  width: 100%;
+  margin-bottom: 10px;
+}
+
+.sim-SwitchBtn--on {
+  background: #dcfce7;
+  border-color: #10b981;
+  border-bottom-color: #059669;
+  color: #065f46;
+}
+
+.sim-GateProcessor {
+  padding: 20px;
+  background: #1e293b;
+  color: #facc15;
+  border-radius: var(--radius-md);
+  text-align: center;
+  font-size: 1.1rem;
+}
+
+.sim-GateOutput {
+  padding: 22px;
+  border-radius: var(--radius-md);
+  border: 3px solid #cbd5e1;
+  background: #ffffff;
+  font-weight: 900;
+  font-size: 1.12rem;
+  text-align: center;
+}
+
+.sim-GateOutput--on {
+  background: #dcfce7;
+  border-color: #10b981;
+  color: #065f46;
+}
+
+.sim-GateOutput--else {
+  background: #dbeafe;
+  border-color: #3b82f6;
+  color: #1e40af;
+}
+
+.sim-IpoPipeline {
+  display: flex;
+  align-items: stretch;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.sim-IpoBox {
+  flex: 1;
+  min-width: 180px;
+  padding: 18px;
+  border-radius: var(--radius-md);
+  border: 3px solid #cbd5e1;
+  background: #f8fafc;
+  opacity: 0.6;
+}
+
+.sim-IpoBox--active {
+  opacity: 1;
+  background: #eff6ff;
+  border-color: var(--brand-blue);
+  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.15);
+}
+
+.sim-IpoTag {
+  font-size: 0.85rem;
+  font-weight: 900;
+  color: var(--brand-blue);
+  margin-bottom: 6px;
+}
+
+.sim-IpoText {
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+
+.sim-IpoArrow {
+  display: flex;
+  align-items: center;
+  font-size: 1.8rem;
+  font-weight: 900;
+  color: var(--brand-blue);
+}
+
+/* Block Studio & Spirograph */
+.sim-BlockStudioGrid, .sim-SpiroLayout, .sim-PixelDualGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  align-items: start;
+}
+
+@media (max-width: 860px) {
+  .sim-BlockStudioGrid, .sim-SpiroLayout, .sim-PixelDualGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.sim-PaletteGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+}
+
+.sim-CodeBlockBtn {
+  padding: 12px 14px;
+  background: #ffffff;
+  border: 2px solid #cbd5e1;
+  border-bottom: 4px solid #94a3b8;
+  border-radius: 10px;
+  font-weight: 800;
+  font-size: 0.94rem;
+  cursor: pointer;
+  text-align: left;
+}
+
+.sim-ScriptStack {
+  background: #0f172a;
+  padding: 16px;
+  border-radius: var(--radius-md);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.sim-HatBlock {
+  background: #f59e0b;
+  color: #0f172a;
+  padding: 10px 14px;
+  border-radius: 14px 14px 6px 6px;
+  font-weight: 900;
+  font-size: 0.96rem;
+}
+
+.sim-StackedBlock {
+  color: #ffffff;
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.sim-SliderLabel {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 1rem;
+  font-weight: 700;
+  margin-bottom: 12px;
+}
+
+.sim-SliderLabel input[type="range"] {
+  height: 10px;
+  accent-color: var(--brand-blue);
+  cursor: pointer;
+}
+
+.sim-PresetRow, .sim-TabRow {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.sim-TabBtn, .sim-MiniBtn {
+  padding: 10px 16px;
+  border-radius: 12px;
+  border: 2px solid #cbd5e1;
+  border-bottom: 4px solid #94a3b8;
+  background: #ffffff;
+  font-size: 0.95rem;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.sim-TabBtn--active {
+  background: var(--brand-blue);
+  color: #ffffff;
+  border-color: #1d4ed8;
+  border-bottom-color: #1e3a8a;
+}
+
+/* Charts, Lockers, Pixels, Neural Net & Confusion Matrix */
+.sim-BarChartStage {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-around;
+  gap: 14px;
+  min-height: 260px;
+  background: #f8fafc;
+  border: 2px solid #cbd5e1;
+  border-radius: var(--radius-md);
+  padding: 22px;
+}
+
+.sim-BarCol {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+}
+
+.sim-BarVisual {
+  width: 100%;
+  max-width: 68px;
+  background: var(--brand-blue);
+  border-radius: 10px 10px 0 0;
+  transition: height 0.2s ease;
+}
+
+.sim-BarVisual--active {
+  background: var(--brand-amber);
+}
+
+.sim-BarVisual--sorted {
+  background: var(--brand-emerald);
+}
+
+.sim-LockerGrid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 10px;
+}
+
+.sim-LockerBtn {
+  padding: 14px 10px;
+  border-radius: 12px;
+  border: 2px solid #cbd5e1;
+  border-bottom: 5px solid #94a3b8;
+  background: #ffffff;
+  font-weight: 800;
+  cursor: pointer;
+  text-align: center;
+}
+
+.sim-LockerBtn--mid {
+  border-color: var(--brand-amber);
+  background: #fef3c7;
+}
+
+.sim-LockerBtn--found {
+  border-color: var(--brand-emerald);
+  background: #dcfce7;
+}
+
+.sim-LockerBtn--eliminated {
+  opacity: 0.35;
+}
+
+.sim-NlpResultRow {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 12px;
+}
+
+.sim-MetricBox {
+  background: #f8fafc;
+  border: 2px solid #cbd5e1;
+  border-radius: 12px;
+  padding: 14px 16px;
+}
+
+.sim-MetricBox span {
+  display: block;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--ink-muted);
+}
+
+.sim-MetricBox strong {
+  font-size: 1.2rem;
+  font-weight: 900;
+  color: var(--ink-primary);
+}
+
+.sim-NlpToken {
+  padding: 8px 14px;
+  border-radius: 10px;
+  font-weight: 800;
+  font-size: 0.98rem;
+}
+
+.sim-NlpToken--stop {
+  background: #e2e8f0;
+  color: #64748b;
+  text-decoration: line-through;
+}
+
+.sim-NlpToken--key {
+  background: #dbeafe;
+  color: #1e40af;
+}
+
+.sim-CmGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+.sim-CmCell {
+  padding: 16px;
+  border-radius: 12px;
+  border: 2px solid #cbd5e1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.sim-CmCell--good { background: #ecfdf5; border-color: #10b981; }
+.sim-CmCell--warn { background: #fffbeb; border-color: #f59e0b; }
+.sim-CmCell--bad { background: #fef2f2; border-color: #ef4444; }
+
+.sim-PixelMatrix {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 5px;
+  background: #334155;
+  padding: 10px;
+  border-radius: 12px;
+}
+
+.sim-PixelCell {
+  aspect-ratio: 1;
+  border: none;
+  border-radius: 6px;
+  font-family: monospace;
+  font-size: 0.88rem;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  min-height: 46px;
+}
+
+.sim-Banner {
+  padding: 16px 20px;
+  border-radius: 14px;
+  background: #eff6ff;
+  border: 2px solid #93c5fd;
+  color: #1e3a8a;
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+
+.sim-Banner--success {
+  background: #dcfce7;
+  color: #065f46;
+  border: 2px solid #10b981;
+}
+
+.sim-Banner--warn {
+  background: #fef3c7;
+  color: #92400e;
+  border: 2px solid #f59e0b;
+}
+
+/* Vision Lab, External Cards & Animated Video Player */
+.vision-HeaderCard {
+  background: linear-gradient(135deg, #0f172a, #1e3a8a);
+  color: #ffffff;
+  padding: 28px;
+  border-radius: var(--radius-xl);
+  margin-bottom: 22px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 18px;
+  flex-wrap: wrap;
+}
+
+.vision-ConsentControls {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.vision-MainGrid {
+  display: grid;
+  grid-template-columns: 1.35fr 1fr;
+  gap: 24px;
+}
+
+@media (max-width: 960px) {
+  .vision-MainGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.vision-StageCard, .vision-ControlCard {
+  background: #ffffff;
+  border: 2px solid #cbd5e1;
+  border-bottom: 6px solid #94a3b8;
+  border-radius: var(--radius-xl);
+  padding: 24px;
+}
+
+.vision-StatusBadge {
+  padding: 10px 16px;
+  border-radius: 10px;
+  background: #eff6ff;
+  color: #1e40af;
+  font-weight: 800;
+  font-size: 0.98rem;
+  margin-bottom: 14px;
+}
+
+.vision-StatusBadge--live {
+  background: #dcfce7;
+  color: #065f46;
+}
+
+.exp-ExtCard, .exp-VidCard {
+  background: #ffffff;
+  border: 2px solid #cbd5e1;
+  border-bottom: 6px solid #94a3b8;
+  border-radius: var(--radius-xl);
+  padding: 26px;
+  box-shadow: var(--shadow-sm);
+  margin-bottom: 22px;
+}
+
+.exp-OfflineBox {
+  background: #f0fdf4;
+  border: 2px solid #86efac;
+  border-radius: var(--radius-md);
+  padding: 16px;
+  margin-top: 14px;
+  font-size: 0.98rem;
+}
+
+.anim-PlayerBox {
+  margin-bottom: 14px;
+}
+
+.anim-ControlsBar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 10px;
+  padding: 10px;
+  background: #f8fafc;
+  border: 2px solid #cbd5e1;
+  border-radius: 14px;
+}
+
+.anim-ScenePills {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-left: auto;
+}
+
+
+/* =========================================================================
+   Experimind Lab v4.1 — Confetti, Certificate & Enhanced Tactile Polish
+   ========================================================================= */
+
+.exp-ConfettiCanvas {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  z-index: 99999;
+}
+
+.exp-CertBtn {
+  background: #fef08a !important;
+  color: #854d0e !important;
+  border-color: #facc15 !important;
+  border-bottom: 4px solid #ca8a04 !important;
+  font-weight: 900 !important;
+}
+
+.exp-CertBtn:hover {
+  background: #fde047 !important;
+  transform: translateY(-2px);
+}
+
+/* Kid-First Session Star Certificate Modal */
+.exp-ModalBackdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(15, 23, 42, 0.75);
+  backdrop-filter: blur(6px);
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.exp-ModalDialog {
+  background: #ffffff;
+  border-radius: var(--radius-xl);
+  max-width: 820px;
+  width: 100%;
+  max-height: 92vh;
+  overflow-y: auto;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.35);
+  border: 4px solid #2563eb;
+  position: relative;
+  animation: expModalPop 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes expModalPop {
+  0% { transform: scale(0.85); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.exp-CertCard {
+  background: linear-gradient(135deg, #fefce8 0%, #ffffff 50%, #eff6ff 100%);
+  border: 12px double #ca8a04;
+  border-radius: calc(var(--radius-xl) - 4px);
+  padding: 36px 32px;
+  text-align: center;
+  position: relative;
+  box-shadow: inset 0 0 40px rgba(234, 179, 8, 0.15);
+}
+
+.exp-CertWatermark {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 16rem;
+  opacity: 0.04;
+  pointer-events: none;
+  user-select: none;
+}
+
+.exp-CertHeader {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  margin-bottom: 12px;
+}
+
+.exp-CertOrg {
+  font-size: 1.15rem;
+  font-weight: 900;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: #1e3a8a;
+}
+
+.exp-CertTagline {
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: #2563eb;
+}
+
+.exp-CertTitle {
+  font-size: 2.3rem;
+  font-weight: 900;
+  color: #713f12;
+  margin: 12px 0 6px;
+  text-shadow: 1px 1px 0 #fef08a;
+}
+
+.exp-CertSubtitle {
+  font-size: 1.2rem;
+  font-weight: 800;
+  color: #0369a1;
+  margin-bottom: 24px;
+}
+
+.exp-CertStarCircle {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: #fef08a;
+  border: 4px solid #ca8a04;
+  border-radius: 50%;
+  width: 130px;
+  height: 130px;
+  margin: 0 auto 20px;
+  box-shadow: 0 8px 20px rgba(202, 138, 4, 0.25);
+  animation: expStarPulse 2s infinite ease-in-out;
+}
+
+@keyframes expStarPulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+.exp-CertStarCount {
+  font-size: 2.4rem;
+  font-weight: 900;
+  color: #854d0e;
+  line-height: 1;
+}
+
+.exp-CertStarLabel {
+  font-size: 0.85rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: #a16207;
+}
+
+.exp-CertPraise {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: #1e293b;
+  max-width: 620px;
+  margin: 0 auto 24px;
+  line-height: 1.5;
+}
+
+.exp-CertBadgesRow {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 28px;
+}
+
+.exp-CertBadgeItem {
+  background: #ffffff;
+  border: 2px solid #cbd5e1;
+  border-radius: 14px;
+  padding: 10px 18px;
+  font-weight: 800;
+  font-size: 0.98rem;
+  color: #1e293b;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+}
+
+.exp-CertSignatureRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  border-top: 2px dashed #ca8a04;
+  padding-top: 18px;
+  margin-top: 20px;
+  font-size: 0.95rem;
+  color: #475569;
+}
+
+.exp-CertModalActions {
+  display: flex;
+  justify-content: center;
+  gap: 14px;
+  margin-top: 20px;
+  padding: 0 20px 24px;
+}
+
+/* Tactile Drag and Drop & Active Game Feedback */
+.sim-Token--dragging {
+  opacity: 0.4;
+  transform: scale(0.95);
+}
+
+.sim-BinCard--dragover {
+  border-color: #2563eb !important;
+  background: #eff6ff !important;
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.3) !important;
+  transform: scale(1.02);
+}
+
+.sim-GlowActive {
+  box-shadow: 0 0 0 4px #f59e0b, 0 8px 24px rgba(245, 158, 11, 0.45) !important;
+  border-color: #f59e0b !important;
+  transform: translateY(-3px) scale(1.02);
+}
+
+/* Print Stylesheet for Session Star Certificate */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  .exp-ModalDialog, .exp-ModalDialog * {
+    visibility: visible;
+  }
+  .exp-ModalDialog {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    max-width: 100%;
+    margin: 0;
+    border: none;
+    box-shadow: none;
+  }
+  .exp-ModalActions, .exp-ModalBackdrop, .exp-TopBar {
+    display: none !important;
+  }
+  .exp-CertCard {
+    border: 8px double #ca8a04;
+    page-break-inside: avoid;
+  }
+}

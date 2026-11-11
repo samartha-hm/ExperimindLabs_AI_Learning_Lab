@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Experimind AI Learning Lab — Innovation for Education (LKG to Class 8)</title>
+  <link rel="stylesheet" href="src/styles/main.css">
+</head>
+<body>
+  <header class="exp-TopBar">
+    <div class="exp-TopBarInner">
+      <button type="button" class="exp-BrandLink" id="brand-home-btn" title="Experimind AI Learning Lab Home">
+        <img src="10_Brand_Assets/Experimind_Labs_Official_Logo.png" alt="Experimind Labs Official Logo" class="exp-LogoImg" id="brand-logo-img">
+      </button>
+
+      <nav class="exp-NavMenu" aria-label="Student Navigation">
+        <button type="button" class="exp-NavBtn exp-NavBtn--active" data-top-route="home">🏠 Pick Your Class</button>
+        <button type="button" class="exp-NavBtn" data-top-route="simulators">🎮 All 80 Games</button>
+        <button type="button" class="exp-NavBtn" data-top-route="vision">📷 Magic AI Camera</button>
+        <button type="button" class="exp-NavBtn" data-top-route="videos">🎬 Animated Movies</button>
+        <button type="button" class="exp-NavBtn" data-top-route="external">🚀 Coding Apps</button>
+      </nav>
+
+      <div class="exp-UtilityCluster">
+        <span class="exp-StarBadge" id="header-star-badge">⭐ 0 Stars Won!</span>
+        <button type="button" class="exp-TogglePill exp-CertBtn" id="header-cert-btn" title="View Your Session Star Certificate">🏆 My Certificate</button>
+        <button type="button" class="exp-TogglePill" id="header-sound-btn">🔇 Sound: Off</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="exp-MainContainer" id="exp-main-view"></main>
+  <div id="exp-modal-root"></div>
+  <canvas id="exp-confetti-canvas" class="exp-ConfettiCanvas"></canvas>
+
+  
+  <script src="src/config/brand.js"></script>
+  <script src="src/data/curriculum80.js"></script>
+  <script src="src/data/externalPlatforms.js"></script>
+  <script src="src/data/videoHub.js"></script>
+  <script src="src/audio/soundEngine.js"></script>
+  <script src="src/simulators/engines.js"></script>
+  <script src="src/vision/visionLab.js"></script>
+  <script src="src/videoPlayer.js"></script>
+  <script src="src/app.js"></script>
+</body>
+</html>

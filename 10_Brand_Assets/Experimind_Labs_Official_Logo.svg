@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 120" width="240" height="60">
+  <defs>
+    <linearGradient id="expGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1e40af"/>
+      <stop offset="100%" stop-color="#3b82f6"/>
+    </linearGradient>
+  </defs>
+  <rect x="8" y="8" width="104" height="104" rx="26" fill="url(#expGrad)"/>
+  <rect x="14" y="14" width="92" height="92" rx="20" fill="none" stroke="#93c5fd" stroke-width="2.5"/>
+  <line x1="40" y1="40" x2="60" y2="62" stroke="#bfdbfe" stroke-width="4" stroke-linecap="round"/>
+  <line x1="80" y1="36" x2="60" y2="62" stroke="#bfdbfe" stroke-width="4" stroke-linecap="round"/>
+  <line x1="60" y1="62" x2="38" y2="84" stroke="#bfdbfe" stroke-width="4" stroke-linecap="round"/>
+  <line x1="60" y1="62" x2="82" y2="84" stroke="#bfdbfe" stroke-width="4" stroke-linecap="round"/>
+  <line x1="40" y1="40" x2="80" y2="36" stroke="#93c5fd" stroke-width="2.5" stroke-dasharray="4 4"/>
+  <line x1="38" y1="84" x2="82" y2="84" stroke="#93c5fd" stroke-width="2.5" stroke-dasharray="4 4"/>
+  <circle cx="40" cy="40" r="7" fill="#ffffff"/>
+  <circle cx="80" cy="36" r="7" fill="#ffffff"/>
+  <circle cx="38" cy="84" r="7" fill="#ffffff"/>
+  <circle cx="82" cy="84" r="7" fill="#ffffff"/>
+  <circle cx="60" cy="62" r="10" fill="#facc15" stroke="#ffffff" stroke-width="2"/>
+  <text x="130" y="54" font-family="Inter, system-ui, sans-serif" font-size="32" font-weight="800" fill="#0f172a" letter-spacing="0.5">EXPERIMIND LABS</text>
+  <text x="132" y="86" font-family="Inter, system-ui, sans-serif" font-size="16" font-weight="700" fill="#2563eb" letter-spacing="2.2">INNOVATION FOR EDUCATION</text>
+</svg>
