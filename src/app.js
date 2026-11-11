@@ -590,6 +590,76 @@ window.ExperimindApp = (function() {
     });
   }
 
+  function renderBooksHub(mainEl) {
+    var books = window.EXPERIMIND_REFERENCE_BOOKS || [];
+    var selId = state.selectedBookId || (books[0] ? books[0].id : '');
+    var currentBook = books.find(function(b) { return b.id === selId; }) || books[0];
+
+    var html = '<div class="exp-HeroBand" style="background:linear-gradient(135deg,#1e3a8a,#2563eb,#059669);">';
+    html += '<div class="exp-HeroBadge">OFFICIAL CBSE CURRICULUM • DIGITAL AI REFERENCE LIBRARY</div>';
+    html += '<h1 style="color:#ffffff;">CBSE Artificial Intelligence Reference Books & Handbooks</h1>';
+    html += '<p style="color:#f8fafc;">Official CBSE Student Handbooks (Classes 6, 7, 8), Curriculum Progression Matrix, and Facilitator Manual with matching interactive lab games.</p>';
+    html += '</div>';
+
+    // Tabs for selecting book
+    html += '<div class="sim-TabRow" style="margin-bottom:18px;overflow-x:auto;padding-bottom:6px;">';
+    books.forEach(function(b) {
+      var act = (b.id === currentBook.id) ? ' sim-TabBtn--active' : '';
+      html += '<button type="button" class="sim-TabBtn' + act + '" data-select-book="' + b.id + '">' + b.icon + ' ' + b.grade + '</button>';
+    });
+    html += '</div>';
+
+    if (currentBook) {
+      // Header Card for Book
+      html += '<div class="exp-VidCard" style="margin-bottom:20px;border-left:8px solid ' + currentBook.color + ';">';
+      html += '<div class="exp-LessonMetaRow"><span class="exp-LessonNumBadge" style="background:' + currentBook.color + ';color:#fff;">' + currentBook.code + '</span><span style="font-weight:900;color:' + currentBook.color + ';">' + currentBook.grade + '</span></div>';
+      html += '<h2 style="font-size:1.8rem;font-weight:900;margin:10px 0;">' + currentBook.icon + ' ' + currentBook.title + '</h2>';
+      html += '<p style="font-size:1.05rem;color:#475569;margin-bottom:14px;">' + currentBook.description + '</p>';
+      html += '<div style="display:flex;gap:12px;flex-wrap:wrap;">';
+      html += '<a href="' + currentBook.officialPdfUrl + '" target="_blank" rel="noopener noreferrer" referrerpolicy="no-referrer" class="btn-Primary" style="text-decoration:none;display:inline-flex;align-items:center;gap:6px;">📥 Official CBSE Academic PDF (cbseacademic.nic.in) ↗</a>';
+      html += '</div></div>';
+
+      // Units Grid
+      html += '<h3 style="font-size:1.4rem;font-weight:900;margin:20px 0 14px 0;color:#0f172a;">📚 Curriculum Units & Hands-On Competencies (' + currentBook.units.length + ' Units):</h3>';
+      html += '<div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(360px, 1fr));gap:16px;">';
+      currentBook.units.forEach(function(u) {
+        html += '<div class="exp-VidCard" style="display:flex;flex-direction:column;justify-content:space-between;">';
+        html += '<div>';
+        html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;"><span class="exp-LessonNumBadge">' + u.unitNumber + '</span><span style="font-size:0.85rem;font-weight:800;color:#2563eb;">CBSE Competency</span></div>';
+        html += '<h4 style="font-size:1.2rem;font-weight:900;margin-bottom:8px;color:#1e3a8a;">' + u.title + '</h4>';
+        html += '<p style="font-size:0.95rem;color:#334155;margin-bottom:10px;">' + u.summary + '</p>';
+        html += '<div style="background:#f1f5f9;border-radius:10px;padding:10px;margin-bottom:12px;">';
+        html += '<div style="font-weight:800;font-size:0.85rem;color:#475569;margin-bottom:6px;">🎯 Core Exam Learning Outcomes:</div>';
+        html += '<div style="font-size:0.9rem;color:#0f172a;font-weight:600;">' + u.competencies + '</div>';
+        html += '</div>';
+        html += '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px;">';
+        (u.keyConcepts || []).forEach(function(kc) {
+          html += '<span class="vis-SampleChip" style="font-size:0.8rem;background:#e0f2fe;color:#0369a1;border-color:#bae6fd;">' + kc + '</span>';
+        });
+        html += '</div></div>';
+
+        if (u.matchingLessonId) {
+          html += '<div style="padding-top:10px;border-top:1px dashed #cbd5e1;">';
+          html += '<button type="button" class="btn-Primary" style="width:100%;font-size:0.95rem;" data-nav="lesson" data-param="' + u.matchingLessonId + '">🎮 Play Matching Game in Lab (' + u.matchingLessonId + ')</button>';
+          html += '</div>';
+        }
+        html += '</div>';
+      });
+      html += '</div>';
+    }
+
+    mainEl.innerHTML = html;
+    bindNavButtons(mainEl);
+
+    mainEl.querySelectorAll('[data-select-book]').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        state.selectedBookId = btn.getAttribute('data-select-book');
+        if (window.ExperimindAudio) window.ExperimindAudio.click();
+        renderBooksHub(mainEl);
+      });
+    });
+  }
+
   function bindNavButtons(root) {
     root.querySelectorAll('[data-nav]').forEach(function(btn) {
       btn.addEventListener('click', function() {
@@ -619,6 +689,7 @@ window.ExperimindApp = (function() {
     else if (state.route === 'vision') window.ExperimindVisionLab.mount(mainEl, state.param || 'Class 6');
     else if (state.route === 'external') renderExternalPlatforms(mainEl);
     else if (state.route === 'videos') renderVideoHub(mainEl);
+    else if (state.route === 'books') renderBooksHub(mainEl);
     else renderHome(mainEl);
   }
 

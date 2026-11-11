@@ -1,4 +1,4 @@
-# Experimind AI Learning Lab — School Deployment Verification Script
+﻿# Experimind AI Learning Lab — School Deployment Verification Script
 Write-Host "=== Experimind AI Learning Lab Pre-Deployment Verification ===" -ForegroundColor Cyan
 $root = Split-Path -Parent $MyInvocation.MyCommand.Path
 $required = @(
@@ -10,6 +10,7 @@ $required = @(
   "src\data\curriculum80.js",
   "src\data\externalPlatforms.js",
   "src\data\videoHub.js",
+  "src\data\referenceBooks.js",
   "src\simulators\engines.js",
   "src\vision\visionLab.js",
   "src\audio\soundEngine.js",
@@ -27,7 +28,7 @@ foreach ($rel in $required) {
   }
 }
 if ($missing -eq 0) {
-  Write-Host "`nALL 13 DEPLOYMENT GATES PASSED! Ready for school computer lab USB copy." -ForegroundColor Green
+  Write-Host "`nALL 14 DEPLOYMENT GATES PASSED! Ready for school computer lab USB copy." -ForegroundColor Green
 } else {
   Write-Host "`nWARNING: $missing required files missing." -ForegroundColor Yellow
 }
