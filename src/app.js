@@ -154,65 +154,6 @@ window.ExperimindApp = (function() {
     }
   }
 
-  function showCertificateModal() {
-    var modalRoot = document.getElementById('exp-modal-root');
-    if (!modalRoot) return;
-    var totalStars = countTotalStars();
-    var brand = window.EXPERIMIND_BRAND || {};
-
-    var title = '🌟 Curious AI Explorer';
-    if (totalStars >= 30) title = '🧠 Chief AI & Robotics Architect';
-    else if (totalStars >= 15) title = '🧩 Master Algorithm Builder';
-    else if (totalStars >= 6) title = '🚀 Junior AI & Coding Apprentice';
-
-    var html = '<div class="exp-ModalBackdrop" id="cert-backdrop">';
-    html += '<div class="exp-ModalDialog">';
-    html += '<div class="exp-CertCard">';
-    html += '<div class="exp-CertWatermark">🤖</div>';
-    html += '<div class="exp-CertHeader">';
-    html += '<div><div class="exp-CertOrg">' + (brand.organization || 'Experimind Labs') + '</div>';
-    html += '<div class="exp-CertTagline">' + (brand.tagline || 'Innovation for Education') + '</div></div></div>';
-    html += '<div class="exp-CertTitle">OFFICIAL LAB STAR DIPLOMA</div>';
-    html += '<div class="exp-CertSubtitle">' + title + '</div>';
-    html += '<div class="exp-CertStarCircle"><span class="exp-CertStarCount">' + totalStars + '</span><span class="exp-CertStarLabel">Stars Won</span></div>';
-    html += '<p class="exp-CertPraise">Awarded for active, hands-on scientific curiosity, solving robot mazes, sorting data patterns, and mastering computational thinking challenges!</p>';
-    html += '<div class="exp-CertBadgesRow">';
-    html += '<span class="exp-CertBadgeItem">🤖 Robot Navigation</span>';
-    html += '<span class="exp-CertBadgeItem">🧩 Algorithm Logic</span>';
-    html += '<span class="exp-CertBadgeItem">👁️ Computer Vision</span>';
-    html += '<span class="exp-CertBadgeItem">🧠 Machine Learning</span>';
-    html += '</div>';
-    html += '<div class="exp-CertSignatureRow">';
-    html += '<div><strong>Date:</strong> ' + new Date().toLocaleDateString() + '</div>';
-    html += '<div><strong>Platform:</strong> Experimind AI Learning Lab v3.0</div>';
-    html += '<div><strong>Certified by:</strong> Sparky the Lab Mascot 🤖</div>';
-    html += '</div></div>';
-    html += '<div class="exp-CertModalActions">';
-    html += '<button type="button" class="btn-Primary" id="cert-print-btn" style="background:#10b981;border-color:#059669;border-bottom-color:#047857;">🖨️ Print My Diploma</button>';
-    html += '<button type="button" class="btn-Secondary" id="cert-close-btn">❌ Close Diploma</button>';
-    html += '</div></div></div>';
-
-    modalRoot.innerHTML = html;
-    if (window.ExperimindConfetti) window.ExperimindConfetti.burst();
-    if (window.ExperimindAudio) window.ExperimindAudio.fanfare();
-
-    var closeBtn = document.getElementById('cert-close-btn');
-    var backdrop = document.getElementById('cert-backdrop');
-    var printBtn = document.getElementById('cert-print-btn');
-
-    function closeModal() {
-      modalRoot.innerHTML = '';
-    }
-
-    if (closeBtn) closeBtn.addEventListener('click', closeModal);
-    if (backdrop) backdrop.addEventListener('click', function(e) {
-      if (e.target === backdrop) closeModal();
-    });
-    if (printBtn) printBtn.addEventListener('click', function() {
-      window.print();
-    });
-  }
-
   function updateHeaderBadges() {
     var starEl = document.getElementById('header-star-badge');
     if (starEl) {
@@ -714,22 +655,13 @@ window.ExperimindApp = (function() {
       });
     }
 
-    var certBtn = document.getElementById('header-cert-btn');
-    if (certBtn) {
-      certBtn.addEventListener('click', function() {
-        if (window.ExperimindAudio) window.ExperimindAudio.click();
-        showCertificateModal();
-      });
-    }
-
     renderApp();
   }
 
   return {
     init: init,
     navigate: navigate,
-    awardStar: awardStar,
-    showCertificateModal: showCertificateModal
+    awardStar: awardStar
   };
 })();
 
