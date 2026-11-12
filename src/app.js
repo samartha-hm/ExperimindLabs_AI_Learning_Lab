@@ -509,8 +509,19 @@ window.ExperimindApp = (function() {
       html += '<div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:14px;margin-bottom:16px;">';
       html += '<div><span class="sim-EngineBadge">' + p.grades + ' • ' + p.badge + '</span>';
       html += '<h3 style="font-size:1.5rem;font-weight:900;margin-top:4px;">' + p.icon + ' ' + p.name + '</h3></div>';
+      var offlineRoute = {
+        'ext-scratch': { nav: 'lesson', param: 'C3-04', label: '⚡ Play Built-In Offline Block Studio ➔', file: 'Scratch 3 Desktop Setup (.exe)' },
+        'ext-gcompris': { nav: 'lesson', param: 'LKG-02', label: '⚡ Play Built-In Offline Logic Sorter ➔', file: 'GCompris Educational Suite Setup (.exe)' },
+        'ext-teachable': { nav: 'vision', param: 'Class 8', label: '⚡ Open Built-In Offline AI Vision Trainer ➔', file: 'Teachable_Machine_Offline/Launch_Teachable_Machine_Offline.bat' },
+        'ext-blockly': { nav: 'lesson', param: 'C3-03', label: '⚡ Play Built-In Offline Robo-Maze ➔', file: 'Blockly_Games/Launch_Blockly_Games.bat' },
+        'ext-codeorg': { nav: 'lesson', param: 'C5-06', label: '⚡ Play Built-In Offline Ocean ML Lab ➔', file: 'CodeOrg_AI_For_Oceans/Launch_CodeOrg_AI_For_Oceans.bat' }
+      }[p.id];
+
       html += '<div style="display:flex;gap:10px;flex-wrap:wrap;">';
-      html += '<a href="' + p.webLaunchUrl + '" target="_blank" rel="noopener noreferrer" referrerpolicy="no-referrer" class="btn-Primary" style="text-decoration:none;">🌐 Launch ' + p.name + ' Online ↗</a>';
+      if (offlineRoute) {
+        html += '<button type="button" class="btn-Primary" style="background:#10b981;border-color:#059669;border-bottom-color:#047857;" data-nav="' + offlineRoute.nav + '" data-param="' + offlineRoute.param + '">' + offlineRoute.label + '</button>';
+      }
+      html += '<a href="' + p.webLaunchUrl + '" target="_blank" rel="noopener noreferrer" referrerpolicy="no-referrer" class="btn-Secondary" style="text-decoration:none;">🌐 Launch ' + p.name + ' Online ↗</a>';
       html += '</div></div>';
 
       html += '<div class="exp-ConceptItem" style="margin-bottom:16px;"><strong>🎯 What You Will Build:</strong> ' + p.learningObjective + '</div>';
@@ -520,8 +531,13 @@ window.ExperimindApp = (function() {
       (p.gameplaySteps || []).forEach(function(st) { html += '<li style="margin-bottom:6px;">' + st + '</li>'; });
       html += '</ol></div>';
 
-      html += '<div style="background:#eff6ff;border:2px solid #93c5fd;padding:14px 16px;border-radius:12px;font-size:1rem;margin-bottom:12px;">';
-      html += '<strong>💻 How to Open Offline on Your School Computer:</strong> <code>' + p.windowsStartMenuPath + '</code></div>';
+      html += '<div style="background:#eff6ff;border:2px solid #93c5fd;padding:14px 16px;border-radius:12px;font-size:1rem;margin-bottom:12px;line-height:1.6;">';
+      html += '<strong>💻 How to Open Offline on School Lab PCs:</strong><br>';
+      html += '• <strong>1. Instant Built-In Simulator:</strong> Click the green button above to play 100% offline inside Experimind.<br>';
+      if (offlineRoute && offlineRoute.file) {
+        html += '• <strong>2. Standalone Offline Tool on USB:</strong> Run <code>Offline_AI_Software_Installers/' + offlineRoute.file + '</code> directly on your PC!';
+      }
+      html += '</div>';
 
       html += '<div class="exp-OfflineBox"><strong>🎮 Fun Unplugged Game With Friends:</strong> ' + p.offlineClassroomAlternative + '</div>';
       html += '</div>';

@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Google Blockly Games — Offline Standalone Lab Edition</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; }
+    body { background: #0f172a; color: #f8fafc; padding: 20px; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
+    header { width: 100%; max-width: 960px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 2px solid #334155; padding-bottom: 12px; }
+    h1 { font-size: 1.6rem; color: #38bdf8; display: flex; align-items: center; gap: 10px; }
+    .badge { background: #1e293b; color: #a855f7; border: 1px solid #7e22ce; padding: 4px 10px; border-radius: 9999px; font-size: 0.8rem; font-weight: bold; }
+    .container { width: 100%; max-width: 960px; background: #1e293b; border: 2px solid #475569; border-radius: 16px; padding: 20px; display: grid; grid-template-columns: 320px 1fr; gap: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.4); }
+    .level-row { display: flex; gap: 8px; margin-bottom: 16px; }
+    .level-btn { background: #334155; color: #fff; border: none; width: 34px; height: 34px; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.15s; }
+    .level-btn.active { background: #3b82f6; transform: scale(1.1); box-shadow: 0 0 10px #3b82f6; }
+    .workspace { background: #0f172a; border: 2px solid #334155; border-radius: 12px; padding: 14px; min-height: 380px; display: flex; flex-direction: column; justify-content: space-between; }
+    .block-palette { display: flex; flex-direction: column; gap: 8px; margin-bottom: 14px; }
+    .code-block { background: #2563eb; color: #fff; border: 2px solid #1d4ed8; border-bottom: 4px solid #1e40af; border-radius: 8px; padding: 8px 12px; font-weight: bold; font-size: 0.9rem; cursor: pointer; display: flex; align-items: center; gap: 8px; user-select: none; transition: 0.1s; }
+    .code-block:hover { transform: translateY(-2px); filter: brightness(1.1); }
+    .code-block.turn { background: #059669; border-color: #047857; border-bottom-color: #065f46; }
+    .code-block.loop { background: #d97706; border-color: #b45309; border-bottom-color: #92400e; }
+    .code-block.delete { background: #ef4444; border-color: #dc2626; border-bottom-color: #b91c1c; font-size: 0.8rem; padding: 4px 8px; }
+    .program-area { background: #1e293b; border: 2px dashed #475569; border-radius: 8px; padding: 10px; min-height: 160px; margin-bottom: 12px; display: flex; flex-direction: column; gap: 6px; }
+    .stage { display: flex; flex-direction: column; align-items: center; justify-content: center; background: #0284c7; border: 2px solid #0369a1; border-radius: 12px; padding: 14px; min-height: 380px; position: relative; overflow: hidden; }
+    canvas { background: #075985; border-radius: 8px; box-shadow: inset 0 0 12px rgba(0,0,0,0.4); }
+    .btn-row { display: flex; gap: 10px; width: 100%; margin-top: 12px; }
+    .btn { flex: 1; padding: 10px; border: none; border-radius: 8px; font-weight: bold; font-size: 1rem; cursor: pointer; transition: 0.15s; }
+    .btn-run { background: #10b981; color: #0f172a; border-bottom: 4px solid #059669; }
+    .btn-reset { background: #64748b; color: #fff; border-bottom: 4px solid #475569; }
+    .btn-run:hover { transform: translateY(-2px); filter: brightness(1.1); }
+    .status-box { margin-top: 10px; font-size: 0.95rem; color: #facc15; font-weight: bold; min-height: 24px; text-align: center; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>🧩 Google Blockly Games <span class="badge">100% Offline Standalone Lab</span></h1>
+    <div><a href="../../index.html" style="color:#38bdf8;text-decoration:none;font-weight:bold;">🏠 Back to Experimind Lab</a></div>
+  </header>
+
+  <div class="container">
+    <div class="workspace">
+      <div>
+        <div style="font-weight:bold;margin-bottom:8px;color:#94a3b8;">SELECT PUZZLE LEVEL:</div>
+        <div class="level-row" id="levels"></div>
+
+        <div style="font-weight:bold;margin-bottom:8px;color:#94a3b8;">BLOCK PALETTE (Click to Add):</div>
+        <div class="block-palette">
+          <div class="code-block" id="add-fwd">🚀 Move Forward ➔</div>
+          <div class="code-block turn" id="add-left">↩️ Turn Left (90°)</div>
+          <div class="code-block turn" id="add-right">↪️ Turn Right (90°)</div>
+          <div class="code-block loop" id="add-repeat">🔁 Repeat Until Star ⭐</div>
+        </div>
+
+        <div style="font-weight:bold;margin-bottom:6px;color:#94a3b8;display:flex;justify-content:space-between;align-items:center;">
+          <span>YOUR CODE BLOCKS:</span>
+          <button type="button" class="code-block delete" id="btn-clear" style="margin:0;">Clear</button>
+        </div>
+        <div class="program-area" id="program-list"></div>
+      </div>
+
+      <div class="btn-row">
+        <button type="button" class="btn btn-run" id="btn-run">▶️ Run Program</button>
+        <button type="button" class="btn btn-reset" id="btn-reset">🔄 Reset</button>
+      </div>
+    </div>
+
+    <div class="stage">
+      <canvas id="game-canvas" width="460" height="420"></canvas>
+      <div class="status-box" id="status-text">Snap code blocks and click "Run Program" to guide the astronaut to the star!</div>
+    </div>
+  </div>
+
+  <script>
+    var currentLevel = 1;
+    var maxLevels = 5;
+    var program = [];
+    var isRunning = false;
+    var astronaut = { x: 0, y: 0, dir: 1 }; // dir: 0:up, 1:right, 2:down, 3:left
+    var star = { x: 4, y: 0 };
+    var gridW = 5, gridH = 5;
+    var walls = [];
+
+    var LEVELS = [
+      { id: 1, start: {x: 0, y: 2, dir: 1}, star: {x: 3, y: 2}, walls: [], hint: "Move forward 3 times to reach the star!" },
+      { id: 2, start: {x: 0, y: 4, dir: 0}, star: {x: 2, y: 2}, walls: [{x:0, y:1}, {x:1, y:1}, {x:1, y:3}], hint: "Turn right after moving up!" },
+      { id: 3, start: {x: 0, y: 0, dir: 1}, star: {x: 4, y: 4}, walls: [{x:2, y:0}, {x:2, y:1}, {x:2, y:3}, {x:2, y:4}], hint: "Navigate around the asteroid barrier!" },
+      { id: 4, start: {x: 0, y: 2, dir: 1}, star: {x: 4, y: 2}, walls: [], hint: "Use 'Repeat Until Star' to reach the goal in just 1 block!" },
+      { id: 5, start: {x: 0, y: 4, dir: 0}, star: {x: 4, y: 0}, walls: [{x:1, y:1},{x:1, y:2},{x:1, y:3},{x:3, y:1},{x:3, y:2},{x:3, y:3}], hint: "Zig-zag maze: combine moves, turns, and loops!" }
+    ];
+
+    var canvas = document.getElementById('game-canvas');
+    var ctx = canvas.getContext('2d');
+    var cellW = canvas.width / gridW;
+    var cellH = canvas.height / gridH;
+
+    function initLevels() {
+      var levDiv = document.getElementById('levels');
+      levDiv.innerHTML = '';
+      for (var i = 1; i <= maxLevels; i++) {
+        var btn = document.createElement('button');
+        btn.className = 'level-btn' + (i === currentLevel ? ' active' : '');
+        btn.textContent = i;
+        btn.dataset.lev = i;
+        btn.onclick = function() { loadLevel(parseInt(this.dataset.lev)); };
+        levDiv.appendChild(btn);
+      }
+    }
+
+    function loadLevel(num) {
+      currentLevel = num;
+      initLevels();
+      var levData = LEVELS[num - 1];
+      astronaut.x = levData.start.x;
+      astronaut.y = levData.start.y;
+      astronaut.dir = levData.start.dir;
+      star.x = levData.star.x;
+      star.y = levData.star.y;
+      walls = levData.walls.slice();
+      program = [];
+      updateProgramList();
+      document.getElementById('status-text').textContent = levData.hint;
+      draw();
+    }
+
+    function draw() {
+      ctx.fillStyle = '#075985';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      // Grid lines
+      ctx.strokeStyle = '#0284c7';
+      ctx.lineWidth = 1.5;
+      for (var x = 0; x <= gridW; x++) {
+        ctx.beginPath(); ctx.moveTo(x * cellW, 0); ctx.lineTo(x * cellW, canvas.height); ctx.stroke();
+      }
+      for (var y = 0; y <= gridH; y++) {
+        ctx.beginPath(); ctx.moveTo(0, y * cellH); ctx.lineTo(canvas.width, y * cellH); ctx.stroke();
+      }
+
+      // Walls
+      ctx.fillStyle = '#334155';
+      walls.forEach(function(w) {
+        ctx.fillRect(w.x * cellW + 4, w.y * cellH + 4, cellW - 8, cellH - 8);
+        ctx.font = '28px sans-serif';
+        ctx.fillText('🪨', w.x * cellW + cellW/2 - 14, w.y * cellH + cellH/2 + 10);
+      });
+
+      // Star Goal
+      ctx.font = '36px sans-serif';
+      ctx.fillText('⭐', star.x * cellW + cellW/2 - 18, star.y * cellH + cellH/2 + 12);
+
+      // Astronaut
+      var cx = astronaut.x * cellW + cellW/2;
+      var cy = astronaut.y * cellH + cellH/2;
+      ctx.save();
+      ctx.translate(cx, cy);
+      ctx.rotate(astronaut.dir * Math.PI / 2);
+      ctx.font = '38px sans-serif';
+      ctx.fillText('🚀', -19, 14);
+      ctx.restore();
+    }
+
+    function updateProgramList() {
+      var pl = document.getElementById('program-list');
+      pl.innerHTML = '';
+      if (program.length === 0) {
+        pl.innerHTML = '<div style="color:#64748b;font-size:0.85rem;text-align:center;margin-top:40px;">No blocks added yet.<br>Click blocks above to write code!</div>';
+        return;
+      }
+      program.forEach(function(cmd, i) {
+        var d = document.createElement('div');
+        d.className = 'code-block ' + (cmd.type === 'fwd' ? '' : cmd.type === 'repeat' ? 'loop' : 'turn');
+        d.style.padding = '6px 10px';
+        d.style.fontSize = '0.85rem';
+        d.textContent = (i + 1) + '. ' + cmd.label;
+        pl.appendChild(d);
+      });
+    }
+
+    document.getElementById('add-fwd').onclick = function() { program.push({type: 'fwd', label: 'Move Forward ➔'}); updateProgramList(); };
+    document.getElementById('add-left').onclick = function() { program.push({type: 'left', label: 'Turn Left ↩️'}); updateProgramList(); };
+    document.getElementById('add-right').onclick = function() { program.push({type: 'right', label: 'Turn Right ↪️'}); updateProgramList(); };
+    document.getElementById('add-repeat').onclick = function() { program.push({type: 'repeat', label: 'Repeat: Move to Goal 🔁'}); updateProgramList(); };
+    document.getElementById('btn-clear').onclick = function() { program = []; updateProgramList(); };
+    document.getElementById('btn-reset').onclick = function() { loadLevel(currentLevel); };
+
+    document.getElementById('btn-run').onclick = function() {
+      if (isRunning || program.length === 0) return;
+      isRunning = true;
+      document.getElementById('status-text').textContent = "Executing code blocks...";
+
+      var queue = [];
+      program.forEach(function(cmd) {
+        if (cmd.type === 'repeat') {
+          for (var r = 0; r < 5; r++) queue.push({type: 'fwd'});
+        } else {
+          queue.push(cmd);
+        }
+      });
+
+      var stepIdx = 0;
+      function step() {
+        if (stepIdx >= queue.length) {
+          isRunning = false;
+          checkGoal();
+          return;
+        }
+        var action = queue[stepIdx++];
+        if (action.type === 'fwd') {
+          var nx = astronaut.x, ny = astronaut.y;
+          if (astronaut.dir === 0) ny--;
+          else if (astronaut.dir === 1) nx++;
+          else if (astronaut.dir === 2) ny++;
+          else if (astronaut.dir === 3) nx--;
+
+          var hitWall = walls.some(function(w) { return w.x === nx && w.y === ny; });
+          if (nx >= 0 && nx < gridW && ny >= 0 && ny < gridH && !hitWall) {
+            astronaut.x = nx;
+            astronaut.y = ny;
+          } else {
+            document.getElementById('status-text').textContent = "💥 BUMP! Hit an obstacle or wall! Debug your code.";
+            isRunning = false;
+            draw();
+            return;
+          }
+        } else if (action.type === 'left') {
+          astronaut.dir = (astronaut.dir + 3) % 4;
+        } else if (action.type === 'right') {
+          astronaut.dir = (astronaut.dir + 1) % 4;
+        }
+        draw();
+
+        if (astronaut.x === star.x && astronaut.y === star.y) {
+          isRunning = false;
+          document.getElementById('status-text').innerHTML = "🎉 LEVEL COMPLETE! Reached the Star!";
+          setTimeout(function() {
+            if (currentLevel < maxLevels) loadLevel(currentLevel + 1);
+          }, 1200);
+          return;
+        }
+        setTimeout(step, 400);
+      }
+      step();
+    };
+
+    function checkGoal() {
+      if (astronaut.x === star.x && astronaut.y === star.y) {
+        document.getElementById('status-text').innerHTML = "🎉 LEVEL COMPLETE!";
+      } else {
+        document.getElementById('status-text').textContent = "Did not reach star. Try adding more blocks!";
+      }
+    }
+
+    loadLevel(1);
+  </script>
+</body>
+</html>

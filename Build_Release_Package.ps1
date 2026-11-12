@@ -1,4 +1,4 @@
-# Experimind AI Learning Lab — Release Packaging & Distribution Tool
+﻿# Experimind AI Learning Lab — Release Packaging & Distribution Tool
 # Automates: Checksum Generation -> Pre-Deployment Verification -> Zip Archive Bundling -> Git Release Push
 
 param(
@@ -81,7 +81,7 @@ foreach ($item in $itemsToInclude) {
 Remove-Item -Path $tempStage -Recurse -Force -ErrorAction SilentlyContinue
 
 $zipSizeMb = [math]::Round(((Get-Item $zipPath).Length / 1MB), 2)
-$successMsg = "[SUCCESS] Release bundle packaged successfully: " + $zipPath + " (" + $zipSizeMb + " MB)"
+$successMsg = "[SUCCESS] Release bundle packaged successfully: $zipPath [$zipSizeMb MB]"
 Write-Host $successMsg -ForegroundColor Green
 
 # 5. Git commit & push if requested

@@ -1,30 +1,62 @@
-# Free AI-Related Software — Offline School Lab Installation Guide
+# Free AI-Related Software Suite — 100% Offline Standalone Lab Package
 
-This folder holds the standalone offline Windows installers and guides for the third-party Free AI and Coding software tools featured in the **`💻 Free AI-Related Software`** tab of Experimind AI Learning Lab.
+This directory contains standalone offline packages and installation helpers for all **5 Free AI-Related Software Tools** featured in the Experimind AI Learning Lab (`💻 Free AI-Related Software`):
 
----
-
-## 1. Summary of Tools
-
-| Tool | Official Developer | Target Grades | Offline Capability | Built-In Experimind Alternative |
-|---|---|---|:---:|---|
-| **MIT Scratch 3.0 Desktop** | MIT Media Lab | Classes 3 to 8 | 100% Offline Desktop App | Built-In Block Studio (`ENG-05`) |
-| **GCompris Educational Suite** | KDE Community | LKG to Class 4 | 100% Offline Desktop App | Built-In Sorting & Mazes (`ENG-01` to `ENG-04`) |
-| **Google Teachable Machine** | Google Creative Lab | Classes 5 to 8 | Browser Local In-RAM | Built-In Offline Vision ML Trainer (`#vision/Lab 7`) |
-| **Google Blockly Games** | Google Education | Classes 2 to 6 | Browser Offline Bundle | Built-In RoboGrid Maze Engine (`ENG-03`) |
-| **MIT App Inventor** | MIT CSAIL | Classes 6 to 8 | Emulator / Web | Built-In Logic Trees (`ENG-06`) |
+1. **MIT Scratch 3.0 Desktop Editor** (Classes 3 to 8)
+2. **GCompris Educational Software Suite** (LKG to Class 4)
+3. **Google Teachable Machine — Standalone Offline Lab** (Classes 5 to 8)
+4. **Google Blockly Games — Standalone Offline Lab** (Classes 2 to 6)
+5. **Code.org — Hour of AI: AI for Oceans Standalone Lab** (Classes 1 to 8)
 
 ---
 
-## 2. How to Install on School Lab PCs Tomorrow
+## 1. Directory Structure on USB Drive
 
-### If the School PC Already Has Scratch / GCompris Installed:
-- You don't need to do anything! Experimind AI Learning Lab automatically recognizes the standard Windows Start Menu paths and executable locations (`C:\Program Files\Scratch 3\Scratch 3.exe` and `C:\Program Files\GCompris-Qt\bin\GCompris.exe`).
+```
+Offline_AI_Software_Installers/
+├── Blockly_Games/
+│   ├── index.html                           (Standalone Offline Blockly Puzzles)
+│   └── Launch_Blockly_Games.bat             (1-Click Kiosk Launcher)
+├── Teachable_Machine_Offline/
+│   ├── index.html                           (Standalone In-Browser 3-Class ML Trainer)
+│   └── Launch_Teachable_Machine_Offline.bat (1-Click Kiosk Launcher)
+├── CodeOrg_AI_For_Oceans/
+│   ├── index.html                           (Standalone Offline Marine AI Conservation Lab)
+│   └── Launch_CodeOrg_AI_For_Oceans.bat     (1-Click Kiosk Launcher)
+├── Silent_Install_All_Software.bat          (Silent multi-installer for Scratch & GCompris)
+└── README_FREE_AI_SOFTWARE.md               (This documentation)
+```
 
-### If the School PC Does NOT Have Them Installed:
-1. **Option A (No Installation Required — Use Built-in Games):**
-   - Experimind AI Learning Lab has built-in 100% offline simulation engines that teach the exact same concepts (Block Programming Studio, Algorithmic Mazes, and Teachable Machine). Students can learn immediately without installing anything!
-2. **Option B (Install Official Desktop Apps):**
-   - Run `Download_Free_AI_Software_Installers.ps1` on an internet PC tonight to fetch the offline installers (`Scratch_3_Desktop_Setup.exe` and `GCompris_Educational_Suite_Setup.exe`) into this folder.
-   - On the school PC, double-click `Silent_Install_All_Software.bat` or run the setup `.exe` files to install them with standard settings.
+---
 
+## 2. Tool-by-Tool Offline Launch Instructions
+
+### 1. Google Blockly Games (Standalone Offline)
+* **How to run:** Double-click `Blockly_Games\Launch_Blockly_Games.bat`.
+* **What it does:** Launches 5 progressive algorithmic puzzle worlds (Sequence, Turns, Obstacles, Repeat Loops, and Mazes) running 100% offline in fullscreen application mode.
+
+### 2. Google Teachable Machine (Standalone Offline)
+* **How to run:** Double-click `Teachable_Machine_Offline\Launch_Teachable_Machine_Offline.bat`.
+* **What it does:** Allows students to gather 3 classes of training samples using their webcam (or virtual cursor mode), click **Train Model**, and test real-time predictions with live confidence percentage bars—all computed in local browser RAM without any cloud APIs.
+
+### 3. Code.org — Hour of AI: "AI for Oceans" (Standalone Offline)
+* **How to run:** Double-click `CodeOrg_AI_For_Oceans\Launch_CodeOrg_AI_For_Oceans.bat`.
+* **What it does:** Recreates Code.org's iconic ocean conservation tutorial. Students train an AI classifier to distinguish sea life from plastic trash, train neural weights, and deploy an autonomous underwater cleaning robot to evaluate model accuracy and algorithmic bias.
+
+### 4. MIT Scratch 3.0 Desktop (Official Offline Windows App)
+* **How to install:** Download `Scratch_3_Desktop_Setup.exe` into this folder and run `Silent_Install_All_Software.bat`.
+* **Official Download URL:** [https://downloads.scratch.mit.edu/desktop/Scratch%20Setup.exe](https://downloads.scratch.mit.edu/desktop/Scratch%20Setup.exe)
+* **Built-in Alternative:** Students can also click **⚡ Play Built-In Offline Block Studio** directly inside Experimind (`#lesson/C3-04`).
+
+### 5. GCompris Educational Suite (Official Offline Windows App)
+* **How to install:** Download `GCompris_Educational_Suite_Setup.exe` into this folder and run `Silent_Install_All_Software.bat`.
+* **Official Download URL:** [https://www.gcompris.net/download/qt/windows/gcompris-qt-4.3-Windows-x86_64.exe](https://www.gcompris.net/download/qt/windows/gcompris-qt-4.3-Windows-x86_64.exe)
+* **Built-in Alternative:** Students can also click **⚡ Play Built-In Offline Logic Sorter** directly inside Experimind (`#lesson/LKG-02`).
+
+---
+
+## 3. Summary for School Lab Facilitators
+
+Whether school computers have internet or are completely offline:
+* All 5 tools can be launched **instantly from inside Experimind AI Learning Lab** via the green buttons.
+* All 5 tools can ALSO be launched as **standalone applications from this USB folder** via their individual `.bat` launchers!

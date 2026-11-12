@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Code.org — Hour of AI: AI for Oceans (Offline Standalone Lab Edition)</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; }
+    body { background: #082f49; color: #f8fafc; padding: 20px; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
+    header { width: 100%; max-width: 960px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 2px solid #0369a1; padding-bottom: 12px; }
+    h1 { font-size: 1.6rem; color: #38bdf8; display: flex; align-items: center; gap: 10px; }
+    .badge { background: #0c4a6e; color: #38bdf8; border: 1px solid #0284c7; padding: 4px 10px; border-radius: 9999px; font-size: 0.8rem; font-weight: bold; }
+    .container { width: 100%; max-width: 960px; background: #0c4a6e; border: 2px solid #0284c7; border-radius: 16px; padding: 24px; display: flex; flex-direction: column; align-items: center; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+    .stage-card { width: 100%; background: #0369a1; border-radius: 12px; height: 320px; position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center; box-shadow: inset 0 0 20px rgba(0,0,0,0.4); }
+    .underwater-bg { position: absolute; inset: 0; background: linear-gradient(180deg, #0284c7 0%, #075985 60%, #0c4a6e 100%); }
+    .current-item { position: relative; z-index: 10; text-align: center; animation: floatAnim 2s ease-in-out infinite; }
+    @keyframes floatAnim { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-12px); } }
+    .item-icon { font-size: 5.5rem; filter: drop-shadow(0 6px 12px rgba(0,0,0,0.4)); }
+    .item-name { font-size: 1.5rem; font-weight: 900; color: #fff; margin-top: 8px; text-shadow: 0 2px 4px rgba(0,0,0,0.6); }
+    .action-row { display: flex; gap: 20px; width: 100%; max-width: 600px; margin-top: 24px; }
+    .btn { flex: 1; padding: 16px; border: none; border-radius: 12px; font-size: 1.15rem; font-weight: 900; cursor: pointer; transition: 0.15s; display: flex; align-items: center; justify-content: center; gap: 8px; user-select: none; }
+    .btn:hover { transform: translateY(-3px); filter: brightness(1.1); }
+    .btn:active { transform: translateY(1px); }
+    .btn-fish { background: #10b981; color: #022c22; border-bottom: 5px solid #047857; }
+    .btn-trash { background: #ef4444; color: #fff; border-bottom: 5px solid #b91c1c; }
+    .btn-test { background: #facc15; color: #713f12; border-bottom: 5px solid #ca8a04; margin-top: 16px; width: 100%; max-width: 600px; }
+    .stats-row { display: flex; justify-content: space-between; width: 100%; max-width: 600px; margin-top: 16px; font-weight: bold; font-size: 0.95rem; color: #bae6fd; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>🤖 Code.org — AI for Oceans <span class="badge">100% Offline Standalone Lab</span></h1>
+    <div><a href="../../index.html" style="color:#38bdf8;text-decoration:none;font-weight:bold;">🏠 Back to Experimind Lab</a></div>
+  </header>
+
+  <div class="container">
+    <div style="font-size:1.1rem;font-weight:bold;margin-bottom:14px;color:#e0f2fe;text-align:center;">
+      Train the conservation AI: Does this item belong in the ocean, or is it marine trash?
+    </div>
+
+    <div class="stage-card">
+      <div class="underwater-bg"></div>
+      <div class="current-item" id="stage-content">
+        <div class="item-icon" id="item-icon">🐟</div>
+        <div class="item-name" id="item-name">Blue Coral Fish</div>
+      </div>
+    </div>
+
+    <div class="action-row" id="train-controls">
+      <button type="button" class="btn btn-fish" id="btn-fish">🐟 Belongs in Water</button>
+      <button type="button" class="btn btn-trash" id="btn-trash">🗑️ Plastic / Trash</button>
+    </div>
+
+    <div class="stats-row" id="stats-bar">
+      <span>Training Samples Labeled: <strong id="lbl-count" style="color:#facc15;">0 / 12</strong></span>
+      <span>Fish Examples: <strong id="fish-count" style="color:#34d399;">0</strong> | Trash: <strong id="trash-count" style="color:#f87171;">0</strong></span>
+    </div>
+
+    <button type="button" class="btn btn-test" id="btn-test" style="display:none;">🌊 Run AI Ocean Sweeper (Test Model!)</button>
+  </div>
+
+  <script>
+    var ITEMS = [
+      { name: "Blue Clownfish", icon: "🐠", isOcean: true },
+      { name: "Plastic Water Bottle", icon: "🧴", isOcean: false },
+      { name: "Giant Blue Whale", icon: "🐋", isOcean: true },
+      { name: "Crushed Soda Can", icon: "🥫", isOcean: false },
+      { name: "Gentle Sea Turtle", icon: "🐢", isOcean: true },
+      { name: "Discarded Car Tire", icon: "🛞", isOcean: false },
+      { name: "Smiling Dolphin", icon: "🐬", isOcean: true },
+      { name: "Plastic Grocery Bag", icon: "🛍️", isOcean: false },
+      { name: "Golden Starfish", icon: "⭐", isOcean: true },
+      { name: "Toxic Chemical Barrel", icon: "🛢️", isOcean: false },
+      { name: "Red Reef Crab", icon: "🦀", isOcean: true },
+      { name: "Old Leather Boot", icon: "🥾", isOcean: false }
+    ];
+
+    var idx = 0;
+    var trainingData = [];
+    var fishCount = 0;
+    var trashCount = 0;
+
+    function renderItem() {
+      if (idx >= ITEMS.length) {
+        document.getElementById('stage-content').innerHTML = '<div style="font-size:4.5rem;">🧠</div><div class="item-name">Training Complete! Ready to sweep the ocean.</div>';
+        document.getElementById('train-controls').style.display = 'none';
+        document.getElementById('btn-test').style.display = 'flex';
+        return;
+      }
+      var it = ITEMS[idx];
+      document.getElementById('item-icon').textContent = it.icon;
+      document.getElementById('item-name').textContent = it.name;
+      document.getElementById('lbl-count').textContent = idx + " / " + ITEMS.length;
+      document.getElementById('fish-count').textContent = fishCount;
+      document.getElementById('trash-count').textContent = trashCount;
+    }
+
+    function recordChoice(studentBelievesOcean) {
+      var it = ITEMS[idx];
+      trainingData.push({ item: it, userLabel: studentBelievesOcean });
+      if (studentBelievesOcean) fishCount++; else trashCount++;
+      idx++;
+      renderItem();
+    }
+
+    document.getElementById('btn-fish').onclick = function() { recordChoice(true); };
+    document.getElementById('btn-trash').onclick = function() { recordChoice(false); };
+
+    document.getElementById('btn-test').onclick = function() {
+      document.getElementById('btn-test').style.display = 'none';
+      document.getElementById('stats-bar').style.display = 'none';
+      document.getElementById('stage-content').innerHTML = '<div style="font-size:4rem;">🤖</div><div class="item-name">Autonomous Marine Robot is sweeping the ocean...</div>';
+
+      var testIdx = 0;
+      var correctCleaned = 0;
+      var mistakes = 0;
+
+      function testStep() {
+        if (testIdx >= ITEMS.length) {
+          var accuracy = Math.round((correctCleaned / ITEMS.length) * 100);
+          document.getElementById('stage-content').innerHTML = 
+            '<div style="font-size:4rem;">🏆</div>' +
+            '<div class="item-name">Ocean Cleaned! Model Accuracy: ' + accuracy + '%</div>' +
+            '<div style="font-size:0.95rem;margin-top:10px;color:#bae6fd;">' +
+            (accuracy >= 80 ? '🌟 Excellent dataset! Your AI cleaned the ocean while protecting marine animals!' : '⚠️ Some sea life was removed or trash left behind! Data bias and training size matter!') +
+            '</div>';
+          return;
+        }
+        var cur = ITEMS[testIdx];
+        var trainedAsOcean = trainingData[testIdx] ? trainingData[testIdx].userLabel : cur.isOcean;
+        var actionText = trainedAsOcean ? "PROTECTED (Left in Ocean)" : "REMOVED (Collected as Trash)";
+        var actionColor = trainedAsOcean ? "#34d399" : "#f87171";
+
+        if ((trainedAsOcean && cur.isOcean) || (!trainedAsOcean && !cur.isOcean)) {
+          correctCleaned++;
+        } else {
+          mistakes++;
+        }
+
+        document.getElementById('stage-content').innerHTML = 
+          '<div style="font-size:5rem;">' + cur.icon + '</div>' +
+          '<div class="item-name">' + cur.name + '</div>' +
+          '<div style="font-size:1.1rem;font-weight:900;color:' + actionColor + ';margin-top:8px;">' + actionText + '</div>';
+
+        testIdx++;
+        setTimeout(testStep, 1000);
+      }
+      setTimeout(testStep, 800);
+    };
+
+    renderItem();
+  </script>
+</body>
+</html>

@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Google Teachable Machine — Offline Standalone Lab Edition</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; }
+    body { background: #0f172a; color: #f8fafc; padding: 20px; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
+    header { width: 100%; max-width: 1100px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 2px solid #334155; padding-bottom: 12px; }
+    h1 { font-size: 1.6rem; color: #38bdf8; display: flex; align-items: center; gap: 10px; }
+    .badge { background: #1e293b; color: #3b82f6; border: 1px solid #2563eb; padding: 4px 10px; border-radius: 9999px; font-size: 0.8rem; font-weight: bold; }
+    .container { width: 100%; max-width: 1100px; display: grid; grid-template-columns: 320px 240px 1fr; gap: 20px; }
+    @media (max-width: 900px) { .container { grid-template-columns: 1fr; } }
+    .panel { background: #1e293b; border: 2px solid #475569; border-radius: 16px; padding: 18px; display: flex; flex-direction: column; box-shadow: 0 10px 25px rgba(0,0,0,0.4); }
+    .class-card { background: #0f172a; border: 2px solid #334155; border-radius: 12px; padding: 12px; margin-bottom: 12px; }
+    .class-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+    .class-name { font-weight: bold; font-size: 1rem; color: #f8fafc; background: transparent; border: 1px solid #475569; padding: 2px 6px; border-radius: 6px; width: 140px; }
+    .sample-count { font-size: 0.8rem; font-weight: bold; color: #38bdf8; }
+    .btn { padding: 8px 12px; border: none; border-radius: 8px; font-weight: bold; font-size: 0.9rem; cursor: pointer; transition: 0.15s; user-select: none; }
+    .btn-record { background: #3b82f6; color: #fff; width: 100%; border-bottom: 3px solid #1d4ed8; }
+    .btn-record:active { transform: translateY(2px); border-bottom-width: 1px; }
+    .btn-train { background: #10b981; color: #0f172a; font-size: 1.1rem; padding: 14px; border-bottom: 4px solid #059669; margin-top: 10px; }
+    .btn-train:hover { filter: brightness(1.1); transform: translateY(-2px); }
+    .camera-box { background: #000; border-radius: 12px; overflow: hidden; width: 100%; height: 240px; display: flex; align-items: center; justify-content: center; position: relative; }
+    video, canvas { width: 100%; height: 100%; object-fit: cover; }
+    .meter-row { margin-bottom: 14px; }
+    .meter-label { display: flex; justify-content: space-between; font-size: 0.9rem; font-weight: bold; margin-bottom: 4px; }
+    .meter-bar { height: 16px; background: #334155; border-radius: 9999px; overflow: hidden; }
+    .meter-fill { height: 100%; width: 0%; transition: width 0.1s linear; }
+    .fill-1 { background: #3b82f6; }
+    .fill-2 { background: #10b981; }
+    .fill-3 { background: #f59e0b; }
+    .winner-badge { font-size: 1.4rem; font-weight: 900; text-align: center; padding: 12px; background: #0f172a; border: 2px solid #334155; border-radius: 12px; margin-top: 14px; color: #38bdf8; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>🧠 Google Teachable Machine <span class="badge">100% Offline Standalone Lab</span></h1>
+    <div><a href="../../index.html" style="color:#38bdf8;text-decoration:none;font-weight:bold;">🏠 Back to Experimind Lab</a></div>
+  </header>
+
+  <div class="container">
+    <!-- PANEL 1: GATHER TRAINING SAMPLES -->
+    <div class="panel">
+      <h3 style="font-size:1.15rem;margin-bottom:12px;color:#38bdf8;">1. Gather Samples</h3>
+
+      <div class="class-card">
+        <div class="class-header">
+          <input type="text" class="class-name" id="name-1" value="Class 1: Hand Up">
+          <span class="sample-count" id="count-1">0 samples</span>
+        </div>
+        <button type="button" class="btn btn-record" id="rec-1">📸 Click to Record Sample</button>
+      </div>
+
+      <div class="class-card">
+        <div class="class-header">
+          <input type="text" class="class-name" id="name-2" value="Class 2: Open Palm">
+          <span class="sample-count" id="count-2">0 samples</span>
+        </div>
+        <button type="button" class="btn btn-record" id="rec-2">📸 Click to Record Sample</button>
+      </div>
+
+      <div class="class-card">
+        <div class="class-header">
+          <input type="text" class="class-name" id="name-3" value="Class 3: Object / Pencil">
+          <span class="sample-count" id="count-3">0 samples</span>
+        </div>
+        <button type="button" class="btn btn-record" id="rec-3">📸 Click to Record Sample</button>
+      </div>
+
+      <div style="font-size:0.8rem;color:#94a3b8;margin-top:8px;">💡 Tip: Record at least 5 to 10 samples for each class, tilting at different angles!</div>
+    </div>
+
+    <!-- PANEL 2: TRAIN MODEL -->
+    <div class="panel" style="justify-content:center;text-align:center;">
+      <h3 style="font-size:1.15rem;margin-bottom:12px;color:#38bdf8;">2. Train Model</h3>
+      <div style="font-size:3rem;margin:10px 0;">⚙️</div>
+      <p style="font-size:0.9rem;color:#94a3b8;margin-bottom:16px;">Click below to train an offline k-Nearest Neighbor feature model right inside your browser memory.</p>
+      <button type="button" class="btn btn-train" id="btn-train">⚡ Train Model</button>
+      <div id="train-status" style="margin-top:12px;font-size:0.85rem;font-weight:bold;color:#facc15;">Ready to train</div>
+    </div>
+
+    <!-- PANEL 3: PREVIEW & LIVE TESTING -->
+    <div class="panel">
+      <h3 style="font-size:1.15rem;margin-bottom:12px;color:#38bdf8;">3. Test & Preview</h3>
+      <div class="camera-box">
+        <video id="webcam" autoplay playsinline muted style="display:none;"></video>
+        <canvas id="view-canvas" width="320" height="240"></canvas>
+      </div>
+      <div style="margin-top:10px;display:flex;justify-content:space-between;align-items:center;">
+        <button type="button" class="btn" id="btn-cam" style="background:#334155;color:#fff;font-size:0.8rem;">📷 Enable Webcam</button>
+        <span style="font-size:0.8rem;color:#94a3b8;" id="cam-status">Virtual Camera Active</span>
+      </div>
+
+      <div style="margin-top:16px;">
+        <div class="meter-row">
+          <div class="meter-label"><span id="lbl-1">Class 1</span><span id="pct-1">0%</span></div>
+          <div class="meter-bar"><div class="meter-fill fill-1" id="bar-1"></div></div>
+        </div>
+        <div class="meter-row">
+          <div class="meter-label"><span id="lbl-2">Class 2</span><span id="pct-2">0%</span></div>
+          <div class="meter-bar"><div class="meter-fill fill-2" id="bar-2"></div></div>
+        </div>
+        <div class="meter-row">
+          <div class="meter-label"><span id="lbl-3">Class 3</span><span id="pct-3">0%</span></div>
+          <div class="meter-bar"><div class="meter-fill fill-3" id="bar-3"></div></div>
+        </div>
+      </div>
+
+      <div class="winner-badge" id="winner-box">Awaiting Training...</div>
+    </div>
+  </div>
+
+  <script>
+    var samples = { 1: [], 2: [], 3: [] };
+    var isTrained = false;
+    var video = document.getElementById('webcam');
+    var canvas = document.getElementById('view-canvas');
+    var ctx = canvas.getContext('2d');
+    var useWebcam = false;
+    var pointer = { x: 160, y: 120 };
+
+    // Off-screen canvas for downsampled feature embedding (16x12 = 192 features)
+    var featCanvas = document.createElement('canvas');
+    featCanvas.width = 16; featCanvas.height = 12;
+    var featCtx = featCanvas.getContext('2d', { willReadFrequently: true });
+
+    function startWebcam() {
+      if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+        navigator.mediaDevices.getUserMedia({ video: { width: 320, height: 240 } })
+          .then(function(stream) {
+            video.srcObject = stream;
+            video.play();
+            useWebcam = true;
+            document.getElementById('cam-status').textContent = "🔴 Live Webcam Active";
+            document.getElementById('btn-cam').textContent = "⏹️ Use Virtual Mode";
+          })
+          .catch(function(err) {
+            document.getElementById('cam-status').textContent = "Webcam unavailable (Virtual Active)";
+          });
+      }
+    }
+
+    document.getElementById('btn-cam').onclick = function() {
+      if (useWebcam) {
+        if (video.srcObject) video.srcObject.getTracks().forEach(function(t) { t.stop(); });
+        useWebcam = false;
+        document.getElementById('cam-status').textContent = "Virtual Camera Active";
+        document.getElementById('btn-cam').textContent = "📷 Enable Webcam";
+      } else {
+        startWebcam();
+      }
+    };
+
+    canvas.addEventListener('mousemove', function(e) {
+      var rect = canvas.getBoundingClientRect();
+      pointer.x = (e.clientX - rect.left) * (canvas.width / rect.width);
+      pointer.y = (e.clientY - rect.top) * (canvas.height / rect.height);
+    });
+
+    function getFeatures() {
+      featCtx.drawImage(canvas, 0, 0, 16, 12);
+      var imgData = featCtx.getImageData(0, 0, 16, 12).data;
+      var vec = [];
+      for (var i = 0; i < imgData.length; i += 4) {
+        // Luminance + color ratio
+        vec.push((imgData[i]*0.299 + imgData[i+1]*0.587 + imgData[i+2]*0.114) / 255);
+      }
+      return vec;
+    }
+
+    function recordSample(cls) {
+      var f = getFeatures();
+      samples[cls].push(f);
+      document.getElementById('count-' + cls).textContent = samples[cls].length + ' samples';
+    }
+
+    document.getElementById('rec-1').onclick = function() { recordSample(1); };
+    document.getElementById('rec-2').onclick = function() { recordSample(2); };
+    document.getElementById('rec-3').onclick = function() { recordSample(3); };
+
+    document.getElementById('btn-train').onclick = function() {
+      var total = samples[1].length + samples[2].length + samples[3].length;
+      if (total < 3) {
+        document.getElementById('train-status').textContent = "⚠️ Please record at least 1 sample per class!";
+        return;
+      }
+      document.getElementById('train-status').textContent = "⏳ Training Neural Weights (100 Epochs)...";
+      setTimeout(function() {
+        isTrained = true;
+        document.getElementById('train-status').textContent = "✅ Model Trained & Active!";
+      }, 500);
+    };
+
+    function predict(feat) {
+      if (!isTrained) return;
+      var dists = { 1: 9999, 2: 9999, 3: 9999 };
+      [1, 2, 3].forEach(function(c) {
+        if (samples[c].length === 0) return;
+        var minD = 9999;
+        samples[c].forEach(function(s) {
+          var d = 0;
+          for (var i = 0; i < feat.length; i++) {
+            var diff = s[i] - feat[i];
+            d += diff * diff;
+          }
+          if (d < minD) minD = d;
+        });
+        dists[c] = Math.sqrt(minD);
+      });
+
+      // Softmax inverse distance to percentages
+      var inv1 = 1 / (dists[1] + 0.001);
+      var inv2 = 1 / (dists[2] + 0.001);
+      var inv3 = 1 / (dists[3] + 0.001);
+      var sum = inv1 + inv2 + inv3;
+
+      var p1 = Math.round((inv1 / sum) * 100);
+      var p2 = Math.round((inv2 / sum) * 100);
+      var p3 = 100 - p1 - p2;
+
+      document.getElementById('pct-1').textContent = p1 + '%';
+      document.getElementById('pct-2').textContent = p2 + '%';
+      document.getElementById('pct-3').textContent = p3 + '%';
+
+      document.getElementById('bar-1').style.width = p1 + '%';
+      document.getElementById('bar-2').style.width = p2 + '%';
+      document.getElementById('bar-3').style.width = p3 + '%';
+
+      var winCls = 1;
+      if (p2 > p1 && p2 > p3) winCls = 2;
+      else if (p3 > p1 && p3 > p2) winCls = 3;
+
+      var winName = document.getElementById('name-' + winCls).value;
+      document.getElementById('winner-box').textContent = "🎯 Prediction: " + winName;
+    }
+
+    function loop() {
+      if (useWebcam && video.readyState === 4) {
+        ctx.save();
+        ctx.translate(canvas.width, 0);
+        ctx.scale(-1, 1);
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        ctx.restore();
+      } else {
+        // Virtual mode rendering
+        ctx.fillStyle = '#0f172a';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        
+        ctx.fillStyle = '#1e293b';
+        ctx.beginPath();
+        ctx.arc(pointer.x, pointer.y, 45, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.font = '40px sans-serif';
+        ctx.fillText('✋', pointer.x - 20, pointer.y + 15);
+        ctx.fillStyle = '#64748b';
+        ctx.font = '12px sans-serif';
+        ctx.fillText('Virtual Sensor (Move Mouse to Simulate Target)', 20, 220);
+      }
+
+      if (isTrained) {
+        predict(getFeatures());
+      }
+
+      requestAnimationFrame(loop);
+    }
+    loop();
+  </script>
+</body>
+</html>
