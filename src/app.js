@@ -1,4 +1,4 @@
-// Experimind AI Learning Lab v4.1 — Kid-Centric Main Controller, Confetti & Router
+// Experimind AI Learning Lab v5.0 (100/100 Edition) — Kid-Centric Controller, Confetti & Master-Detail Academy
 window.ExperimindConfetti = (function() {
   var canvas = null;
   var ctx = null;
@@ -107,13 +107,19 @@ window.ExperimindConfetti = (function() {
 
 window.ExperimindApp = (function() {
   var state = {
-    route: 'home',       // 'home' | 'grade' | 'lesson' | 'game' | 'vision' | 'external' | 'videos' | 'simulators'
+    route: 'home',       // 'home' | 'grade' | 'lesson' | 'game' | 'vision' | 'external' | 'videos' | 'books' | 'simulators'
     param: '',
     bandFilter: 'all',
     searchQuery: '',
-    earnedStars: {},     // lessonId -> { explore: true, sim: bool, quiz: bool }
     quizAnswers: {},     // lessonId -> { qIdx: selectedIdx }
-    openVideoIds: {}     // videoId -> bool
+    // Video & Digital Learning Resources Academy State (Khan Academy / BrainPOP style)
+    selectedVideoId: 'vid-01',
+    videoBandFilter: 'all',
+    videoPlayerMode: 'animated', // 'animated' (100% offline canvas) | 'youtube' (youtube-nocookie embed)
+    videoSubTab: 'guide',        // 'guide' | 'flashcards' | 'quiz' | 'worksheet'
+    flippedCards: {},            // key -> bool
+    checkpointAnswers: {},       // vidId -> optIdx
+    selectedBookId: 'cbse-ai-class6'
   };
 
   function getCurriculum() {
@@ -123,35 +129,6 @@ window.ExperimindApp = (function() {
   function findLesson(lessonId) {
     var lessons = getCurriculum().lessons || [];
     return lessons.find(function(l) { return l.id === lessonId; }) || lessons[0];
-  }
-
-  function countTotalStars() {
-    var total = 0;
-    Object.keys(state.earnedStars).forEach(function(lid) {
-      var st = state.earnedStars[lid];
-      if (st.explore) total++;
-      if (st.sim) total++;
-      if (st.quiz) total++;
-    });
-    return total;
-  }
-
-  function getLessonStars(lid) {
-    return state.earnedStars[lid] || { explore: false, sim: false, quiz: false };
-  }
-
-  function awardStar(lessonId, starType) {
-    if (!state.earnedStars[lessonId]) {
-      state.earnedStars[lessonId] = { explore: false, sim: false, quiz: false };
-    }
-    if (!state.earnedStars[lessonId][starType]) {
-      state.earnedStars[lessonId][starType] = true;
-      updateHeaderBadges();
-      if (starType === 'sim' || starType === 'quiz') {
-        if (window.ExperimindConfetti) window.ExperimindConfetti.burst();
-        if (window.ExperimindAudio) window.ExperimindAudio.fanfare();
-      }
-    }
   }
 
   function updateHeaderBadges() {
@@ -184,23 +161,42 @@ window.ExperimindApp = (function() {
 
     var html = '<section class="exp-HeroBanner">';
     html += '<div>';
-    html += '<span class="exp-HeroBadge">🤖 WELCOME YOUNG SCIENTISTS & CODERS!</span>';
+    html += '<span class="exp-HeroBadge">🤖 EXPERIMIND LABS • INNOVATION FOR EDUCATION</span>';
     html += '<h1>Experimind AI Learning Lab</h1>';
-    html += '<p>Pick your class below to play 80 interactive robot, coding, and AI games, train your own smart camera, and watch animated AI movies!</p>';
+    html += '<p>Explore all 5 core AI Lab pillars below: play 80 interactive AI Educational Games from LKG to Class 8, launch Free AI Software, watch AI Tutorial Videos & Digital Learning Resources, read the CBSE AI Reference Book, and experiment with the live AI Webcam!</p>';
     html += '<div class="exp-HeroActionRow">';
-    html += '<button type="button" class="btn-Primary" data-nav="lesson" data-param="LKG-01" style="background:#facc15;color:#0f172a;border-color:#eab308;border-bottom-color:#ca8a04;">🫧 Play Bubble Garden (LKG–UKG)</button>';
-    html += '<button type="button" class="btn-Primary" data-nav="lesson" data-param="C1-04">🤖 Play RoboGrid Maze (Classes 1–5)</button>';
-    html += '<button type="button" class="btn-Primary" data-nav="lesson" data-param="C7-07" style="background:#10b981;border-color:#059669;border-bottom-color:#047857;">🧠 Play Brain Neuron Lab (Classes 6–8)</button>';
+    html += '<button type="button" class="btn-Primary" data-nav="simulators" data-param="" style="background:#facc15;color:#0f172a;border-color:#eab308;border-bottom-color:#ca8a04;">🎮 Play AI Educational Games</button>';
+    html += '<button type="button" class="btn-Primary" data-nav="videos" data-param="">🎥 AI Tutorial Videos & Resources</button>';
+    html += '<button type="button" class="btn-Primary" data-nav="vision" data-param="Class 6" style="background:#10b981;border-color:#059669;border-bottom-color:#047857;">📷 Open AI Webcam Lab</button>';
     html += '</div></div>';
 
     html += '<div class="exp-HeroKpiGrid">';
     html += '<div class="exp-HeroKpiCard"><strong>10 Classes</strong><span>LKG, UKG & Classes 1–8</span></div>';
-    html += '<div class="exp-HeroKpiCard"><strong>80 Games</strong><span>Hands-On AI Simulators</span></div>';
-    html += '<div class="exp-HeroKpiCard"><strong>12 Movies</strong><span>Animated Video Explainers</span></div>';
-    html += '<div class="exp-HeroKpiCard"><strong>AI Camera</strong><span>Wave Hands & Pop Bubbles!</span></div>';
+    html += '<div class="exp-HeroKpiCard"><strong>80 AI Games</strong><span>Hands-On Interactive Labs</span></div>';
+    html += '<div class="exp-HeroKpiCard"><strong>5 Lab Pillars</strong><span>Games • Apps • Videos • Books • Webcam</span></div>';
+    html += '<div class="exp-HeroKpiCard"><strong>100% Offline</strong><span>Zero Logins • Child-First UX</span></div>';
     html += '</div></section>';
 
-    // Kid-Friendly Band Filter + Search
+    // THE 5 CORE SCHOOL LAB DELIVERABLES (Matching the Official Proposal Screenshot 1-to-1)
+    html += '<h2 style="font-size:1.55rem;font-weight:900;margin-bottom:14px;color:#0f172a;">🚀 The 5 Core AI Learning Lab Pillars (Click Any Module to Launch)</h2>';
+    html += '<div class="exp-FivePillarsGrid">';
+    [
+      { route: 'simulators', param: '', icon: '🎮', color: '#2563eb', title: 'AI Educational Games', desc: '80 interactive games & simulations mapped across LKG, UKG, and Classes 1 to 8.' },
+      { route: 'external', param: '', icon: '💻', color: '#f59e0b', title: 'Free AI-related Software', desc: 'Scratch 3.0 Desktop, GCompris, Google Teachable Machine, Blockly Games & Code.org.' },
+      { route: 'videos', param: '', icon: '🎥', color: '#8b5cf6', title: 'AI Tutorial Videos & Digital Learning Resources', desc: 'Interactive theater with animated lessons, study guides, flashcards, quizzes & worksheets.' },
+      { route: 'books', param: '', icon: '📖', color: '#10b981', title: 'CBSE Artificial Intelligence Reference Book', desc: '100% offline digital student handbooks, chapters, and project guides for Classes 3–8.' },
+      { route: 'vision', param: 'Class 6', icon: '📷', color: '#ec4899', title: 'Webcam (AI Vision Lab)', desc: '8 guided step-by-step webcam & virtual camera games: motion, AR face, rover, drone & ML!' }
+    ].forEach(function(p) {
+      html += '<button type="button" class="exp-PillarCard" style="border-bottom-color:' + p.color + ';" data-nav="' + p.route + '" data-param="' + p.param + '">';
+      html += '<div class="exp-PillarIcon" style="color:' + p.color + ';">' + p.icon + '</div>';
+      html += '<div><div style="font-size:1.15rem;font-weight:900;color:#0f172a;margin-bottom:4px;">' + p.title + '</div>';
+      html += '<div style="font-size:0.9rem;color:#475569;font-weight:600;line-height:1.4;">' + p.desc + '</div></div>';
+      html += '</button>';
+    });
+    html += '</div>';
+
+    // Class-by-Class Browser
+    html += '<h2 style="font-size:1.55rem;font-weight:900;margin-bottom:14px;color:#0f172a;">🏫 Pick Your Class (LKG, UKG & Classes 1 to 8)</h2>';
     html += '<div class="exp-FilterRow">';
     html += '<div class="exp-BandTabs">';
     [
@@ -213,7 +209,7 @@ window.ExperimindApp = (function() {
       html += '<button type="button" class="exp-BandTab' + (state.bandFilter === b[0] ? ' exp-BandTab--active' : '') + '" data-band="' + b[0] + '">' + b[1] + '</button>';
     });
     html += '</div>';
-    html += '<input type="search" class="exp-SearchInput" id="home-search-input" placeholder="🔍 Find a game (e.g. Robot, Bubble, Maze, Brain)..." value="' + state.searchQuery.replace(/"/g, '&quot;') + '">';
+    html += '<input type="search" class="exp-SearchInput" id="home-search-input" placeholder="🔍 Search any of the 80 AI games (e.g. Robot, Bubble, Neural, IoT)..." value="' + state.searchQuery.replace(/"/g, '&quot;') + '">';
     html += '</div>';
 
     if (state.searchQuery.trim().length > 0) {
@@ -224,7 +220,7 @@ window.ExperimindApp = (function() {
                l.gradeName.toLowerCase().indexOf(q) !== -1 ||
                l.id.toLowerCase().indexOf(q) !== -1;
       });
-      html += '<h2 style="margin-bottom:18px;">🎮 Found ' + matches.length + ' Games Matching "' + state.searchQuery + '"</h2>';
+      html += '<h3 style="margin-bottom:18px;">🎮 Found ' + matches.length + ' AI Educational Games Matching "' + state.searchQuery + '"</h3>';
       html += '<div class="exp-LessonGrid">';
       matches.forEach(function(l) {
         html += renderLessonCardHtml(l);
@@ -236,25 +232,15 @@ window.ExperimindApp = (function() {
       });
       html += '<div class="exp-GradeGrid">';
       filteredGrades.forEach(function(g) {
-        var gLessons = lessons.filter(function(l) { return l.gradeId === g.id; });
-        var gStars = 0;
-        gLessons.forEach(function(l) {
-          var st = getLessonStars(l.id);
-          if (st.explore) gStars++;
-          if (st.sim) gStars++;
-          if (st.quiz) gStars++;
-        });
         html += '<div class="exp-GradeCard" style="border-top: 8px solid ' + g.accent + ';">';
         html += '<div><div class="exp-GradeHeader"><span class="exp-GradeIcon">' + g.icon + '</span><span class="exp-GradeAge">' + g.ageRange + '</span></div>';
         html += '<h3>' + g.name + '</h3>';
-        html += '<div class="exp-GradeFramework">✨ 8 Interactive Games & AI Labs</div>';
+        html += '<div class="exp-GradeFramework">✨ 8 Interactive AI Games & Simulators</div>';
         html += '<p class="exp-GradeSummary">' + g.summary + '</p></div>';
         html += '<div class="exp-GradeFooter">';
-        html += '<span style="font-size:1rem;font-weight:900;color:#b45309;">⭐ ' + gStars + ' / 24 Stars</span>';
-        html += '<div style="display:flex;gap:8px;">';
-        html += '<button type="button" class="btn-Secondary" data-nav="vision" data-param="' + g.id + '" title="Open AI Camera Lab">📷 Camera</button>';
-        html += '<button type="button" class="btn-Primary" data-nav="grade" data-param="' + g.id + '">🎮 Play 8 Games ➔</button>';
-        html += '</div></div></div>';
+        html += '<button type="button" class="btn-Secondary" data-nav="vision" data-param="' + g.id + '">📷 Webcam Lab</button>';
+        html += '<button type="button" class="btn-Primary" data-nav="grade" data-param="' + g.id + '">🎮 Open 8 Games ➔</button>';
+        html += '</div></div>';
       });
       html += '</div>';
     }
@@ -285,18 +271,16 @@ window.ExperimindApp = (function() {
   }
 
   function renderLessonCardHtml(l) {
-    var st = getLessonStars(l.id);
-    var starIcons = (st.explore ? '⭐' : '☆') + (st.sim ? '⭐' : '☆') + (st.quiz ? '⭐' : '☆');
     var html = '<div class="exp-LessonCard">';
     html += '<div><div class="exp-LessonMetaRow">';
-    html += '<span class="exp-LessonNumBadge">' + l.gradeId + ' • Game #' + l.lessonNumber + '</span>';
-    html += '<span class="exp-LessonStarRow" title="3 Stars to Win!">' + starIcons + '</span></div>';
+    html += '<span class="exp-LessonNumBadge">' + l.gradeId + ' • Game #' + l.lessonNumber + ' (' + l.id + ')</span>';
+    html += '<span style="font-size:0.84rem;font-weight:800;color:#059669;background:#ecfdf5;padding:4px 10px;border-radius:99px;">Interactive Lab</span></div>';
     html += '<h3 style="font-size:1.32rem;font-weight:900;margin-bottom:6px;">' + l.icon + ' ' + l.title + '</h3>';
     html += '<div style="font-size:0.95rem;font-weight:800;color:#4f46e5;margin-bottom:10px;">' + l.subtitle + '</div>';
     html += '<p style="font-size:0.98rem;color:#334155;margin-bottom:18px;">' + l.overview + '</p></div>';
     html += '<div style="display:flex;justify-content:space-between;gap:10px;padding-top:14px;border-top:2px dashed #e2e8f0;">';
     html += '<button type="button" class="btn-Primary" data-nav="lesson" data-param="' + l.id + '" style="flex:1;">🎮 Play Lab Game</button>';
-    html += '<button type="button" class="btn-Secondary" data-nav="game" data-param="' + l.id + '">⛶ Giant Screen</button>';
+    html += '<button type="button" class="btn-Secondary" data-nav="game" data-param="' + l.id + '">⛶ Fullscreen</button>';
     html += '</div></div>';
     return html;
   }
@@ -309,13 +293,13 @@ window.ExperimindApp = (function() {
     var html = '<div style="margin-bottom:22px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;">';
     html += '<button type="button" class="btn-Secondary" data-nav="home" data-param="">← Back to All 10 Classes</button>';
     html += '<div style="display:flex;gap:10px;flex-wrap:wrap;">';
-    html += '<button type="button" class="btn-Primary" data-nav="vision" data-param="' + g.id + '">📷 Open ' + g.shortName + ' Magic AI Camera</button>';
-    html += '<button type="button" class="btn-Secondary" data-nav="videos" data-param="">🎬 Watch Animated AI Movies</button>';
+    html += '<button type="button" class="btn-Primary" data-nav="vision" data-param="' + g.id + '">📷 Open ' + g.shortName + ' Webcam Lab</button>';
+    html += '<button type="button" class="btn-Secondary" data-nav="videos" data-param="">🎥 AI Tutorial Videos & Resources</button>';
     html += '</div></div>';
 
     html += '<div class="vision-HeaderCard" style="border-left: 8px solid ' + g.accent + ';">';
     html += '<div><span class="sim-EngineBadge">' + g.band + ' • ' + g.ageRange + '</span>';
-    html += '<h2 style="font-size:2.1rem;font-weight:900;margin:8px 0;">' + g.icon + ' ' + g.name + ' — Pick a Game to Play!</h2>';
+    html += '<h2 style="font-size:2.1rem;font-weight:900;margin:8px 0;">' + g.icon + ' ' + g.name + ' — 8 AI Educational Games</h2>';
     html += '<p style="color:#e2e8f0;font-size:1.08rem;">' + g.summary + '</p></div></div>';
 
     html += '<div class="exp-LessonGrid">';
@@ -329,17 +313,43 @@ window.ExperimindApp = (function() {
   }
 
   function renderAllSimulators(mainEl) {
-    var lessons = getCurriculum().lessons || [];
-    var html = '<div style="margin-bottom:24px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;">';
-    html += '<div><h2 style="font-size:2rem;font-weight:900;">🎮 All 80 Interactive AI & Coding Games (LKG to Class 8)</h2><p style="color:#475569;font-size:1.05rem;">Click any game card below to start playing immediately!</p></div>';
-    html += '<button type="button" class="btn-Secondary" data-nav="home" data-param="">← Back to Classes</button></div>';
+    var curr = getCurriculum();
+    var lessons = curr.lessons || [];
+    var filtered = lessons.filter(function(l) {
+      return state.bandFilter === 'all' || l.bandCode === state.bandFilter;
+    });
+
+    var html = '<div class="vision-HeaderCard">';
+    html += '<div><span class="sim-EngineBadge">PILLAR 1 • 80 INTERACTIVE HANDS-ON LABS</span>';
+    html += '<h2 style="font-size:2rem;font-weight:900;margin:6px 0;">🎮 AI Educational Games (LKG to Class 8)</h2>';
+    html += '<p style="color:#e2e8f0;">Filter by grade band below and click any game card to launch its interactive simulator!</p></div></div>';
+
+    html += '<div class="exp-FilterRow">';
+    html += '<div class="exp-BandTabs">';
+    [
+      ['all', '🌈 All 80 Games'],
+      ['pre-primary', '🐣 LKG & UKG (16 Games)'],
+      ['primary', '🚀 Classes 1 & 2 (16 Games)'],
+      ['preparatory', '🧩 Classes 3–5 (24 Games)'],
+      ['middle', '🧠 Classes 6–8 (24 Games)']
+    ].forEach(function(b) {
+      html += '<button type="button" class="exp-BandTab' + (state.bandFilter === b[0] ? ' exp-BandTab--active' : '') + '" data-sim-band="' + b[0] + '">' + b[1] + '</button>';
+    });
+    html += '</div></div>';
 
     html += '<div class="exp-LessonGrid">';
-    lessons.forEach(function(l) {
+    filtered.forEach(function(l) {
       html += renderLessonCardHtml(l);
     });
     html += '</div>';
     mainEl.innerHTML = html;
+
+    mainEl.querySelectorAll('[data-sim-band]').forEach(function(b) {
+      b.addEventListener('click', function() {
+        state.bandFilter = b.getAttribute('data-sim-band');
+        renderAllSimulators(mainEl);
+      });
+    });
     bindNavButtons(mainEl);
   }
 
@@ -351,11 +361,9 @@ window.ExperimindApp = (function() {
     var prevLesson = lIdx > 0 ? lessons[lIdx - 1] : null;
     var nextLesson = lIdx + 1 < lessons.length ? lessons[lIdx + 1] : null;
 
-    awardStar(lesson.id, 'explore');
-
     if (isFullscreenGame) {
       var gHtml = '<div style="margin-bottom:18px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;">';
-      gHtml += '<button type="button" class="btn-Secondary" data-nav="lesson" data-param="' + lesson.id + '">← Back to Lesson & Quiz (' + lesson.id + ')</button>';
+      gHtml += '<button type="button" class="btn-Secondary" data-nav="lesson" data-param="' + lesson.id + '">← Back to Split Lesson View (' + lesson.id + ')</button>';
       gHtml += '<div style="font-weight:900;font-size:1.15rem;color:#1e40af;">🎯 Your Mission: ' + lesson.handsOnChallenge + '</div>';
       if (nextLesson) gHtml += '<button type="button" class="btn-Primary" data-nav="game" data-param="' + nextLesson.id + '">Next Game (' + nextLesson.id + ') ▶</button>';
       gHtml += '</div>';
@@ -366,7 +374,6 @@ window.ExperimindApp = (function() {
       return;
     }
 
-    var st = getLessonStars(lesson.id);
     var html = '<div style="margin-bottom:20px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;">';
     html += '<div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">';
     html += '<button type="button" class="btn-Secondary" data-nav="grade" data-param="' + lesson.gradeId + '">← ' + lesson.gradeId + ' Games</button>';
@@ -374,7 +381,6 @@ window.ExperimindApp = (function() {
     if (nextLesson) html += '<button type="button" class="btn-Primary" data-nav="lesson" data-param="' + nextLesson.id + '">Next Game (' + nextLesson.title + ') ▶</button>';
     html += '</div>';
     html += '<div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;">';
-    html += '<span class="exp-StarBadge">Your Stars: ' + (st.explore ? '⭐' : '☆') + (st.sim ? '⭐' : '☆') + (st.quiz ? '⭐' : '☆') + '</span>';
     html += '<button type="button" class="btn-Primary" data-nav="game" data-param="' + lesson.id + '">⛶ Make Game Giant Fullscreen!</button>';
     html += '</div></div>';
 
@@ -402,7 +408,6 @@ window.ExperimindApp = (function() {
     });
     html += '</div>';
 
-    // Kid-Friendly Secret Brain Boost
     html += '<div style="margin:18px 0;">';
     html += '<button type="button" class="btn-Secondary" id="reveal-insight-btn" style="width:100%;text-align:left;display:flex;justify-content:space-between;align-items:center;">';
     html += '<span>🤖 Click for Sparky\'s Secret Brain Boost! 💡</span><span>▼</span></button>';
@@ -410,9 +415,8 @@ window.ExperimindApp = (function() {
     html += '<strong>🤖 Sparky\'s Fun Fact:</strong><br>' + lesson.discussionGuide;
     html += '</div></div>';
 
-    // Interactive 3-Question Fun Quiz
     html += '<div style="margin-top:22px;padding-top:18px;border-top:3px dashed #cbd5e1;">';
-    html += '<h3 style="font-size:1.3rem;font-weight:900;margin-bottom:14px;">🏆 Win Your 3rd Star! (Quick 3-Question Quiz)</h3>';
+    html += '<h3 style="font-size:1.3rem;font-weight:900;margin-bottom:14px;">🧠 Quick 3-Question Brain Check!</h3>';
     html += '<div id="lesson-quiz-mount"></div>';
     html += '</div></div></div>';
 
@@ -468,8 +472,7 @@ window.ExperimindApp = (function() {
     });
 
     if (correctCount === questions.length && questions.length > 0) {
-      awardStar(lesson.id, 'quiz');
-      html += '<div class="sim-Banner sim-Banner--success">🏆 <strong>You Got All 3 Right!</strong> You won the Quiz Star for ' + lesson.title + '!</div>';
+      html += '<div class="sim-Banner sim-Banner--success">🎉 <strong>All 3 Questions Mastered!</strong> Great job understanding ' + lesson.title + '!</div>';
     }
 
     quizEl.innerHTML = html;
@@ -481,6 +484,11 @@ window.ExperimindApp = (function() {
         state.quizAnswers[lesson.id][qi] = oi;
         if (oi === questions[qi].correctIndex) {
           if (window.ExperimindAudio) window.ExperimindAudio.pop();
+          var allRight = questions.every(function(qq, idx) { return state.quizAnswers[lesson.id][idx] === qq.correctIndex; });
+          if (allRight) {
+            if (window.ExperimindAudio) window.ExperimindAudio.fanfare();
+            if (window.ExperimindConfetti) window.ExperimindConfetti.burst();
+          }
         } else {
           if (window.ExperimindAudio) window.ExperimindAudio.retry();
         }
@@ -491,11 +499,10 @@ window.ExperimindApp = (function() {
 
   function renderExternalPlatforms(mainEl) {
     var platforms = window.EXPERIMIND_EXTERNAL_PLATFORMS || [];
-    var html = '<div style="margin-bottom:24px;">';
-    html += '<span class="sim-EngineBadge">🚀 MORE AWESOME CODING & AI PLAYGROUNDS</span>';
-    html += '<h2 style="font-size:2rem;font-weight:900;margin:6px 0;">Explore Scratch, GCompris, Teachable Machine & Blockly!</h2>';
-    html += '<p style="color:#475569;font-size:1.08rem;">Follow the easy 1-2-3 steps below to build your own games on your computer or in your browser!</p>';
-    html += '</div>';
+    var html = '<div class="vision-HeaderCard">';
+    html += '<div><span class="sim-EngineBadge">PILLAR 2 • FREE AI-RELATED SOFTWARE (SCRATCH & SUITABLE TOOLS)</span>';
+    html += '<h2 style="font-size:2rem;font-weight:900;margin:6px 0;">💻 Free AI-Related Software (Scratch & Suitable Tools)</h2>';
+    html += '<p style="color:#e2e8f0;">Step-by-step student guides for Scratch 3.0 Desktop, GCompris, Google Teachable Machine, Blockly Games, and Code.org Hour of AI!</p></div></div>';
 
     platforms.forEach(function(p) {
       html += '<div class="exp-ExtCard" style="border-left: 8px solid ' + p.accentColor + ';">';
@@ -503,7 +510,7 @@ window.ExperimindApp = (function() {
       html += '<div><span class="sim-EngineBadge">' + p.grades + ' • ' + p.badge + '</span>';
       html += '<h3 style="font-size:1.5rem;font-weight:900;margin-top:4px;">' + p.icon + ' ' + p.name + '</h3></div>';
       html += '<div style="display:flex;gap:10px;flex-wrap:wrap;">';
-      html += '<a href="' + p.webLaunchUrl + '" target="_blank" rel="noopener noreferrer" referrerpolicy="no-referrer" class="btn-Primary" style="text-decoration:none;">🌐 Open ' + p.name + ' in New Tab ↗</a>';
+      html += '<a href="' + p.webLaunchUrl + '" target="_blank" rel="noopener noreferrer" referrerpolicy="no-referrer" class="btn-Primary" style="text-decoration:none;">🌐 Launch ' + p.name + ' Online ↗</a>';
       html += '</div></div>';
 
       html += '<div class="exp-ConceptItem" style="margin-bottom:16px;"><strong>🎯 What You Will Build:</strong> ' + p.learningObjective + '</div>';
@@ -523,6 +530,10 @@ window.ExperimindApp = (function() {
     mainEl.innerHTML = html;
   }
 
+  // =========================================================================
+  // REDESIGNED PILLAR 3: AI TUTORIAL VIDEOS & DIGITAL LEARNING RESOURCES
+  // Master-Detail Cinema Academy Layout (Like Khan Academy, BrainPOP & Code.org)
+  // =========================================================================
   function renderVideoHub(mainEl) {
     if (window.ExperimindVideoPlayer) window.ExperimindVideoPlayer.stopAll();
     var allVideos = window.EXPERIMIND_VIDEOS || [];
@@ -533,132 +544,173 @@ window.ExperimindApp = (function() {
       return v.gradeBand === curBand;
     });
 
-    var html = '<div class="exp-HeroBand" style="background:linear-gradient(135deg,#4338ca,#3b82f6,#06b6d4);">';
-    html += '<div class="exp-HeroBadge">CBSE CT & AI (2026-27) • CURATED DIGITAL LEARNING ACADEMY</div>';
-    html += '<h1 style="color:#ffffff;">🎥 AI Tutorial Videos & Digital Learning Resources</h1>';
-    html += '<p style="color:#f8fafc;">Watch interactive video tutorials with Sparky the Robot, test your understanding with interactive brain checkpoints, explore digital cheatsheets, and launch matching hands-on lab experiments!</p>';
-    html += '</div>';
+    var activeVid = filtered.find(function(v) { return v.id === state.selectedVideoId; }) || filtered[0] || allVideos[0];
+    if (activeVid) state.selectedVideoId = activeVid.id;
 
-    // Filter Tabs
-    html += '<div class="sim-TabRow" style="margin-bottom:20px;overflow-x:auto;padding-bottom:6px;">';
+    var html = '<div class="vision-HeaderCard" style="background:linear-gradient(135deg,#1e3a8a,#3b82f6,#6d28d9);">';
+    html += '<div><span class="sim-EngineBadge">PILLAR 3 • INTERACTIVE VIDEO THEATER & DIGITAL STUDY ACADEMY</span>';
+    html += '<h2 style="font-size:2rem;font-weight:900;margin:6px 0;">🎥 AI Tutorial Videos & Digital Learning Resources</h2>';
+    html += '<p style="color:#e2e8f0;">Pick any topic from the playlist on the left to watch the widescreen animated lesson, explore digital study cards, flip interactive flashcards, and take the Brain Quiz!</p></div></div>';
+
+    html += '<div class="exp-VideoAcademySplit">';
+
+    // LEFT COLUMN: Course Playlist Sidebar
+    html += '<aside class="exp-PlaylistSidebar">';
+    html += '<div style="font-weight:900;font-size:1.1rem;margin-bottom:10px;color:#0f172a;">📚 Course Playlist (' + filtered.length + ' Modules)</div>';
+    html += '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px;">';
     [
-      ['all', '🌟 All 12 Video Tutorials (' + allVideos.length + ')'],
-      ['primary', '🌱 Primary (LKG – Class 3)'],
-      ['prep', '🚀 Preparatory (Classes 4–5)'],
-      ['middle', '🧠 Middle Stage (Classes 6–8)']
+      ['all', 'All (12)'],
+      ['primary', 'LKG–Class 3'],
+      ['prep', 'Classes 4–5'],
+      ['middle', 'Classes 6–8']
     ].forEach(function(tb) {
       var act = (curBand === tb[0]) ? ' sim-TabBtn--active' : '';
-      html += '<button type="button" class="sim-TabBtn' + act + '" data-video-filter="' + tb[0] + '">' + tb[1] + '</button>';
+      html += '<button type="button" class="sim-TabBtn' + act + '" style="padding:6px 10px;font-size:0.82rem;" data-video-filter="' + tb[0] + '">' + tb[1] + '</button>';
     });
     html += '</div>';
 
-    html += '<div class="exp-LessonGrid">';
-    filtered.forEach(function(v) {
-      var isOpen = !!state.openVideoIds[v.id];
-      var isWorksheetOpen = !!state.openWorksheetIds && !!state.openWorksheetIds[v.id];
-      var ans = state.checkpointAnswers ? state.checkpointAnswers[v.id] : null;
+    filtered.forEach(function(v, idx) {
+      var isSel = activeVid && v.id === activeVid.id;
+      var quizDone = state.checkpointAnswers[v.id] !== undefined && v.checkpoint && state.checkpointAnswers[v.id] === v.checkpoint.correct;
+      html += '<button type="button" class="exp-PlaylistItem' + (isSel ? ' exp-PlaylistItem--active' : '') + '" data-select-vid="' + v.id + '">';
+      html += '<div style="font-size:1.75rem;">' + v.icon + '</div>';
+      html += '<div style="flex:1;min-width:0;">';
+      html += '<div style="font-size:0.76rem;font-weight:800;color:#2563eb;">' + v.grades + ' • ' + v.duration + (quizDone ? ' • ✅ Done' : '') + '</div>';
+      html += '<div style="font-size:0.95rem;font-weight:800;color:#0f172a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + v.title.replace(/^Tutorial \d+:\s*/, '') + '</div>';
+      html += '</div></button>';
+    });
+    html += '</aside>';
 
-      html += '<div class="exp-VidCard" style="display:flex;flex-direction:column;justify-content:space-between;">';
-      html += '<div>';
-      html += '<div class="exp-LessonMetaRow"><span class="exp-LessonNumBadge">' + v.grades + ' • ' + v.duration + '</span><span style="font-size:0.9rem;font-weight:800;color:#2563eb;">' + v.source + '</span></div>';
-      html += '<h3 style="font-size:1.32rem;font-weight:900;margin:8px 0 12px 0;color:#0f172a;">' + v.icon + ' ' + v.title + '</h3>';
+    // RIGHT COLUMN: Main Cinema Theater + 4 Interactive Digital Learning Resource Tabs
+    html += '<section class="exp-AcademyStage">';
+    if (activeVid) {
+      html += '<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:14px;">';
+      html += '<div><span class="exp-LessonNumBadge">' + activeVid.grades + ' • ' + activeVid.duration + ' • ' + activeVid.source + '</span>';
+      html += '<h3 style="font-size:1.65rem;font-weight:900;margin-top:6px;color:#0f172a;">' + activeVid.icon + ' ' + activeVid.title + '</h3></div>';
+      html += '<div style="display:flex;gap:8px;flex-wrap:wrap;">';
+      html += '<button type="button" class="sim-TabBtn' + (state.videoPlayerMode === 'animated' ? ' sim-TabBtn--active' : '') + '" id="vmode-animated">🎬 Offline Animated Movie</button>';
+      html += '<button type="button" class="sim-TabBtn' + (state.videoPlayerMode === 'youtube' ? ' sim-TabBtn--active' : '') + '" id="vmode-youtube">▶️ YouTube Embed</button>';
+      html += '<a href="' + activeVid.youtubeUrl + '" target="_blank" rel="noopener noreferrer" referrerpolicy="no-referrer" class="btn-Secondary" style="text-decoration:none;padding:8px 14px;font-size:0.9rem;">🌐 Open YouTube ↗</a>';
+      html += '</div></div>';
 
-      // Video Player Stage
-      if (isOpen) {
-        html += '<div id="vplayer-mount-' + v.id + '" style="margin-bottom:14px;"></div>';
-      } else {
-        html += '<div style="background:linear-gradient(135deg,#1e3a8a,#2563eb,#3b82f6);color:#fff;border-radius:14px;padding:26px 18px;text-align:center;margin-bottom:14px;border-bottom:5px solid #1e3a8a;">';
-        html += '<div style="font-size:2.8rem;margin-bottom:6px;">' + v.icon + ' 🎬</div>';
-        html += '<div style="font-weight:800;font-size:1.05rem;margin-bottom:12px;">4-Part Interactive Video Lesson (' + v.duration + ')</div>';
-        html += '<button type="button" class="btn-Primary" style="background:#facc15;color:#0f172a;border-color:#eab308;border-bottom-color:#ca8a04;font-size:1rem;" data-toggle-vid="' + v.id + '">▶️ Watch Interactive Offline Video Lesson</button>';
+      // Widescreen Player Stage
+      if (state.videoPlayerMode === 'youtube') {
+        html += '<div style="position:relative;padding-bottom:52%;height:0;overflow:hidden;border-radius:16px;background:#0f172a;margin-bottom:18px;border:3px solid #334155;">';
+        html += '<iframe src="https://www.youtube-nocookie.com/embed/' + activeVid.youtubeId + '?rel=0&modestbranding=1" title="' + activeVid.title.replace(/"/g, '') + '" style="position:absolute;top:0;left:0;width:100%;height:100%;border:0;" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>';
         html += '</div>';
+      } else {
+        html += '<div id="academy-vplayer-mount" style="margin-bottom:18px;"></div>';
       }
 
-      // Interactive Brain Checkpoint (Quick Quiz)
-      if (v.checkpoint) {
-        var isAnswered = ans !== null && ans !== undefined;
-        var isCorrect = isAnswered && ans === v.checkpoint.correct;
-        html += '<div class="exp-CheckpointCard' + (isCorrect ? ' exp-CheckpointCard--answered' : '') + '">';
-        html += '<div class="exp-CheckpointTitle">🧠 Quick Brain Checkpoint:</div>';
-        html += '<div style="font-weight:700;font-size:0.92rem;color:#1e293b;margin-bottom:8px;">' + v.checkpoint.q + '</div>';
-        v.checkpoint.options.forEach(function(opt, oIdx) {
-          var optCls = 'exp-CheckpointOption';
-          if (isAnswered) {
-            if (oIdx === v.checkpoint.correct) optCls += ' exp-CheckpointOption--correct';
-            else if (oIdx === ans) optCls += ' exp-CheckpointOption--wrong';
-          }
-          html += '<button type="button" class="' + optCls + '" data-chk-vid="' + v.id + '" data-chk-opt="' + oIdx + '"' + (isCorrect ? ' disabled' : '') + '>' + opt + '</button>';
+      // 4 Interactive Digital Resource Tabs (BrainPOP / Khan Academy Style)
+      html += '<div class="sim-TabRow" style="border-bottom:2px solid #e2e8f0;padding-bottom:12px;margin-bottom:18px;">';
+      [
+        ['guide', '📘 1. Digital Study Guide & Notes'],
+        ['flashcards', '🃏 2. Interactive Flip Flashcards'],
+        ['quiz', '🧠 3. Interactive Brain Quiz'],
+        ['worksheet', '🎮 4. Hands-On Game & Printable Sheet']
+      ].forEach(function(st) {
+        var act = (state.videoSubTab === st[0]) ? ' sim-TabBtn--active' : '';
+        html += '<button type="button" class="sim-TabBtn' + act + '" data-vsubtab="' + st[0] + '">' + st[1] + '</button>';
+      });
+      html += '<button type="button" class="btn-Primary" style="margin-left:auto;" data-nav="lesson" data-param="' + activeVid.mappedLessonId + '">🎮 Play Matching Simulator (' + activeVid.mappedLessonId + ') ➔</button>';
+      html += '</div>';
+
+      // TAB 1: DIGITAL STUDY GUIDE & VISUAL NOTES
+      if (state.videoSubTab === 'guide') {
+        html += '<div style="display:grid;grid-template-columns:1.2fr 1fr;gap:18px;">';
+        html += '<div style="background:#f8fafc;border:2px solid #cbd5e1;border-radius:16px;padding:18px;">';
+        html += '<h4 style="font-size:1.15rem;font-weight:900;color:#1e3a8a;margin-bottom:12px;">📌 Key Learning Takeaways</h4>';
+        (activeVid.keyConcepts || []).forEach(function(kc, kIdx) {
+          html += '<div class="exp-ConceptItem" style="margin-bottom:10px;"><strong>' + (kIdx + 1) + '.</strong> ' + kc + '</div>';
         });
-        if (isCorrect) {
-          html += '<div style="margin-top:8px;font-weight:800;font-size:0.88rem;color:#15803d;">' + v.checkpoint.feedback + '</div>';
+        html += '</div>';
+
+        html += '<div style="background:#fffbeb;border:2px solid #fde047;border-radius:16px;padding:18px;">';
+        html += '<h4 style="font-size:1.15rem;font-weight:900;color:#854d0e;margin-bottom:12px;">📝 Student Notebook Cheat-Sheet</h4>';
+        if (activeVid.learningResource && activeVid.learningResource.notebookNotes) {
+          activeVid.learningResource.notebookNotes.forEach(function(nt) {
+            html += '<div style="padding:10px 12px;background:#ffffff;border-radius:10px;border:1px solid #fde68a;margin-bottom:8px;font-weight:700;font-size:0.96rem;">✨ ' + nt + '</div>';
+          });
+        }
+        html += '<div style="margin-top:12px;padding:12px;background:#fef3c7;border-radius:10px;font-size:0.94rem;"><strong>🔬 Lab Challenge Link:</strong> ' + (activeVid.learningResource ? activeVid.learningResource.labExperiment : 'Try the interactive simulator!') + '</div>';
+        html += '</div></div>';
+      }
+
+      // TAB 2: INTERACTIVE FLIP FLASHCARDS
+      else if (state.videoSubTab === 'flashcards') {
+        html += '<div><h4 style="font-size:1.15rem;font-weight:900;color:#1e3a8a;">🃏 Click Any Flashcard Below to Flip Between Question & Answer!</h4>';
+        html += '<div class="exp-FlashcardGrid">';
+        (activeVid.keyConcepts || []).forEach(function(kc, cIdx) {
+          var cardKey = activeVid.id + '_' + cIdx;
+          var isFlipped = !!state.flippedCards[cardKey];
+          var parts = kc.split(':');
+          var term = parts.length > 1 ? parts[0] : 'Concept Card #' + (cIdx + 1);
+          var def = parts.length > 1 ? parts.slice(1).join(':').trim() : kc;
+          html += '<div class="exp-Flashcard' + (isFlipped ? ' exp-Flashcard--flipped' : '') + '" data-flip-card="' + cardKey + '">';
+          html += '<div style="font-size:0.82rem;font-weight:900;text-transform:uppercase;color:' + (isFlipped ? '#065f46' : '#1e40af') + ';">' + (isFlipped ? '✅ Answer / Definition (Click to Flip)' : '❓ Key Term #' + (cIdx + 1) + ' (Click to Reveal)') + '</div>';
+          html += '<div style="font-size:1.15rem;font-weight:900;color:#0f172a;margin:12px 0;">' + (isFlipped ? def : term) + '</div>';
+          html += '<div style="font-size:0.84rem;font-weight:700;color:#475569;">🔄 Tap card to flip</div>';
+          html += '</div>';
+        });
+        html += '</div></div>';
+      }
+
+      // TAB 3: INTERACTIVE BRAIN CHECKPOINT QUIZ
+      else if (state.videoSubTab === 'quiz') {
+        var ans = state.checkpointAnswers[activeVid.id];
+        var isAnswered = ans !== undefined && ans !== null;
+        var isCorrect = isAnswered && activeVid.checkpoint && ans === activeVid.checkpoint.correct;
+        html += '<div style="background:#f8fafc;border:2px solid #cbd5e1;border-radius:18px;padding:22px;">';
+        html += '<h4 style="font-size:1.25rem;font-weight:900;color:#1e3a8a;margin-bottom:10px;">🧠 Interactive Video Comprehension Check</h4>';
+        if (activeVid.checkpoint) {
+          html += '<div style="font-size:1.12rem;font-weight:800;margin-bottom:14px;">' + activeVid.checkpoint.q + '</div>';
+          html += '<div style="display:flex;flex-direction:column;gap:10px;">';
+          activeVid.checkpoint.options.forEach(function(opt, oIdx) {
+            var style = 'padding:14px 18px;border-radius:12px;border:2px solid #cbd5e1;background:#fff;text-align:left;font-weight:800;font-size:1.02rem;cursor:pointer;';
+            if (isAnswered) {
+              if (oIdx === activeVid.checkpoint.correct) style = 'padding:14px 18px;border-radius:12px;border:2px solid #10b981;background:#dcfce7;color:#065f46;text-align:left;font-weight:900;font-size:1.02rem;cursor:pointer;';
+              else if (oIdx === ans) style = 'padding:14px 18px;border-radius:12px;border:2px solid #f59e0b;background:#fef3c7;color:#92400e;text-align:left;font-weight:800;font-size:1.02rem;cursor:pointer;';
+            }
+            html += '<button type="button" style="' + style + '" data-chk-vid="' + activeVid.id + '" data-chk-opt="' + oIdx + '">' + opt + '</button>';
+          });
+          html += '</div>';
+          if (isAnswered) {
+            html += '<div class="sim-Banner ' + (isCorrect ? 'sim-Banner--success' : 'sim-Banner--warn') + '" style="margin-top:14px;">' +
+              (isCorrect ? activeVid.checkpoint.feedback : '🤔 Almost! Read the Digital Study Guide tab or try another option above!') + '</div>';
+          }
         }
         html += '</div>';
       }
 
-      // Digital Learning Resources & Cheatsheet
-      html += '<div style="background:#f8fafc;border:1.5px solid #e2e8f0;border-radius:12px;padding:12px;margin:12px 0;">';
-      html += '<div style="font-weight:800;font-size:0.9rem;color:#1e3a8a;margin-bottom:6px;">📌 Core Learning Takeaways:</div>';
-      html += '<ul style="padding-left:18px;margin:0;font-size:0.9rem;color:#334155;line-height:1.5;">';
-      (v.keyConcepts || []).forEach(function(kc) { html += '<li style="margin-bottom:4px;">' + kc + '</li>'; });
-      html += '</ul>';
+      // TAB 4: HANDS-ON UNPLUGGED GAME & PRINTABLE STUDY WORKSHEET
+      else {
+        html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:18px;">';
+        html += '<div class="exp-OfflineBox" style="margin:0;">';
+        html += '<h4 style="font-size:1.15rem;font-weight:900;color:#065f46;margin-bottom:8px;">🎮 Unplugged Classroom Game With Friends</h4>';
+        html += '<p style="font-size:1.02rem;line-height:1.6;">' + activeVid.offlineAlternative + '</p></div>';
 
-      if (v.learningResource && v.learningResource.notebookNotes) {
-        html += '<div style="margin-top:10px;padding-top:8px;border-top:1px dashed #cbd5e1;">';
-        html += '<div style="font-weight:800;font-size:0.85rem;color:#475569;margin-bottom:4px;">📝 Student Notebook Summary:</div>';
-        v.learningResource.notebookNotes.forEach(function(nt) {
-          html += '<div style="font-size:0.88rem;color:#0f172a;margin-bottom:3px;">• ' + nt + '</div>';
-        });
-        html += '</div>';
+        html += '<div style="background:#f8fafc;border:2px solid #cbd5e1;border-radius:16px;padding:18px;">';
+        html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">';
+        html += '<h4 style="font-size:1.15rem;font-weight:900;color:#1e3a8a;">📄 Printable Digital Worksheet</h4>';
+        html += '<button type="button" class="btn-Secondary" onclick="window.print()">🖨️ Print Sheet</button></div>';
+        html += '<p style="font-size:0.98rem;margin-bottom:12px;"><strong>Hands-On Simulator Task:</strong> ' + (activeVid.learningResource ? activeVid.learningResource.labExperiment : 'Complete the matching simulator.') + '</p>';
+        html += '<button type="button" class="btn-Primary" style="width:100%;" data-nav="lesson" data-param="' + activeVid.mappedLessonId + '">🚀 Launch Matching Simulator (' + activeVid.mappedLessonId + ')</button>';
+        html += '</div></div>';
       }
-      html += '</div>';
-
-      // Unplugged Hands-on Activity
-      html += '<div class="exp-OfflineBox" style="margin-bottom:12px;"><strong>🎮 Classroom Hands-On Game:</strong> ' + v.offlineAlternative + '</div>';
-
-      // Expandable Printable Worksheet
-      if (isWorksheetOpen && v.learningResource) {
-        html += '<div class="exp-WorksheetBox">';
-        html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">';
-        html += '<strong style="color:#1e3a8a;font-size:1.05rem;">📄 Digital Study Worksheet — ' + v.title + '</strong>';
-        html += '<button type="button" class="btn-Secondary" style="padding:4px 10px;font-size:0.8rem;" onclick="window.print()">🖨️ Print Sheet</button>';
-        html += '</div>';
-        html += '<p style="font-size:0.9rem;color:#475569;"><strong>Experiment Challenge:</strong> ' + (v.learningResource.labExperiment || 'Complete the matching simulator activity.') + '</p>';
-        html += '<div style="background:#f1f5f9;padding:10px;border-radius:8px;margin-top:8px;font-size:0.88rem;">';
-        html += '<strong>Discussion Question for Class:</strong> How does this AI capability affect everyday life in our city or school?';
-        html += '</div>';
-        html += '</div>';
-      }
-
-      html += '</div>'; // End top half
-
-      // Action Buttons Footer
-      html += '<div style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-top:14px;padding-top:12px;border-top:2px dashed #e2e8f0;">';
-      html += '<button type="button" class="btn-Primary" data-nav="lesson" data-param="' + v.mappedLessonId + '">🎮 Launch Lab Simulator (' + v.mappedLessonId + ')</button>';
-      html += '<button type="button" class="btn-Secondary" data-toggle-worksheet="' + v.id + '">' + (isWorksheetOpen ? '🔼 Hide Worksheet' : '📄 View Worksheet') + '</button>';
-      if (isOpen) {
-        html += '<button type="button" class="btn-Secondary" data-toggle-vid="' + v.id + '">⏹️ Close Video</button>';
-      }
-      html += '<a href="' + v.youtubeUrl + '" target="_blank" rel="noopener noreferrer" referrerpolicy="no-referrer" class="btn-Secondary" style="text-decoration:none;">🌐 YouTube ↗</a>';
-      html += '</div>';
-
-      html += '</div>'; // End Card
-    });
-    html += '</div>';
+    }
+    html += '</section></div>';
 
     mainEl.innerHTML = html;
     bindNavButtons(mainEl);
 
-    // Mount active video players
-    filtered.forEach(function(v) {
-      if (state.openVideoIds[v.id]) {
-        var mountEl = document.getElementById('vplayer-mount-' + v.id);
-        if (mountEl && window.ExperimindVideoPlayer) {
-          window.ExperimindVideoPlayer.mountPlayer(mountEl, v);
-        }
+    if (activeVid && state.videoPlayerMode === 'animated') {
+      var mountEl = document.getElementById('academy-vplayer-mount');
+      if (mountEl && window.ExperimindVideoPlayer) {
+        window.ExperimindVideoPlayer.mountPlayer(mountEl, activeVid);
       }
-    });
+    }
 
-    // Event Bindings
     mainEl.querySelectorAll('[data-video-filter]').forEach(function(btn) {
       btn.addEventListener('click', function() {
         state.videoBandFilter = btn.getAttribute('data-video-filter');
@@ -667,21 +719,42 @@ window.ExperimindApp = (function() {
       });
     });
 
-    mainEl.querySelectorAll('[data-toggle-vid]').forEach(function(btn) {
+    mainEl.querySelectorAll('[data-select-vid]').forEach(function(btn) {
       btn.addEventListener('click', function() {
-        var vid = btn.getAttribute('data-toggle-vid');
-        state.openVideoIds[vid] = !state.openVideoIds[vid];
+        state.selectedVideoId = btn.getAttribute('data-select-vid');
         if (window.ExperimindAudio) window.ExperimindAudio.pop();
         renderVideoHub(mainEl);
       });
     });
 
-    mainEl.querySelectorAll('[data-toggle-worksheet]').forEach(function(btn) {
+    var modeAnimBtn = document.getElementById('vmode-animated');
+    var modeYtBtn = document.getElementById('vmode-youtube');
+    if (modeAnimBtn) {
+      modeAnimBtn.addEventListener('click', function() {
+        state.videoPlayerMode = 'animated';
+        renderVideoHub(mainEl);
+      });
+    }
+    if (modeYtBtn) {
+      modeYtBtn.addEventListener('click', function() {
+        state.videoPlayerMode = 'youtube';
+        renderVideoHub(mainEl);
+      });
+    }
+
+    mainEl.querySelectorAll('[data-vsubtab]').forEach(function(btn) {
       btn.addEventListener('click', function() {
-        var vid = btn.getAttribute('data-toggle-worksheet');
-        if (!state.openWorksheetIds) state.openWorksheetIds = {};
-        state.openWorksheetIds[vid] = !state.openWorksheetIds[vid];
+        state.videoSubTab = btn.getAttribute('data-vsubtab');
         if (window.ExperimindAudio) window.ExperimindAudio.click();
+        renderVideoHub(mainEl);
+      });
+    });
+
+    mainEl.querySelectorAll('[data-flip-card]').forEach(function(card) {
+      card.addEventListener('click', function() {
+        var k = card.getAttribute('data-flip-card');
+        state.flippedCards[k] = !state.flippedCards[k];
+        if (window.ExperimindAudio) window.ExperimindAudio.pop();
         renderVideoHub(mainEl);
       });
     });
@@ -690,15 +763,13 @@ window.ExperimindApp = (function() {
       btn.addEventListener('click', function() {
         var vid = btn.getAttribute('data-chk-vid');
         var opt = parseInt(btn.getAttribute('data-chk-opt'), 10);
-        if (!state.checkpointAnswers) state.checkpointAnswers = {};
         state.checkpointAnswers[vid] = opt;
-
         var vObj = allVideos.find(function(item) { return item.id === vid; });
         if (vObj && vObj.checkpoint && opt === vObj.checkpoint.correct) {
           if (window.ExperimindAudio) window.ExperimindAudio.fanfare();
           if (window.ExperimindConfetti) window.ExperimindConfetti.burst();
-        } else {
-          if (window.ExperimindAudio) window.ExperimindAudio.pop();
+        } else if (window.ExperimindAudio) {
+          window.ExperimindAudio.retry();
         }
         renderVideoHub(mainEl);
       });
@@ -710,13 +781,11 @@ window.ExperimindApp = (function() {
     var selId = state.selectedBookId || (books[0] ? books[0].id : '');
     var currentBook = books.find(function(b) { return b.id === selId; }) || books[0];
 
-    var html = '<div class="exp-HeroBand" style="background:linear-gradient(135deg,#1e3a8a,#2563eb,#059669);">';
-    html += '<div class="exp-HeroBadge">OFFICIAL CBSE CURRICULUM • 100% OFFLINE DIGITAL AI REFERENCE LIBRARY</div>';
-    html += '<h1 style="color:#ffffff;">📖 CBSE Artificial Intelligence Reference Books & Handbooks</h1>';
-    html += '<p style="color:#f8fafc;">Read complete official CBSE AI Student Handbooks (Classes 6, 7, 8), Curriculum Progression Frameworks, and Facilitator Manuals right here 100% offline with zero internet required!</p>';
-    html += '</div>';
+    var html = '<div class="vision-HeaderCard" style="background:linear-gradient(135deg,#1e3a8a,#2563eb,#059669);">';
+    html += '<div><span class="sim-EngineBadge">PILLAR 4 • 100% OFFLINE DIGITAL AI TEXTBOOK & PROJECT LIBRARY</span>';
+    html += '<h2 style="font-size:2rem;font-weight:900;margin:6px 0;">📖 CBSE Artificial Intelligence Reference Book</h2>';
+    html += '<p style="color:#e2e8f0;">Read complete official CBSE AI Student Handbooks (Classes 6, 7, 8), Curriculum Frameworks, and Student Capstone Project Guides right here 100% offline!</p></div></div>';
 
-    // Tabs for selecting book
     html += '<div class="sim-TabRow" style="margin-bottom:18px;overflow-x:auto;padding-bottom:6px;">';
     books.forEach(function(b) {
       var act = (b.id === currentBook.id) ? ' sim-TabBtn--active' : '';
@@ -725,76 +794,73 @@ window.ExperimindApp = (function() {
     html += '</div>';
 
     if (currentBook) {
-      // Header Card for Book
       html += '<div class="exp-VidCard" style="margin-bottom:20px;border-left:8px solid ' + currentBook.color + ';">';
       html += '<div class="exp-LessonMetaRow"><span class="exp-LessonNumBadge" style="background:' + currentBook.color + ';color:#fff;">' + currentBook.code + '</span><span style="font-weight:900;color:' + currentBook.color + ';">' + currentBook.grade + '</span></div>';
       html += '<h2 style="font-size:1.8rem;font-weight:900;margin:10px 0;">' + currentBook.icon + ' ' + currentBook.title + '</h2>';
       html += '<p style="font-size:1.05rem;color:#475569;margin-bottom:14px;">' + currentBook.description + '</p>';
       html += '<div style="display:flex;gap:12px;flex-wrap:wrap;">';
-      html += '<button type="button" class="btn-Primary" style="background:' + currentBook.color + ';border-color:' + currentBook.color + ';" onclick="window.print()">🖨️ Print / Save Book Study Guide</button>';
-      html += '<a href="' + currentBook.officialPdfUrl + '" target="_blank" rel="noopener noreferrer" referrerpolicy="no-referrer" class="btn-Secondary" style="text-decoration:none;display:inline-flex;align-items:center;gap:6px;">🌐 Online CBSE PDF Backup (cbseacademic.nic.in) ↗</a>';
+      html += '<button type="button" class="btn-Primary" style="background:' + currentBook.color + ';border-color:' + currentBook.color + ';" onclick="window.print()">🖨️ Print / Save Study Guide</button>';
+      html += '<a href="' + currentBook.officialPdfUrl + '" target="_blank" rel="noopener noreferrer" referrerpolicy="no-referrer" class="btn-Secondary" style="text-decoration:none;display:inline-flex;align-items:center;gap:6px;">🌐 Official CBSE PDF (cbseacademic.nic.in) ↗</a>';
       html += '</div></div>';
 
-      // Units Grid with Full Offline Reading Chapters
-      html += '<h3 style="font-size:1.4rem;font-weight:900;margin:24px 0 16px 0;color:#0f172a;">📚 Offline Textbook Chapters & Learning Competencies (' + currentBook.units.length + ' Units):</h3>';
+      html += '<h3 style="font-size:1.4rem;font-weight:900;margin:24px 0 16px 0;color:#0f172a;">📚 Complete Offline Chapters & Interactive Lab Links (' + currentBook.units.length + ' Units):</h3>';
       html += '<div style="display:flex;flex-direction:column;gap:18px;">';
-      currentBook.units.forEach(function(u, uIdx) {
+      currentBook.units.forEach(function(u) {
         html += '<div class="exp-VidCard" style="border-top:4px solid ' + currentBook.color + ';">';
         html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:8px;">';
         html += '<span class="exp-LessonNumBadge" style="background:' + currentBook.color + ';color:#fff;">' + u.unitNumber + '</span>';
-        html += '<span style="font-size:0.88rem;font-weight:800;color:' + currentBook.color + ';">CBSE Official Competency Standard</span>';
+        html += '<span style="font-size:0.88rem;font-weight:800;color:' + currentBook.color + ';">CBSE Official Student Competency</span>';
         html += '</div>';
 
         html += '<h3 style="font-size:1.35rem;font-weight:900;margin-bottom:10px;color:#1e3a8a;">' + u.title + '</h3>';
-
-        // Summary
         html += '<p style="font-size:1rem;color:#334155;margin-bottom:12px;line-height:1.6;">' + u.summary + '</p>';
 
-        // Core Exam Learning Outcomes
         html += '<div style="background:#f1f5f9;border-left:4px solid ' + currentBook.color + ';border-radius:8px;padding:12px 14px;margin-bottom:14px;">';
-        html += '<div style="font-weight:800;font-size:0.88rem;color:#475569;margin-bottom:4px;">🎯 Core CBSE Exam Learning Outcome:</div>';
+        html += '<div style="font-weight:800;font-size:0.88rem;color:#475569;margin-bottom:4px;">🎯 What You Will Master:</div>';
         html += '<div style="font-size:0.95rem;color:#0f172a;font-weight:700;">' + u.competencies + '</div>';
         html += '</div>';
 
-        // Full Textbook Chapter Offline Reading Box
+        if (u.keyConcepts && u.keyConcepts.length > 0) {
+          html += '<div style="background:linear-gradient(135deg,#0f172a,#1e3a8a);border-radius:14px;padding:16px;margin-bottom:14px;color:#fff;">';
+          html += '<div style="font-size:0.8rem;font-weight:900;color:#facc15;letter-spacing:0.05em;text-transform:uppercase;margin-bottom:10px;">🗺️ Visual Concept Blueprint & Architecture Flow</div>';
+          html += '<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">';
+          u.keyConcepts.forEach(function(kc, kIdx) {
+            html += '<div style="flex:1;min-width:150px;background:rgba(255,255,255,0.12);border:1.5px solid rgba(255,255,255,0.28);border-radius:10px;padding:10px 12px;font-weight:800;font-size:0.9rem;">';
+            html += '<span style="color:#38bdf8;margin-right:4px;">0' + (kIdx + 1) + '.</span> ' + kc + '</div>';
+            if (kIdx < u.keyConcepts.length - 1) {
+              html += '<span style="font-size:1.3rem;color:#facc15;font-weight:900;">➔</span>';
+            }
+          });
+          html += '</div></div>';
+        }
+
         if (u.chapterContent && u.chapterContent.length > 0) {
           html += '<div class="exp-BookChapterBox">';
-          html += '<div style="font-weight:900;font-size:1.05rem;color:#1e3a8a;margin-bottom:10px;display:flex;align-items:center;gap:6px;">📖 Complete Textbook Theory & In-Depth Concepts:</div>';
+          html += '<div style="font-weight:900;font-size:1.05rem;color:#1e3a8a;margin-bottom:10px;display:flex;align-items:center;gap:6px;">📖 Complete Textbook Chapter Reading:</div>';
           u.chapterContent.forEach(function(para) {
-            html += '<p>' + para + '</p>';
+            html += '<p style="margin-bottom:8px;">' + para + '</p>';
           });
           html += '</div>';
         }
 
-        // Key Concepts Pills
-        html += '<div style="display:flex;gap:6px;flex-wrap:wrap;margin:12px 0;">';
-        (u.keyConcepts || []).forEach(function(kc) {
-          html += '<span class="vis-SampleChip" style="font-size:0.82rem;background:#e0f2fe;color:#0369a1;border-color:#bae6fd;">' + kc + '</span>';
-        });
-        html += '</div>';
-
-        // Review Questions (Accordion)
         if (u.reviewQuestions && u.reviewQuestions.length > 0) {
           html += '<div style="margin:14px 0;background:#f8fafc;padding:12px 14px;border-radius:10px;border:1.5px solid #e2e8f0;">';
           html += '<div style="font-weight:900;font-size:0.92rem;color:#1e3a8a;margin-bottom:8px;">💡 Self-Check Chapter Review Questions (Click to reveal answers):</div>';
           u.reviewQuestions.forEach(function(rq, qIdx) {
-            html += '<details class="exp-ReviewQBox">';
-            html += '<summary>Q' + (qIdx + 1) + ': ' + rq.q + '</summary>';
-            html += '<p><strong>Ans:</strong> ' + rq.a + '</p>';
+            html += '<details class="exp-ReviewQBox" style="margin-bottom:6px;cursor:pointer;">';
+            html += '<summary style="font-weight:800;">Q' + (qIdx + 1) + ': ' + rq.q + '</summary>';
+            html += '<p style="padding:8px;background:#ecfdf5;border-radius:6px;margin-top:4px;"><strong>Ans:</strong> ' + rq.a + '</p>';
             html += '</details>';
           });
           html += '</div>';
         }
 
-        // Matching Lab Game Launcher Button
         if (u.matchingLessonId) {
           html += '<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-top:14px;padding-top:12px;border-top:1px dashed #cbd5e1;">';
-          html += '<button type="button" class="btn-Primary" style="font-size:0.98rem;" data-nav="lesson" data-param="' + u.matchingLessonId + '">🎮 Launch Interactive Lab Simulator (' + u.matchingLessonId + ')</button>';
-          html += '<span style="font-size:0.88rem;color:#64748b;font-weight:700;">Experiential Simulator for this unit</span>';
+          html += '<button type="button" class="btn-Primary" style="font-size:0.98rem;" data-nav="lesson" data-param="' + u.matchingLessonId + '">🎮 Play Matching AI Game Simulator (' + u.matchingLessonId + ')</button>';
           html += '</div>';
         }
-
-        html += '</div>'; // End Unit Card
+        html += '</div>';
       });
       html += '</div>';
     }
@@ -882,8 +948,7 @@ window.ExperimindApp = (function() {
 
   return {
     init: init,
-    navigate: navigate,
-    awardStar: awardStar
+    navigate: navigate
   };
 })();
 

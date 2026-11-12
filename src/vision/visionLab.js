@@ -1,10 +1,31 @@
-// Experimind AI Learning Lab — Section 8 Advanced 8-Lab AI Computer Vision Suite
-// Compliant with CBSE CT & AI (2026-27), AI4K12, and Google Teachable Machine / MediaPipe Standards.
-// 100% Offline-First, Zero PII, Real-Time In-Browser Computer Vision Processing with Explicit Hardware Consent.
+// Experimind AI Learning Lab — Section 8 Creative 8-Game AI Webcam & Computer Vision Arcade
+// Inspired by Scratch Video Sensing, Google Chrome Experiments, Quick Draw, Air Canvas & Teachable Machine.
+// 100% Offline-First, Zero PII, Real-Time Webcam Optical-Flow Tracking + Instant Mouse/Touch Arcade Play!
 
 window.ExperimindVisionLab = (function() {
   var mediaStream = null;
   var animId = null;
+  var audioCtx = null;
+
+  function playNoteFreq(freq, dur) {
+    try {
+      var AudioContextCls = window.AudioContext || window.webkitAudioContext;
+      if (!AudioContextCls) return;
+      if (!audioCtx) audioCtx = new AudioContextCls();
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+      var now = audioCtx.currentTime;
+      var osc = audioCtx.createOscillator();
+      var gain = audioCtx.createGain();
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(freq, now);
+      gain.gain.setValueAtTime(0.14, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + (dur || 0.35));
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.start(now);
+      osc.stop(now + (dur || 0.35));
+    } catch (e) {}
+  }
 
   function stopHardwareCamera() {
     if (animId) {
@@ -27,1567 +48,1185 @@ window.ExperimindVisionLab = (function() {
 
     var grade = selectedGrade || 'Class 6';
     var mode = (mediaStream ? 'webcam' : 'virtual');
-    var expType = 'pose'; // Default
-    var xrayMode = 'standard'; // 'standard' | 'hud' | 'edge' | 'pixel'
+    var expType = 'fruit_ninja';
+    if (grade === 'LKG' || grade === 'UKG') expType = 'fruit_ninja';
+    else if (grade === 'Class 1') expType = 'air_harp';
+    else if (grade === 'Class 2') expType = 'air_canvas';
+    else if (grade === 'Class 3') expType = 'goalkeeper';
+    else if (grade === 'Class 4') expType = 'rps_arena';
+    else if (grade === 'Class 5') expType = 'emoji_mimic';
+    else if (grade === 'Class 6' || grade === 'Class 7') expType = 'tm_arcade';
+    else if (grade === 'Class 8') expType = 'cyborg_xray';
 
-    // Grade to Lab Mapping
-    if (grade === 'LKG' || grade === 'UKG') expType = 'motion';
-    else if (grade === 'Class 1' || grade === 'Class 2') expType = 'face';
-    else if (grade === 'Class 3') expType = 'color';
-    else if (grade === 'Class 4') expType = 'shape';
-    else if (grade === 'Class 5') expType = 'pose';
-    else if (grade === 'Class 6') expType = 'kernel';
-    else if (grade === 'Class 7') expType = 'trainer';
-    else if (grade === 'Class 8') expType = 'self_driving';
-
+    var xrayMode = 'standard'; // 'standard' | 'hud' | 'edge' | 'ascii' | 'thermal'
     var tick = 0;
-    var virtualObj = { x: 310, y: 185 };
-    var isDrawingCustomShape = false;
-    var customShapePoints = [];
+    var pointer = { x: 320, y: 190, vx: 0, vy: 0, prevX: 320, prevY: 190, isDown: false };
+    var bladeTrail = []; // [{x, y, life}]
 
-    // Offscreen Analysis Canvas for Real-Time Offline CV (80x50 = 4000 px, ~0.3ms per frame)
+    // Offscreen 80x50 Real-Time Webcam Motion & Color Analyzer
     var cvCanvas = document.createElement('canvas');
     cvCanvas.width = 80;
     cvCanvas.height = 50;
     var cvCtx = cvCanvas.getContext('2d', { willReadFrequently: true });
-    var prevGrayscale = null;
+    var prevGray = null;
+    var motionMap = new Uint8Array(80 * 50);
 
-    // --- State for All 8 Labs ---
-    // 1. Motion Lab
-    var motionData = {
-      score: 0, streak: 0, motionEnergy: 0, sensitivity: 26,
-      bubbles: [
-        { x: 130, y: 110, r: 34, vx: 0.9, vy: 0.6, color: '#38bdf8' },
-        { x: 310, y: 90, r: 38, vx: -0.8, vy: 0.7, color: '#facc15' },
-        { x: 480, y: 130, r: 32, vx: 0.7, vy: -0.8, color: '#ec4899' },
-        { x: 200, y: 260, r: 36, vx: -0.6, vy: -0.7, color: '#10b981' },
-        { x: 430, y: 250, r: 34, vx: 0.8, vy: 0.6, color: '#a855f7' }
-      ],
-      particles: [],
-      motionRipples: []
+    // =========================================================================
+    // STATE FOR ALL 8 CREATIVE WEBCAM ARCADE GAMES
+    // =========================================================================
+
+    // GAME 1: 🍉 AI Ninja Fruit Slicer (Motion Blade)
+    var fruitGame = {
+      score: 0,
+      combo: 1,
+      bestCombo: 1,
+      fruits: [],
+      halves: [],
+      splashes: [],
+      spawnRate: 42
     };
 
-    // 2. AR Face Filter & Emotion Lab
-    var faceData = {
-      activeFilter: 'cat', // 'cat' | 'robot' | 'crown' | 'glasses' | 'wizard'
-      joyPercent: 85,
-      emotion: 'Big Smile 😄 (Joy: 85%)',
-      blink: false
-    };
+    function spawnFruit() {
+      var catalog = [
+        { emoji: '🍉', color: '#ef4444', pts: 10, isBomb: false },
+        { emoji: '🥭', color: '#f59e0b', pts: 15, isBomb: false },
+        { emoji: '🍎', color: '#dc2626', pts: 10, isBomb: false },
+        { emoji: '🍍', color: '#eab308', pts: 20, isBomb: false },
+        { emoji: '🍓', color: '#ec4899', pts: 15, isBomb: false },
+        { emoji: '🥝', color: '#10b981', pts: 15, isBomb: false },
+        { emoji: '💣', color: '#334155', pts: -20, isBomb: true }
+      ];
+      var pick = catalog[Math.floor(Math.random() * (catalog.length - (Math.random() < 0.75 ? 1 : 0)))];
+      fruitGame.fruits.push({
+        x: 80 + Math.random() * 480,
+        y: 380,
+        vx: (Math.random() - 0.5) * 4.2,
+        vy: -(8.8 + Math.random() * 3.4),
+        r: 30,
+        rot: 0,
+        vrot: (Math.random() - 0.5) * 0.14,
+        emoji: pick.emoji,
+        color: pick.color,
+        pts: pick.pts,
+        isBomb: pick.isBomb
+      });
+    }
 
-    // 3. Color Beacon & Rover Lab
-    var colorData = {
-      targetColor: '#10b981', targetName: 'Green',
-      targetR: 16, targetG: 185, targetB: 129,
-      command: 'FORWARD 🟢 (Thrusters Active)',
-      crystalsCollected: 0,
-      rover: { x: 80, y: 180, angle: 0, speed: 1.8 },
-      crystals: [
-        { x: 220, y: 120, collected: false, color: '#38bdf8' },
-        { x: 440, y: 100, collected: false, color: '#facc15' },
-        { x: 340, y: 280, collected: false, color: '#ec4899' },
-        { x: 150, y: 290, collected: false, color: '#10b981' },
-        { x: 520, y: 240, collected: false, color: '#a855f7' }
+    // GAME 2: 🎹 Air Xylophone & Rainbow Music Synth
+    var harpGame = {
+      notesPlayed: 0,
+      songMode: true,
+      songStep: 0,
+      songNotes: [0, 0, 4, 4, 5, 5, 4, 3, 3, 2, 2, 1, 1, 0], // Twinkle Twinkle Little Star
+      rings: [],
+      bars: [
+        { label: 'C4 (Do)', freq: 261.63, color: '#ef4444', x: 52, w: 62, cooldown: 0 },
+        { label: 'D4 (Re)', freq: 293.66, color: '#f97316', x: 122, w: 62, cooldown: 0 },
+        { label: 'E4 (Mi)', freq: 329.63, color: '#eab308', x: 192, w: 62, cooldown: 0 },
+        { label: 'F4 (Fa)', freq: 349.23, color: '#10b981', x: 262, w: 62, cooldown: 0 },
+        { label: 'G4 (Sol)', freq: 392.00, color: '#06b6d4', x: 332, w: 62, cooldown: 0 },
+        { label: 'A4 (La)', freq: 440.00, color: '#3b82f6', x: 402, w: 62, cooldown: 0 },
+        { label: 'B4 (Ti)', freq: 493.88, color: '#8b5cf6', x: 472, w: 62, cooldown: 0 },
+        { label: 'C5 (Do+)', freq: 523.25, color: '#ec4899', x: 542, w: 62, cooldown: 0 }
       ]
     };
 
-    // 4. Shape & Contour Lab
-    var shapeData = {
-      detectedShape: '🟡 Circle',
-      perimeter: 248, area: 4900, circularity: 0.98,
-      threshold: 128,
-      drawMode: false
+    // GAME 3: 🎨 Magic Air Canvas & Quick-Draw AI Guesser
+    var paintGame = {
+      strokes: [], // [{points: [{x,y}], color, mirror}]
+      currentStroke: null,
+      brushColor: '#38bdf8',
+      mirrorMode: false,
+      rainbowHue: 0,
+      rainbowMode: true,
+      promptIdx: 0,
+      prompts: [
+        { target: '☀️ Glowing Sun', guess: '☀️ Sun / Circle (96% Match!)', hint: 'Draw a big round circle with rays in the air!' },
+        { target: '🏠 Cozy House', guess: '🏠 House / Square + Roof (94% Match!)', hint: 'Draw a square box with a triangle roof on top!' },
+        { target: '⭐ Shooting Star', guess: '⭐ 5-Point Star (97% Match!)', hint: 'Zig-zag across the air to paint a glowing star!' },
+        { target: '🦋 Symmetric Butterfly', guess: '🦋 Butterfly Wings (98% Match!)', hint: 'Turn ON Mirror Mandala Mode and draw one wing!' }
+      ],
+      aiGuessText: 'Wave or drag in the air to start painting!'
     };
 
-    // 5. 21-Keypoint Hand Drone Lab
-    var poseData = {
-      activeGesture: '✋ Open Palm (Hover Drone)',
-      drone: { x: 310, y: 170, targetY: 170, status: 'Hovering' },
-      propellerAngle: 0,
-      indexAngle: 172,
-      confidence: 96,
-      particles: []
+    // GAME 4: ⚽ AR Stadium Goalkeeper (Penalty Saver)
+    var goalieGame = {
+      saves: 0,
+      missed: 0,
+      streak: 0,
+      ball: { x: 320, y: 190, z: 1.0, targetX: 160, targetY: 110, speed: 0.022, emoji: '⚽', active: true },
+      saveBurst: null
     };
 
-    // 6. 3x3 Convolution Kernel Lab
-    var kernelData = {
-      activeKernel: 'sobel_vert',
-      kernelMatrix: [[-1, 0, 1], [-2, 0, 2], [-1, 0, 1]],
-      kernelLabel: 'Vertical Sobel Edge Detector',
-      divisor: 1
+    function resetBall() {
+      var corners = [
+        { x: 115, y: 95 }, { x: 525, y: 95 },
+        { x: 115, y: 270 }, { x: 525, y: 270 },
+        { x: 320, y: 85 }, { x: 200, y: 180 }, { x: 440, y: 180 }
+      ];
+      var t = corners[Math.floor(Math.random() * corners.length)];
+      goalieGame.ball = {
+        x: 320,
+        y: 205,
+        z: 0.15,
+        targetX: t.x,
+        targetY: t.y,
+        speed: 0.018 + Math.min(0.015, goalieGame.saves * 0.0015),
+        emoji: Math.random() < 0.25 ? '🔥' : '⚽',
+        active: true
+      };
+    }
+
+    // GAME 5: ✂️ AI Rock-Paper-Scissors Championship vs. Sparky
+    var rpsGame = {
+      playerMove: '🪨 Rock',
+      aiMove: '✂️ Scissors',
+      resultText: 'Pick Rock, Paper, or Scissors (or hold up your hand) & click SHOOT!',
+      playerScore: 0,
+      aiScore: 0,
+      roundsPlayed: 0,
+      countdown: 0
     };
 
-    // 7. Teachable Machine & Sorter Lab
-    var trainerData = {
-      isTraining: false,
-      trainProgress: 0,
-      lossHistory: [1.85, 1.42, 1.10, 0.84, 0.61, 0.43, 0.29, 0.18, 0.11, 0.06, 0.03],
-      classes: {
-        'A': { label: 'Class A: Fist / Metal 🔩', samples: 5, color: '#3b82f6', weight: 0.88, centroid: [120, 140, 160, 20] },
-        'B': { label: 'Class B: Palm / Plastic 🧴', samples: 4, color: '#10b981', weight: 0.08, centroid: [70, 180, 120, 40] },
-        'C': { label: 'Class C: Peace / Organic 🍏', samples: 4, color: '#f59e0b', weight: 0.04, centroid: [180, 130, 60, 30] }
-      },
-      craneX: 310, targetCraneX: 120, carrying: 'Metal Scrap 🔩', score: 6
+    // GAME 6: 😎 Emoji Mimic Face-Off & AR Hologram Masks
+    var emojiGame = {
+      mask: 'astronaut', // 'astronaut' | 'cyber' | 'cat' | 'crown' | 'dragon'
+      targetIdx: 0,
+      score: 0,
+      matchProgress: 0,
+      challenges: [
+        { emoji: '😄', name: 'Big Happy Grin!', rule: 'Mouth Wide + Cheeks Up', mar: 0.65, ear: 0.30 },
+        { emoji: '😮', name: 'Surprised O-Face!', rule: 'Jaw Dropped + Wide Eyes', mar: 0.88, ear: 0.45 },
+        { emoji: '😎', name: 'Cool Head Tilt!', rule: 'Head Roll Angle > 15°', mar: 0.25, ear: 0.28 },
+        { emoji: '🤩', name: 'Super Star Pose!', rule: 'Smile + Hands High!', mar: 0.75, ear: 0.38 }
+      ]
     };
 
-    // 8. Self-Driving Car Lab
-    var autoData = {
-      speed: 50, targetSpeed: 50, light: 'GREEN 🟢',
-      weather: 'clear', // 'clear' | 'rain' | 'fog' | 'night'
-      autopilot: true, carX: 310, leadDist: 22.4
+    // GAME 7: 🚀 Teachable Machine Space Arcade (Train Gestures -> Steer Spaceship!)
+    var tmArcade = {
+      samples: { LEFT: 6, RIGHT: 6, LASER: 6 },
+      activeCommand: 'CENTER', // 'LEFT' | 'RIGHT' | 'LASER'
+      probs: { LEFT: 15, RIGHT: 15, LASER: 70 },
+      shipX: 320,
+      lasers: [],
+      asteroids: [
+        { x: 140, y: 60, r: 24, vy: 1.4, emoji: '☄️' },
+        { x: 320, y: 20, r: 26, vy: 1.7, emoji: '🪨' },
+        { x: 490, y: 90, r: 24, vy: 1.5, emoji: '🛸' }
+      ],
+      score: 0
     };
 
+    // GAME 8: 🕵️ Cyborg X-Ray, Matrix ASCII Rain & LiDAR Scanner
+    var cyborgLab = {
+      lens: 'ascii', // 'ascii' | 'thermal' | 'edge' | 'lidar'
+      scanCount: 0,
+      lidarTargets: [
+        { x: 160, y: 150, label: 'Pedestrian 🚶', dist: 4.2 },
+        { x: 460, y: 180, label: 'Rover Bot 🤖', dist: 6.8 }
+      ]
+    };
+
+    // =========================================================================
+    // REAL-TIME WEBCAM PIXEL & OPTICAL-FLOW ENGINE
+    // =========================================================================
+    function analyzeWebcam(videoEl, canvasW, canvasH) {
+      if (mode !== 'webcam' || !mediaStream || !videoEl || videoEl.readyState < 2) return;
+      try {
+        cvCtx.drawImage(videoEl, 0, 0, 80, 50);
+        var frame = cvCtx.getImageData(0, 0, 80, 50).data;
+        var curGray = new Uint8Array(80 * 50);
+        var mSumX = 0, mSumY = 0, mCount = 0;
+
+        for (var y = 0; y < 50; y++) {
+          for (var x = 0; x < 80; x++) {
+            var idx = y * 80 + x;
+            var p = idx * 4;
+            var mx = 79 - x; // Mirror X
+            var gray = (frame[p] * 299 + frame[p + 1] * 587 + frame[p + 2] * 114) / 1000;
+            curGray[idx] = gray;
+
+            if (prevGray) {
+              var diff = Math.abs(gray - prevGray[idx]);
+              motionMap[idx] = diff > 20 ? 255 : 0;
+              if (diff > 22) {
+                mCount++;
+                mSumX += mx;
+                mSumY += y;
+              }
+            }
+          }
+        }
+        prevGray = curGray;
+
+        if (mCount > 8) {
+          var tx = (mSumX / mCount) * (canvasW / 80);
+          var ty = (mSumY / mCount) * (canvasH / 50);
+          pointer.prevX = pointer.x;
+          pointer.prevY = pointer.y;
+          pointer.x += (tx - pointer.x) * 0.38;
+          pointer.y += (ty - pointer.y) * 0.38;
+          pointer.vx = pointer.x - pointer.prevX;
+          pointer.vy = pointer.y - pointer.prevY;
+          bladeTrail.push({ x: pointer.x, y: pointer.y, life: 1.0 });
+          if (bladeTrail.length > 18) bladeTrail.shift();
+
+          if (expType === 'air_canvas') {
+            if (!paintGame.currentStroke) {
+              paintGame.currentStroke = {
+                points: [],
+                color: paintGame.rainbowMode ? 'hsl(' + ((tick * 4) % 360) + ', 90%, 60%)' : paintGame.brushColor,
+                mirror: paintGame.mirrorMode
+              };
+              paintGame.strokes.push(paintGame.currentStroke);
+            }
+            paintGame.currentStroke.points.push({ x: pointer.x, y: pointer.y });
+            if (paintGame.currentStroke.points.length > 120) paintGame.currentStroke.points.shift();
+          }
+        }
+      } catch (e) {}
+    }
+
+    // =========================================================================
+    // RENDER UI & ARCADE STAGE
+    // =========================================================================
     function render() {
       if (animId) {
         cancelAnimationFrame(animId);
         animId = null;
       }
 
+      var GAME_TABS = [
+        ['fruit_ninja', '🍉 1. Ninja Fruit Slicer', 'Wave your hand like a katana blade to slice flying fruit!'],
+        ['air_harp', '🎹 2. Air Xylophone Synth', 'Touch floating rainbow crystal bars in mid-air to play music!'],
+        ['air_canvas', '🎨 3. Magic Air Painter', 'Paint neon light in thin air & watch AI guess your doodle!'],
+        ['goalkeeper', '⚽ 4. AR Stadium Goalkeeper', 'Move your hands to block incoming penalty shots!'],
+        ['rps_arena', '✂️ 5. AI Rock-Paper-Scissors', 'Battle Sparky the Robot with 21-keypoint hand gestures!'],
+        ['emoji_mimic', '😎 6. Emoji Mimic & AR Masks', 'Match target emoji expressions & wear holographic masks!'],
+        ['tm_arcade', '🚀 7. Teachable Space Arcade', 'Train 3 custom AI classes to steer a live spaceship!'],
+        ['cyborg_xray', '🕵️ 8. Cyborg Matrix & LiDAR', 'See in Matrix ASCII code, Thermal Infrared & Edge X-Ray!']
+      ];
+
+      var activeMeta = GAME_TABS.find(function(t) { return t[0] === expType; }) || GAME_TABS[0];
+
       var html = '<div class="vision-Wrapper">';
-      html += '<div class="vision-HeaderCard">';
-      html += '<div><span class="sim-EngineBadge">SECTION 8 • 8-LAB ADVANCED AI VISION SUITE</span><h2>AI Computer Vision Laboratory — ' + grade + '</h2>';
-      html += '<p>Privacy Guarantee: Webcam frames are processed 100% locally in volatile RAM with zero student data retention and instant Virtual Simulator fallback.</p></div>';
+      // Top Header Banner
+      html += '<div class="vision-HeaderCard" style="background:linear-gradient(135deg,#0f172a,#1e3a8a,#4f46e5);">';
+      html += '<div><span class="sim-EngineBadge" style="background:#facc15;color:#0f172a;">PILLAR 5 • INTERACTIVE AI WEBCAM & MOTION ARCADE</span>';
+      html += '<h2 style="font-size:2rem;font-weight:900;margin:6px 0;">📷 AI Computer Vision Arcade (' + activeMeta[1] + ')</h2>';
+      html += '<p style="color:#e2e8f0;font-size:1.02rem;">Turn on your webcam to play hands-free with your body and hands—or play immediately with your mouse/touchscreen right inside the arcade canvas!</p></div>';
       html += '<div class="vision-ConsentControls">';
-      html += '<button type="button" class="btn-Primary" id="vis-start-cam">📷 Start Hardware Camera (Explicit Consent)</button>';
-      html += '<button type="button" class="btn-Danger" id="vis-stop-cam">⏹️ Stop Camera & Release Hardware</button>';
-      html += '<button type="button" class="btn-Secondary" id="vis-virtual-btn">🎮 Virtual Camera Simulator (No Webcam Needed)</button>';
+      html += '<button type="button" class="btn-Primary" id="vis-start-cam" style="background:#10b981;border-color:#059669;border-bottom-color:#047857;">📷 Turn ON Webcam (Hands-Free Play!)</button>';
+      html += '<button type="button" class="btn-Danger" id="vis-stop-cam">⏹️ Turn Off Camera</button>';
+      html += '<button type="button" class="btn-Secondary" id="vis-virtual-btn">🖱️ Mouse / Touch Arcade Mode</button>';
       html += '</div></div>';
 
-      // 8 Interactive Vision Lab Navigation Tabs
-      html += '<div class="sim-TabRow" style="margin-bottom:14px;overflow-x:auto;padding-bottom:4px;">';
-      [
-        ['motion', '🫧 1. Motion Flow (LKG–UKG)'],
-        ['face', '🐱 2. AR Face & Emotion (Class 1–2)'],
-        ['color', '🎨 3. Color Rover (Class 3)'],
-        ['shape', '📐 4. Shape Detective (Class 4)'],
-        ['pose', '✋ 5. 21-Keypoint Drone (Class 5)'],
-        ['kernel', '⚡ 6. 3×3 Convolutions (Class 6)'],
-        ['trainer', '🧠 7. Teachable Sorter (Class 7)'],
-        ['self_driving', '🚗 8. Self-Driving Vision (Class 8)']
-      ].forEach(function(tab) {
-        html += '<button type="button" class="sim-TabBtn' + (expType === tab[0] ? ' sim-TabBtn--active' : '') + '" data-vis-exp="' + tab[0] + '">' + tab[1] + '</button>';
+      // 8 Big Colorful Arcade Game Selector Pills
+      html += '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(205px,1fr));gap:10px;margin-bottom:18px;">';
+      GAME_TABS.forEach(function(tab) {
+        var isAct = (expType === tab[0]);
+        html += '<button type="button" class="sim-TabBtn' + (isAct ? ' sim-TabBtn--active' : '') + '" style="padding:12px 14px;text-align:left;display:flex;flex-direction:column;gap:3px;" data-vis-exp="' + tab[0] + '">';
+        html += '<span style="font-size:1rem;font-weight:900;">' + tab[1] + '</span>';
+        html += '<span style="font-size:0.78rem;opacity:0.85;font-weight:600;">' + tab[2] + '</span>';
+        html += '</button>';
       });
       html += '</div>';
 
-      // AI Optics X-Ray Mode Toolbar
-      html += '<div class="vis-XrayBar">';
-      html += '<span style="font-weight:900;font-size:0.95rem;color:#1e3a8a;margin-right:6px;">🔬 AI Optics X-Ray Mode:</span>';
-      [
-        ['standard', '👁️ Live Camera Feed'],
-        ['hud', '🟩 AI Landmark Tracker HUD'],
-        ['edge', '⚡ Sobel Edge Filter Shader'],
-        ['pixel', '🔍 Pixel RGB Matrix Spy']
-      ].forEach(function(x) {
-        html += '<button type="button" class="vis-XrayPill' + (xrayMode === x[0] ? ' vis-XrayPill--active' : '') + '" data-vis-xray="' + x[0] + '">' + x[1] + '</button>';
-      });
-      html += '</div>';
-
+      // Main Split Stage: Left = Giant 640x390 Interactive Arcade Canvas; Right = Game Controls & AI Brain Telemetry
       html += '<div class="vision-MainGrid">';
-      // Left: Canvas Stage & Off-screen video
       html += '<div class="vision-StageCard">';
       var statusBadgeCls = (mode === 'webcam') ? 'vision-StatusBadge vision-StatusBadge--live' : 'vision-StatusBadge';
       var statusBadgeText = (mode === 'webcam')
-        ? '🔴 LIVE HARDWARE WEBCAM ACTIVE (Wave hands or hold objects to interact!)'
-        : '🟢 Mode: Camera-Free Virtual Vision Simulator (Move pointer or click inside canvas)';
+        ? '🔴 LIVE WEBCAM ACTIVE — Wave your hands in front of the camera (or use mouse)!'
+        : '🎮 INTERACTIVE ARCADE CANVAS — Move or drag your pointer inside the screen below (or click "Turn ON Webcam" above)!';
       html += '<div class="' + statusBadgeCls + '" id="vis-cam-status">' + statusBadgeText + '</div>';
       html += '<div class="sim-CanvasWrap" style="position:relative;">';
       html += '<video id="vis-video" autoplay playsinline muted style="position:absolute;left:-9999px;width:640px;height:480px;opacity:0;pointer-events:none;"></video>';
-      html += '<canvas id="vis-canvas" width="620" height="370" style="background:#0f172a;border-radius:16px;box-shadow:0 10px 28px rgba(0,0,0,0.3);cursor:crosshair;"></canvas>';
-      html += '</div>';
-      html += '</div>';
+      html += '<canvas id="vis-canvas" width="640" height="390" style="background:#0f172a;border-radius:16px;cursor:crosshair;"></canvas>';
+      html += '</div></div>';
 
-      // Right: Interactive Controls for Selected Lab
-      html += '<div class="vision-ControlCard">';
-      if (expType === 'motion') {
-        html += '<h3>🫧 1. Optical Flow & Motion Popper</h3>';
-        html += '<p>Wave your hands in front of the camera (or move pointer) to trigger pixel difference vectors and pop floating bubbles in mid-air!</p>';
-        html += '<div class="sim-MetricBox"><span>Motion Targets Popped</span><strong id="vis-metric-motion">' + motionData.score + ' Targets (Streak: ' + motionData.streak + 'x 🔥)</strong></div>';
-        html += '<div class="vis-SliderRow"><label>Motion Sensitivity:</label><input type="range" id="vis-motion-sens" min="15" max="50" value="' + motionData.sensitivity + '"><span id="vis-sens-val">' + motionData.sensitivity + '</span></div>';
-        html += '<div class="exp-OfflineBox" style="margin-top:10px;"><strong>💡 The AI Math:</strong> The computer calculates <code>|Frame(t) - Frame(t-1)| > Threshold</code> across pixel grid cells to detect motion vectors without recording video!</div>';
-      } else if (expType === 'face') {
-        html += '<h3>🐱 2. AR Face Mesh & Emotion Recognition</h3>';
-        html += '<p>Move your head in front of the camera to test AR props, and smile to fill the Joy-O-Meter:</p>';
-        html += '<div class="sim-PresetRow">';
-        [['cat', '🐱 Cat Ears'], ['robot', '🤖 Sparky Visor'], ['crown', '👑 Royal Crown'], ['glasses', '🕶️ Cyber AI Shades'], ['wizard', '🧙 Wizard Hat']].forEach(function(f) {
-          var act = (faceData.activeFilter === f[0]) ? ' sim-OptionBtn--active' : '';
-          html += '<button type="button" class="sim-OptionBtn' + act + '" data-set-filter="' + f[0] + '">' + f[1] + '</button>';
-        });
+      // Right Column: Game-Specific Interactive Controls & Kid-Friendly AI Explanation
+      html += '<div class="vision-ControlCard" id="vis-right-panel">';
+      if (expType === 'fruit_ninja') {
+        html += '<h3>🍉 AI Ninja Fruit Slicer</h3>';
+        html += '<p style="margin:6px 0 14px;color:#334155;">Swipe your hand in front of the camera (or move your mouse fast across the screen) to slice flying fruit with your glowing Plasma Blade! Avoid the black bombs 💣!</p>';
+        html += '<div class="sim-NlpResultRow" style="margin-bottom:14px;">';
+        html += '<div class="sim-MetricBox"><span>Ninja Score</span><strong id="fn-score" style="font-size:1.5rem;color:#10b981;">' + fruitGame.score + ' pts</strong></div>';
+        html += '<div class="sim-MetricBox"><span>Combo Multiplier</span><strong id="fn-combo" style="font-size:1.5rem;color:#f59e0b;">' + fruitGame.combo + 'x 🔥</strong></div>';
         html += '</div>';
-        html += '<div class="sim-MetricBox" style="margin-top:12px;"><span>Detected Facial Expression</span><strong id="vis-metric-emotion">' + faceData.emotion + '</strong></div>';
-        html += '<div style="margin-top:10px;"><div style="display:flex;justify-content:space-between;font-weight:800;font-size:0.9rem;margin-bottom:4px;"><span>Joy-O-Meter (Smile to Fill!)</span><span id="vis-joy-val">' + faceData.joyPercent + '%</span></div>';
-        html += '<div class="vis-ConfidenceTrack"><div class="vis-ConfidenceFill" id="vis-joy-fill" style="width:' + faceData.joyPercent + '%;background:#10b981;"></div></div></div>';
-        html += '<div class="exp-OfflineBox" style="margin-top:10px;"><strong>💡 Face Landmark Geometry:</strong> Measuring distance between lip corners and nose base detects real smiles in real time!</div>';
-      } else if (expType === 'color') {
-        html += '<h3>🎨 3. Color Beacon & Mars Rover Navigator</h3>';
-        html += '<p>Hold colored objects in front of the camera (or click a beacon below) to steer our autonomous Mars Rover:</p>';
         html += '<div class="sim-PresetRow">';
-        [['#ef4444', 'Red', 239, 68, 68, '🔴 Red (STOP)'], ['#10b981', 'Green', 16, 185, 129, '🟢 Green (FORWARD)'], ['#3b82f6', 'Blue', 59, 130, 246, '🔵 Blue (TURN RIGHT)'], ['#f59e0b', 'Yellow', 245, 158, 11, '🟡 Yellow (SCAN)']].forEach(function(c) {
-          var act = (colorData.targetName === c[1]) ? ' sim-OptionBtn--active' : '';
-          html += '<button type="button" class="sim-OptionBtn' + act + '" data-set-color="' + c[0] + '" data-color-name="' + c[1] + '" data-r="' + c[2] + '" data-g="' + c[3] + '" data-b="' + c[4] + '">' + c[5] + '</button>';
-        });
+        html += '<button type="button" class="btn-Primary" id="fn-burst-btn" style="width:100%;font-size:1.05rem;">🍉 Launch Giant Fruit Frenzy Wave! (8 Fruits)</button>';
         html += '</div>';
-        html += '<div class="sim-MetricBox" style="margin-top:12px;"><span>Active Rover Telemetry</span><strong id="vis-metric-color">State: ' + colorData.command + '</strong></div>';
-        html += '<div class="sim-MetricBox" style="margin-top:8px;"><span>Martian Crystals Collected</span><strong id="vis-metric-crystals">' + colorData.crystalsCollected + ' / 5 Crystals 💎</strong></div>';
-        html += '<div class="exp-OfflineBox" style="margin-top:10px;"><strong>💡 Real-Time Color Tracking:</strong> Hold a green or red item to the camera — the AI tracks its center of mass in milliseconds!</div>';
-      } else if (expType === 'shape') {
-        html += '<h3>📐 4. Geometric Shape & Contour Detective</h3>';
-        html += '<p>Isolates closed pixel contours and computes circularity ratio <code>4π×Area / Perimeter²</code> to classify geometric shapes:</p>';
-        html += '<div class="sim-PresetRow">';
-        ['🟡 Circle (Roundness: 0.98)', '🟦 Square (4 Corners, 90°)', '🔺 Triangle (3 Vertices)', '⭐ Star (10 Alternating Tips)', '⬡ Hexagon (6 Symmetrical)'].forEach(function(s) {
-          var act = (shapeData.detectedShape.slice(0, 2) === s.slice(0, 2)) ? ' sim-OptionBtn--active' : '';
-          html += '<button type="button" class="sim-OptionBtn' + act + '" data-set-shape="' + s + '">' + s + '</button>';
-        });
-        html += '</div>';
-        html += '<div style="margin-top:10px;"><button type="button" class="btn-Secondary" id="vis-toggle-draw" style="width:100%;font-size:0.95rem;">' + (shapeData.drawMode ? '✅ Click to Finish Custom Drawing' : '✏️ Draw Custom Shape on Canvas') + '</button></div>';
-        html += '<div class="sim-MetricBox" style="margin-top:12px;"><span>Perimeter & Area Geometry</span><strong id="vis-metric-shape">' + shapeData.detectedShape + ' (P: ' + shapeData.perimeter + 'px | A: ' + shapeData.area + 'px² | Circ: ' + shapeData.circularity + ')</strong></div>';
-        html += '<div class="exp-OfflineBox" style="margin-top:10px;"><strong>💡 Boundary Polygon Tracking:</strong> Contour tracing detects sudden pixel gradient drops to trace object borders!</div>';
-      } else if (expType === 'pose') {
-        html += '<h3>✋ 5. 21-Keypoint Hand Landmark Drone</h3>';
-        html += '<p>Hold your hand up to the camera: the 21-joint skeleton tracks your hand! Make an open palm to hover, make a fist to land, or move your hand up/down:</p>';
-        html += '<div class="sim-PresetRow">';
-        [['✋ Open Palm (Hover Drone)', 'Open Palm'], ['✊ Closed Fist (Land Safely)', 'Closed Fist'], ['👉 Point Right (Move East)', 'Point Right'], ['✌️ Peace Sign (Selfie Cam)', 'Peace Sign'], ['👍 Thumbs Up (Turbo Rockets)', 'Thumbs Up']].forEach(function(p) {
-          var act = (poseData.activeGesture.indexOf(p[1]) !== -1) ? ' sim-OptionBtn--active' : '';
-          html += '<button type="button" class="sim-OptionBtn' + act + '" data-set-gesture="' + p[0] + '">' + p[0] + '</button>';
-        });
-        html += '</div>';
-        html += '<div class="sim-MetricBox" style="margin-top:12px;"><span>Flight Controller State</span><strong id="vis-metric-pose">' + poseData.activeGesture + ' (' + poseData.drone.status + ')</strong></div>';
-        html += '<div class="sim-MetricBox" style="margin-top:8px;"><span>Hand Tracking Telemetry</span><strong id="vis-metric-hand">Index PIP Angle: ' + poseData.indexAngle + '° | Confidence: ' + poseData.confidence + '%</strong></div>';
-        html += '<div class="exp-OfflineBox" style="margin-top:10px;"><strong>💡 Physical Camera Interaction:</strong> Raise or lower your hand to pilot the drone in 2.5D space!</div>';
-      } else if (expType === 'kernel') {
-        html += '<h3>⚡ 6. 3×3 Convolution Matrix Filter Studio</h3>';
-        html += '<p>Slide real mathematical convolution kernels across the image stream to see how neural networks extract feature maps:</p>';
-        html += '<div class="sim-PresetRow">';
-        [['sobel_vert', 'Vertical Sobel'], ['sobel_horiz', 'Horizontal Sobel'], ['ridge', 'Laplacian Ridge'], ['sharpen', 'Sharpen Edge'], ['blur', 'Box Blur'], ['emboss', '3D Emboss']].forEach(function(k) {
-          var act = (kernelData.activeKernel === k[0]) ? ' sim-OptionBtn--active' : '';
-          html += '<button type="button" class="sim-OptionBtn' + act + '" data-set-kernel="' + k[0] + '">' + k[1] + '</button>';
-        });
-        html += '</div>';
-        html += '<div style="margin:10px 0;"><div style="font-weight:800;font-size:0.9rem;text-align:center;">Interactive 3×3 Kernel Matrix (Click cell to edit):</div>';
-        html += '<div class="vis-Matrix3x3" id="vis-matrix-grid">';
-        for (var mr = 0; mr < 3; mr++) {
-          for (var mc = 0; mc < 3; mc++) {
-            var val = kernelData.kernelMatrix[mr][mc];
-            html += '<button type="button" class="vis-MatrixCell" data-row="' + mr + '" data-col="' + mc + '">' + (val > 0 ? '+' + val : val) + '</button>';
-          }
-        }
-        html += '</div></div>';
-        html += '<div class="sim-MetricBox"><span>Active Convolution Kernel</span><strong id="vis-metric-kernel">' + kernelData.kernelLabel + '</strong></div>';
-        html += '<div class="exp-OfflineBox" style="margin-top:10px;"><strong>💡 Neural Convolutions:</strong> Each output pixel is the sum of products: <code>Output(x,y) = Σ (Neighbor(i,j) × Kernel(i,j))</code>!</div>';
-      } else if (expType === 'trainer') {
-        html += '<h3>🧠 7. In-Browser Teachable Machine & Sorter</h3>';
-        html += '<p>Capture training snapshots from your camera, train your neural classifier, and command the Robotic Recycling Crane:</p>';
-        html += '<div class="sim-PresetRow">';
-        html += '<button type="button" class="sim-OptionBtn" data-record-sample="A">📸 Record Class A (' + trainerData.classes.A.samples + ')</button>';
-        html += '<button type="button" class="sim-OptionBtn" data-record-sample="B">📸 Record Class B (' + trainerData.classes.B.samples + ')</button>';
-        html += '<button type="button" class="sim-OptionBtn" data-record-sample="C">📸 Record Class C (' + trainerData.classes.C.samples + ')</button>';
-        html += '</div>';
-        html += '<div style="margin:10px 0;"><button type="button" class="btn-Primary" id="vis-train-btn" style="width:100%;font-size:1.05rem;">' + (trainerData.isTraining ? '⏳ Training 30 Epochs...' : '⚡ Train AI Model Now (30 Epochs)') + '</button></div>';
-        html += '<div style="background:#f8fafc;padding:12px;border-radius:12px;border:2px solid #cbd5e1;margin-top:8px;">';
-        html += '<div style="font-weight:900;font-size:0.95rem;margin-bottom:8px;">📊 Real-Time Classification Confidences:</div>';
-        Object.keys(trainerData.classes).forEach(function(k) {
-          var c = trainerData.classes[k];
-          var pct = Math.round(c.weight * 100);
-          html += '<div class="vis-ConfidenceMeter">';
-          html += '<span class="vis-ConfidenceLabel">' + c.label.split(':')[1] + '</span>';
-          html += '<div class="vis-ConfidenceTrack"><div class="vis-ConfidenceFill" id="vis-conf-' + k + '" style="width:' + pct + '%;background:' + c.color + ';"></div></div>';
-          html += '<span class="vis-ConfidenceVal" id="vis-conf-val-' + k + '">' + pct + '%</span>';
-          html += '</div>';
-        });
-        html += '</div>';
-        html += '<div class="sim-MetricBox" style="margin-top:10px;"><span>Recycling Sorter Status</span><strong id="vis-metric-trainer">Routing: ' + trainerData.carrying + ' | Total Sorted: ' + trainerData.score + ' items</strong></div>';
-      } else {
-        html += '<h3>🚗 8. Autonomous Vehicle Perception Stack</h3>';
-        html += '<p>Full ADAS perception pipeline: lane boundary detection, pedestrian and vehicle bounding box trackers, and traffic signal classifier:</p>';
-        html += '<div class="sim-PresetRow">';
-        [['GREEN 🟢', '🟢 Green (50 km/h)'], ['YELLOW 🟡', '🟡 Yellow (25 km/h)'], ['RED 🔴', '🔴 Red (0 km/h)']].forEach(function(l) {
-          var act = (autoData.light.indexOf(l[0].slice(0, 3)) !== -1) ? ' sim-OptionBtn--active' : '';
-          html += '<button type="button" class="sim-OptionBtn' + act + '" data-set-light="' + l[0] + '">' + l[1] + '</button>';
-        });
-        html += '</div>';
-        html += '<div style="margin-top:10px;"><div style="font-weight:800;font-size:0.9rem;margin-bottom:4px;">Weather & Sensor Conditions:</div>';
-        html += '<div class="sim-PresetRow">';
-        [['clear', '☀️ Clear Day'], ['rain', '🌧️ Heavy Rain'], ['fog', '🌫️ Thick Fog'], ['night', '🌙 Night Drive']].forEach(function(w) {
-          var act = (autoData.weather === w[0]) ? ' sim-OptionBtn--active' : '';
-          html += '<button type="button" class="sim-OptionBtn' + act + '" data-set-weather="' + w[0] + '">' + w[1] + '</button>';
-        });
-        html += '</div></div>';
-        html += '<div class="sim-MetricBox" style="margin-top:12px;"><span>Self-Driving Telemetry</span><strong id="vis-metric-auto">Speed: ' + autoData.speed + ' km/h | Lead Car: ' + autoData.leadDist.toFixed(1) + 'm | Autopilot: ACTIVE</strong></div>';
-        html += '<div class="exp-OfflineBox" style="margin-top:10px;"><strong>💡 Autonomous Perception:</strong> Hold a red object to trigger emergency braking, or green to resume full speed!</div>';
+        html += '<div class="exp-OfflineBox" style="margin-top:16px;"><strong>🤖 How the AI Camera Sees Your Blade:</strong><br>The computer compares every pixel in <code>Frame(now)</code> minus <code>Frame(previous)</code>. Wherever pixels change brightness fast, it detects your moving hand and places the glowing katana blade!</div>';
       }
+
+      else if (expType === 'air_harp') {
+        html += '<h3>🎹 Air Xylophone & Rainbow Music Synth</h3>';
+        html += '<p style="margin:6px 0 12px;color:#334155;">Touch the 8 glowing rainbow crystal bars at the top of the screen with your hand or mouse pointer to play real musical notes! Follow the ⭐ Star Note to play <em>Twinkle Twinkle Little Star</em>!</p>';
+        html += '<div class="sim-NlpResultRow" style="margin-bottom:12px;">';
+        html += '<div class="sim-MetricBox"><span>Notes Played</span><strong id="harp-count" style="font-size:1.4rem;color:#2563eb;">' + harpGame.notesPlayed + ' Notes 🎵</strong></div>';
+        html += '<div class="sim-MetricBox"><span>Song Progress</span><strong id="harp-song" style="font-size:1.2rem;color:#8b5cf6;">Step ' + (harpGame.songStep + 1) + ' / ' + harpGame.songNotes.length + ' ⭐</strong></div>';
+        html += '</div>';
+        html += '<div class="sim-SubLabel">Click any button below (or touch the bars on the canvas) to play a chord:</div>';
+        html += '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:8px;">';
+        harpGame.bars.forEach(function(b, idx) {
+          html += '<button type="button" class="sim-OptionBtn" style="background:' + b.color + ';color:#fff;border-color:#0f172a;text-align:center;padding:10px 6px;" data-harp-note="' + idx + '">' + b.label + '</button>';
+        });
+        html += '</div>';
+        html += '<div class="exp-OfflineBox" style="margin-top:14px;"><strong>🤖 Spatial Trigger Zones:</strong><br>Computer vision divides the camera screen into 8 invisible regions (Hitboxes). When motion enters a region, it triggers the Web Audio synthesizer!</div>';
+      }
+
+      else if (expType === 'air_canvas') {
+        var curP = paintGame.prompts[paintGame.promptIdx];
+        html += '<h3>🎨 Magic Air Canvas & Quick-Draw AI</h3>';
+        html += '<p style="margin:6px 0 10px;color:#334155;">Hold down your mouse button (or wave your hand in Webcam Mode) to paint glowing neon trails in thin air! Turn on <strong>🦋 Mirror Kaleidoscope Mode</strong> for instant symmetry art!</p>';
+        html += '<div class="exp-ChallengeBox" style="margin:8px 0 12px;padding:12px 14px;">';
+        html += '<div style="font-weight:900;color:#854d0e;">🎯 Quick-Draw Challenge #' + (paintGame.promptIdx + 1) + ': Draw a ' + curP.target + '</div>';
+        html += '<div style="font-size:0.9rem;color:#713f12;">' + curP.hint + '</div>';
+        html += '</div>';
+        html += '<div class="sim-MetricBox" style="margin-bottom:12px;"><span>🤖 Live AI Doodle Classifier Guess:</span><strong id="paint-guess" style="color:#059669;">' + paintGame.aiGuessText + '</strong></div>';
+        html += '<div class="sim-PresetRow" style="margin-bottom:10px;">';
+        html += '<button type="button" class="sim-TabBtn' + (paintGame.mirrorMode ? ' sim-TabBtn--active' : '') + '" id="paint-mirror-btn">🦋 Mirror Mandala: ' + (paintGame.mirrorMode ? 'ON' : 'Off') + '</button>';
+        html += '<button type="button" class="sim-TabBtn' + (paintGame.rainbowMode ? ' sim-TabBtn--active' : '') + '" id="paint-rainbow-btn">🌈 Rainbow Brush: ' + (paintGame.rainbowMode ? 'ON' : 'Off') + '</button>';
+        html += '</div>';
+        html += '<div class="sim-ExecRow">';
+        html += '<button type="button" class="btn-Primary" id="paint-next-prompt">✨ Next Drawing Challenge</button>';
+        html += '<button type="button" class="btn-Secondary" id="paint-clear-btn">🗑️ Clear Air Canvas</button>';
+        html += '</div>';
+      }
+
+      else if (expType === 'goalkeeper') {
+        html += '<h3>⚽ AR Stadium Goalkeeper</h3>';
+        html += '<p style="margin:6px 0 12px;color:#334155;">You are the goalkeeper! Move your hands (or mouse cursor) to position the <strong>🧤 Giant Golden Goalie Gloves</strong> over the incoming soccer balls before they zoom past you!</p>';
+        html += '<div class="sim-NlpResultRow" style="margin-bottom:14px;">';
+        html += '<div class="sim-MetricBox"><span>Goals Saved 🧤</span><strong id="gk-saves" style="font-size:1.5rem;color:#10b981;">' + goalieGame.saves + ' Saves</strong></div>';
+        html += '<div class="sim-MetricBox"><span>Hot Streak 🔥</span><strong id="gk-streak" style="font-size:1.5rem;color:#f59e0b;">' + goalieGame.streak + ' in a row!</strong></div>';
+        html += '</div>';
+        html += '<button type="button" class="btn-Primary" id="gk-shoot-btn" style="width:100%;">⚡ Kick Super Fireball Shot Now!</button>';
+        html += '<div class="exp-OfflineBox" style="margin-top:14px;"><strong>🤖 3D Depth & Trajectory Prediction:</strong><br>As the ball scales from <code>z = 0.15</code> (far) to <code>z = 1.0</code> (goal line), the AI checks if your hand bounding box overlaps the ball coordinates!</div>';
+      }
+
+      else if (expType === 'rps_arena') {
+        html += '<h3>✂️ AI Rock-Paper-Scissors Arena</h3>';
+        html += '<p style="margin:6px 0 12px;color:#334155;">Battle Sparky the AI Robot! Pick your hand gesture below (or hold your hand up to the webcam) to morph the 21-Keypoint Hand Skeleton and play a round!</p>';
+        html += '<div class="sim-NlpResultRow" style="margin-bottom:12px;">';
+        html += '<div class="sim-MetricBox"><span>Your Score 🧑</span><strong style="font-size:1.45rem;color:#2563eb;">' + rpsGame.playerScore + ' Wins</strong></div>';
+        html += '<div class="sim-MetricBox"><span>Sparky AI 🤖</span><strong style="font-size:1.45rem;color:#ec4899;">' + rpsGame.aiScore + ' Wins</strong></div>';
+        html += '</div>';
+        html += '<div class="sim-PresetRow" style="margin-bottom:12px;">';
+        ['🪨 Rock', '📄 Paper', '✂️ Scissors'].forEach(function(mv) {
+          html += '<button type="button" class="btn-Primary" style="flex:1;font-size:1.1rem;" data-rps-move="' + mv + '">Play ' + mv + '</button>';
+        });
+        html += '</div>';
+        html += '<div class="sim-Banner sim-Banner--success" id="rps-status">' + rpsGame.resultText + '</div>';
+        html += '<div class="exp-OfflineBox" style="margin-top:12px;"><strong>🤖 How 21-Keypoint Pose Recognition Works:</strong><br>The AI measures the distance from your fingertip landmarks (`#8, #12, #16, #20`) to your wrist (`#0`). All curled = Rock; all extended = Paper; 2 extended = Scissors!</div>';
+      }
+
+      else if (expType === 'emoji_mimic') {
+        var ch = emojiGame.challenges[emojiGame.targetIdx];
+        html += '<h3>😎 Emoji Mimic Face-Off & AR Masks</h3>';
+        html += '<p style="margin:6px 0 10px;color:#334155;">Try on holographic AR masks and mimic the target facial expression to fill the AI Landmark Match Meter!</p>';
+        html += '<div class="exp-ChallengeBox" style="margin:8px 0 12px;padding:12px 14px;">';
+        html += '<div style="font-size:1.15rem;font-weight:900;color:#854d0e;">🎯 Target Expression: ' + ch.emoji + ' ' + ch.name + '</div>';
+        html += '<div style="font-size:0.9rem;color:#713f12;">AI Landmark Rule: ' + ch.rule + ' (Score: ' + emojiGame.score + ' Matches!)</div></div>';
+        html += '<div class="sim-SubLabel">1. Pick Your Holographic AR Costume Mask:</div>';
+        html += '<div class="sim-PresetRow" style="margin:8px 0 12px;">';
+        [['astronaut', '👨‍🚀 Astronaut'], ['cyber', '🤖 Cyber Visor'], ['crown', '👑 Royal Crown'], ['cat', '🐱 Neon Cat'], ['dragon', '🐉 Dragon Horns']].forEach(function(m) {
+          var act = (emojiGame.mask === m[0]) ? ' sim-TabBtn--active' : '';
+          html += '<button type="button" class="sim-TabBtn' + act + '" data-mask="' + m[0] + '">' + m[1] + '</button>';
+        });
+        html += '</div>';
+        html += '<button type="button" class="btn-Primary" id="emoji-match-btn" style="width:100%;">📸 Snap & Match Expression (' + ch.emoji + ') Now!</button>';
+      }
+
+      else if (expType === 'tm_arcade') {
+        html += '<h3>🚀 Teachable Machine Space Arcade</h3>';
+        html += '<p style="margin:6px 0 10px;color:#334155;">Train 3 custom gesture classes right here, then use your trained model to steer the <strong>🚀 AI Starfighter</strong> and blast falling asteroids on the canvas!</p>';
+        html += '<div class="sim-PresetRow" style="margin-bottom:10px;">';
+        html += '<button type="button" class="sim-OptionBtn" data-tm-cmd="LEFT">⬅️ Class 1: Steer Left (' + tmArcade.samples.LEFT + ')</button>';
+        html += '<button type="button" class="sim-OptionBtn" data-tm-cmd="RIGHT">➡️ Class 2: Steer Right (' + tmArcade.samples.RIGHT + ')</button>';
+        html += '<button type="button" class="sim-OptionBtn" data-tm-cmd="LASER">⚡ Class 3: Fire Laser! (' + tmArcade.samples.LASER + ')</button>';
+        html += '</div>';
+        html += '<div style="background:#f8fafc;padding:12px;border-radius:12px;border:2px solid #cbd5e1;margin-bottom:10px;">';
+        [['LEFT', '⬅️ Left Thrust', '#3b82f6'], ['RIGHT', '➡️ Right Thrust', '#10b981'], ['LASER', '⚡ Plasma Laser', '#f59e0b']].forEach(function(row) {
+          var p = tmArcade.probs[row[0]];
+          html += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;font-size:0.88rem;font-weight:800;">';
+          html += '<span style="width:115px;">' + row[1] + '</span>';
+          html += '<div style="flex:1;height:10px;background:#e2e8f0;border-radius:99px;overflow:hidden;"><div style="width:' + p + '%;height:100%;background:' + row[2] + ';"></div></div>';
+          html += '<span style="width:38px;text-align:right;">' + p + '%</span></div>';
+        });
+        html += '</div>';
+        html += '<div class="sim-MetricBox"><span>Asteroids Blasted 💥</span><strong id="tm-score" style="font-size:1.4rem;color:#10b981;">' + tmArcade.score + ' Asteroids Destroyed!</strong></div>';
+      }
+
+      else {
+        html += '<h3>🕵️ Cyborg X-Ray, ASCII Matrix & LiDAR Lab</h3>';
+        html += '<p style="margin:6px 0 12px;color:#334155;">Switch between 4 futuristic computer-vision shaders below to see how robots, thermal cameras, and self-driving LiDAR scanners transform pixel matrices in real time!</p>';
+        html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;">';
+        [
+          ['ascii', '🟩 Matrix ASCII Code Vision'],
+          ['thermal', '🔥 Thermal Infrared Heatmap'],
+          ['edge', '⚡ Neon Sobel Edge Scanner'],
+          ['lidar', '🚗 Self-Driving LiDAR Radar']
+        ].forEach(function(l) {
+          var act = (cyborgLab.lens === l[0]) ? ' sim-OptionBtn--active' : '';
+          html += '<button type="button" class="sim-OptionBtn' + act + '" data-cyborg-lens="' + l[0] + '">' + l[1] + '</button>';
+        });
+        html += '</div>';
+        html += '<div class="exp-OfflineBox"><strong>🤖 Real-Time Pixel Shaders:</strong><br>• <strong>Matrix ASCII:</strong> Maps pixel brightness `(0–255)` to glowing characters `[@, #, 8, &, :, .,  ]`.<br>• <strong>Thermal IR:</strong> Maps intensity to a cold-blue ➔ hot-red palette.<br>• <strong>LiDAR Radar:</strong> Casts 16 laser distance rays to measure obstacle depth!</div>';
+      }
+
       html += '</div></div></div>';
       container.innerHTML = html;
 
       var canvas = container.querySelector('#vis-canvas');
-      var ctx = canvas.getContext('2d', { willReadFrequently: true });
+      var ctx = canvas.getContext('2d');
       var videoEl = container.querySelector('#vis-video');
       var statusBadge = container.querySelector('#vis-cam-status');
 
-      if (mode === 'webcam' && mediaStream && videoEl) {
+      if (mode === 'webcam' && mediaStream) {
         videoEl.srcObject = mediaStream;
         videoEl.play().catch(function() {});
       }
 
-      // --- 21-Keypoint Hand Pose Engine ---
-      function getLandmarks(cx, cy, gesture) {
-        var isFist = gesture.indexOf('Fist') !== -1;
-        var isPoint = gesture.indexOf('Point') !== -1;
-        var isThumbsUp = gesture.indexOf('Thumbs') !== -1;
-        var isPeace = gesture.indexOf('Peace') !== -1;
-        var wx = cx, wy = cy + 48;
-        var j = [{ x: wx, y: wy }]; // 0: Wrist
-
-        // Thumb: 1, 2, 3, 4
-        if (isThumbsUp) {
-          j.push({ x: wx - 18, y: wy - 16 }, { x: wx - 30, y: wy - 38 }, { x: wx - 34, y: wy - 62 }, { x: wx - 32, y: wy - 88 });
-        } else if (isFist) {
-          j.push({ x: wx - 14, y: wy - 10 }, { x: wx - 20, y: wy - 20 }, { x: wx - 14, y: wy - 28 }, { x: wx - 6, y: wy - 30 });
-        } else {
-          j.push({ x: wx - 18, y: wy - 14 }, { x: wx - 34, y: wy - 28 }, { x: wx - 48, y: wy - 42 }, { x: wx - 58, y: wy - 52 });
-        }
-
-        // Index: 5, 6, 7, 8
-        if (isPoint) {
-          j.push({ x: wx - 8, y: wy - 24 }, { x: wx + 22, y: wy - 34 }, { x: wx + 54, y: wy - 36 }, { x: wx + 82, y: wy - 36 });
-        } else if (isFist || isThumbsUp) {
-          j.push({ x: wx - 12, y: wy - 22 }, { x: wx - 14, y: wy - 34 }, { x: wx - 8, y: wy - 38 }, { x: wx - 2, y: wy - 32 });
-        } else if (isPeace) {
-          j.push({ x: wx - 12, y: wy - 24 }, { x: wx - 22, y: wy - 52 }, { x: wx - 32, y: wy - 78 }, { x: wx - 40, y: wy - 104 });
-        } else {
-          j.push({ x: wx - 12, y: wy - 24 }, { x: wx - 16, y: wy - 50 }, { x: wx - 18, y: wy - 74 }, { x: wx - 20, y: wy - 96 });
-        }
-
-        // Middle: 9, 10, 11, 12
-        if (isPeace) {
-          j.push({ x: wx, y: wy - 26 }, { x: wx + 12, y: wy - 52 }, { x: wx + 22, y: wy - 78 }, { x: wx + 30, y: wy - 104 });
-        } else if (isFist || isThumbsUp || isPoint) {
-          j.push({ x: wx, y: wy - 24 }, { x: wx, y: wy - 36 }, { x: wx + 4, y: wy - 40 }, { x: wx + 8, y: wy - 34 });
-        } else {
-          j.push({ x: wx, y: wy - 26 }, { x: wx, y: wy - 54 }, { x: wx, y: wy - 80 }, { x: wx - 2, y: wy - 104 });
-        }
-
-        // Ring: 13, 14, 15, 16
-        if (isFist || isThumbsUp || isPoint || isPeace) {
-          j.push({ x: wx + 12, y: wy - 22 }, { x: wx + 14, y: wy - 34 }, { x: wx + 16, y: wy - 38 }, { x: wx + 18, y: wy - 32 });
-        } else {
-          j.push({ x: wx + 12, y: wy - 24 }, { x: wx + 16, y: wy - 50 }, { x: wx + 18, y: wy - 72 }, { x: wx + 20, y: wy - 92 });
-        }
-
-        // Pinky: 17, 18, 19, 20
-        if (isFist || isThumbsUp || isPoint || isPeace) {
-          j.push({ x: wx + 22, y: wy - 18 }, { x: wx + 24, y: wy - 28 }, { x: wx + 24, y: wy - 32 }, { x: wx + 22, y: wy - 26 });
-        } else {
-          j.push({ x: wx + 22, y: wy - 20 }, { x: wx + 28, y: wy - 40 }, { x: wx + 32, y: wy - 58 }, { x: wx + 34, y: wy - 74 });
-        }
-
-        return j;
-      }
-
-      function drawHandSkeleton(j) {
-        var bones = [
-          [0, 1], [1, 2], [2, 3], [3, 4],       // Thumb
-          [0, 5], [5, 6], [6, 7], [7, 8],       // Index
-          [0, 9], [9, 10], [10, 11], [11, 12],  // Middle
-          [0, 13], [13, 14], [14, 15], [15, 16],// Ring
-          [0, 17], [17, 18], [18, 19], [19, 20],// Pinky
-          [5, 9], [9, 13], [13, 17]             // Palm base
-        ];
-
-        ctx.strokeStyle = '#10b981';
-        ctx.lineWidth = 3.5;
-        ctx.lineCap = 'round';
-        bones.forEach(function(b) {
-          var p1 = j[b[0]], p2 = j[b[1]];
-          if (p1 && p2) {
-            ctx.beginPath();
-            ctx.moveTo(p1.x, p1.y);
-            ctx.lineTo(p2.x, p2.y);
-            ctx.stroke();
-          }
-        });
-
-        // Finger color mapping
-        var colors = ['#ffffff', '#facc15', '#facc15', '#facc15', '#facc15', '#38bdf8', '#38bdf8', '#38bdf8', '#38bdf8', '#10b981', '#10b981', '#10b981', '#10b981', '#a855f7', '#a855f7', '#a855f7', '#a855f7', '#ec4899', '#ec4899', '#ec4899', '#ec4899'];
-
-        j.forEach(function(pt, idx) {
-          var isTip = (idx === 4 || idx === 8 || idx === 12 || idx === 16 || idx === 20);
-          ctx.beginPath();
-          ctx.arc(pt.x, pt.y, isTip ? 7 : 4.5, 0, Math.PI * 2);
-          ctx.fillStyle = colors[idx] || '#38bdf8';
-          ctx.fill();
-          ctx.strokeStyle = '#ffffff';
-          ctx.lineWidth = 2;
-          ctx.stroke();
-        });
-      }
-
-      function applySobelEdgeShader() {
-        try {
-          var imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-          var d = imgData.data;
-          var w = canvas.width, h = canvas.height;
-          var copy = new Uint8ClampedArray(d);
-
-          for (var y = 1; y < h - 1; y += 2) {
-            for (var x = 1; x < w - 1; x += 2) {
-              var idx = (y * w + x) * 4;
-              var gx = -copy[idx - 4 - w * 4] + copy[idx + 4 - w * 4]
-                       - 2 * copy[idx - 4] + 2 * copy[idx + 4]
-                       - copy[idx - 4 + w * 4] + copy[idx + 4 + w * 4];
-              var gy = -copy[idx - w * 4 - 4] - 2 * copy[idx - w * 4] - copy[idx - w * 4 + 4]
-                       + copy[idx + w * 4 - 4] + 2 * copy[idx + w * 4] + copy[idx + w * 4 + 4];
-              var mag = Math.min(255, Math.abs(gx) + Math.abs(gy));
-              d[idx] = 10;
-              d[idx + 1] = mag; // Luminous green
-              d[idx + 2] = mag > 120 ? 255 : 40;
-            }
-          }
-          ctx.putImageData(imgData, 0, 0);
-        } catch (e) {}
-      }
-
-      // --- Real-Time In-Browser Offline Computer Vision Perception Engine ---
-      function processWebcamFrame(video) {
-        try {
-          cvCtx.drawImage(video, 0, 0, 80, 50);
-          var fData = cvCtx.getImageData(0, 0, 80, 50);
-          var d = fData.data;
-
-          var motionCount = 0;
-          var motionSumX = 0, motionSumY = 0;
-
-          var skinCount = 0;
-          var skinSumX = 0, skinSumY = 0;
-          var skinMinX = 80, skinMaxX = 0, skinMinY = 50, skinMaxY = 0;
-
-          var colorMatchCount = 0;
-          var colorSumX = 0, colorSumY = 0;
-
-          var mouthBrightSum = 0, mouthPixelCount = 0;
-
-          var redMatchCount = 0, greenMatchCount = 0;
-
-          var curGrayscale = new Uint8Array(80 * 50);
-
-          var idx = 0;
-          for (var y = 0; y < 50; y++) {
-            for (var x = 0; x < 80; x++) {
-              var pidx = (y * 80 + x) * 4;
-              // Mirror coordinates so x=0 is left on mirror canvas
-              var mx = 79 - x;
-              var r = d[pidx], g = d[pidx + 1], b = d[pidx + 2];
-              var gray = (r * 299 + g * 587 + b * 114) / 1000;
-              curGrayscale[idx] = gray;
-
-              // 1. Optical Motion Differencing
-              if (prevGrayscale) {
-                var diff = Math.abs(gray - prevGrayscale[idx]);
-                if (diff > motionData.sensitivity) {
-                  motionCount++;
-                  motionSumX += mx;
-                  motionSumY += y;
-
-                  // Pop bubbles in Lab 1
-                  if (expType === 'motion') {
-                    var cx = mx * (canvas.width / 80);
-                    var cy = y * (canvas.height / 50);
-                    motionData.bubbles.forEach(function(bub) {
-                      if (Math.hypot(cx - bub.x, cy - bub.y) < bub.r + 18) {
-                        bub.x = 60 + Math.random() * (canvas.width - 120);
-                        bub.y = 60 + Math.random() * (canvas.height - 120);
-                        motionData.score++;
-                        motionData.streak++;
-                        for (var k = 0; k < 12; k++) {
-                          var pA = (k / 12) * Math.PI * 2;
-                          motionData.particles.push({ x: bub.x, y: bub.y, vx: Math.cos(pA) * 3.5, vy: Math.sin(pA) * 3.5, color: bub.color, alpha: 1 });
-                        }
-                        if (window.ExperimindAudio) window.ExperimindAudio.bubblePop();
-                        var mEl = container.querySelector('#vis-metric-motion');
-                        if (mEl) mEl.textContent = motionData.score + ' Targets (Streak: ' + motionData.streak + 'x 🔥)';
-                      }
-                    });
-                  }
-                }
-              }
-
-              // 2. Skin Tone Segmentation (Normalized RGB Skin Space)
-              var isSkin = (r > 75 && g > 38 && b > 20 && r > g && r > b && (r - g) > 10 && (Math.max(r,g,b) - Math.min(r,g,b)) > 14);
-              if (isSkin) {
-                skinCount++;
-                skinSumX += mx;
-                skinSumY += y;
-                if (mx < skinMinX) skinMinX = mx;
-                if (mx > skinMaxX) skinMaxX = mx;
-                if (y < skinMinY) skinMinY = y;
-                if (y > skinMaxY) skinMaxY = y;
-              }
-
-              // 3. Target Color Beacon Tracking (Euclidean Distance in RGB)
-              var cDist = Math.hypot(r - colorData.targetR, g - colorData.targetG, b - colorData.targetB);
-              if (cDist < 68) {
-                colorMatchCount++;
-                colorSumX += mx;
-                colorSumY += y;
-              }
-
-              // Traffic light signals for Lab 8
-              if (r > 160 && g < 70 && b < 70) redMatchCount++;
-              if (g > 140 && r < 90 && b < 100) greenMatchCount++;
-
-              idx++;
-            }
-          }
-
-          prevGrayscale = curGrayscale;
-
-          // =================================================================
-          // A. Dynamic Tracking for Lab 1 (Motion Flow)
-          // =================================================================
-          if (expType === 'motion') {
-            motionData.motionEnergy = Math.min(100, Math.round((motionCount / 120) * 100));
-            if (motionCount > 10) {
-              var targetX = (motionSumX / motionCount) * (canvas.width / 80);
-              var targetY = (motionSumY / motionCount) * (canvas.height / 50);
-              virtualObj.x += (targetX - virtualObj.x) * 0.25;
-              virtualObj.y += (targetY - virtualObj.y) * 0.25;
-            }
-          }
-
-          // =================================================================
-          // B. Dynamic Tracking for Lab 2 (Face Mesh & Emotion)
-          // =================================================================
-          else if (expType === 'face') {
-            if (skinCount > 25) {
-              var faceTargetX = (skinSumX / skinCount) * (canvas.width / 80);
-              var faceTargetY = (skinSumY / skinCount) * (canvas.height / 50);
-              virtualObj.x += (faceTargetX - virtualObj.x) * 0.22;
-              virtualObj.y += (faceTargetY - virtualObj.y) * 0.22;
-
-              // Smile / Joy-O-Meter Detection
-              var smileDelta = (skinMaxX - skinMinX) / Math.max(1, (skinMaxY - skinMinY));
-              var calculatedJoy = Math.min(100, Math.max(40, Math.round(smileDelta * 75)));
-              faceData.joyPercent = calculatedJoy;
-
-              if (calculatedJoy > 80) faceData.emotion = 'Big Smile 😄 (Joy: ' + calculatedJoy + '%)';
-              else if (calculatedJoy > 60) faceData.emotion = 'Gentle Grin 😊 (Joy: ' + calculatedJoy + '%)';
-              else faceData.emotion = 'Focused Neutral 😐 (Joy: ' + calculatedJoy + '%)';
-
-              var emEl = container.querySelector('#vis-metric-emotion');
-              if (emEl) emEl.textContent = faceData.emotion;
-              var jFill = container.querySelector('#vis-joy-fill');
-              if (jFill) jFill.style.width = calculatedJoy + '%';
-              var jVal = container.querySelector('#vis-joy-val');
-              if (jVal) jVal.textContent = calculatedJoy + '%';
-            }
-          }
-
-          // =================================================================
-          // C. Dynamic Tracking for Lab 3 (Color Rover)
-          // =================================================================
-          else if (expType === 'color') {
-            if (colorMatchCount > 8) {
-              var colorTargetX = (colorSumX / colorMatchCount) * (canvas.width / 80);
-              var colorTargetY = (colorSumY / colorMatchCount) * (canvas.height / 50);
-              virtualObj.x += (colorTargetX - virtualObj.x) * 0.28;
-              virtualObj.y += (colorTargetY - virtualObj.y) * 0.28;
-            }
-          }
-
-          // =================================================================
-          // D. Dynamic Tracking & Gesture Perception for Lab 5 (Hand Pose Drone)
-          // =================================================================
-          else if (expType === 'pose') {
-            // If user moves hand, follow motion or skin centroid
-            if (motionCount > 8) {
-              var handTargetX = (motionSumX / motionCount) * (canvas.width / 80);
-              var handTargetY = (motionSumY / motionCount) * (canvas.height / 50);
-              virtualObj.x += (handTargetX - virtualObj.x) * 0.25;
-              virtualObj.y += (handTargetY - virtualObj.y) * 0.25;
-
-              // Classify physical gesture from hand blob geometry
-              var handW = (skinMaxX - skinMinX);
-              var handH = (skinMaxY - skinMinY);
-              var blobDensity = skinCount / Math.max(1, handW * handH);
-              var aspect = handW / Math.max(1, handH);
-
-              // 1. Closed Fist: compact, dense, round
-              if (blobDensity > 0.52 && aspect >= 0.75 && aspect <= 1.25) {
-                poseData.activeGesture = '✊ Closed Fist (Land Safely)';
-                poseData.indexAngle = 38;
-              }
-              // 2. Point Right: wide horizontal spread
-              else if (aspect > 1.35) {
-                poseData.activeGesture = '👉 Point Right (Move East)';
-                poseData.indexAngle = 168;
-              }
-              // 3. Open Palm: tall with spread fingers
-              else {
-                poseData.activeGesture = '✋ Open Palm (Hover Drone)';
-                poseData.indexAngle = 172;
-              }
-
-              // Vertical altitude control: raising hand pulls drone up, lowering lands
-              if (handTargetY < 140) {
-                poseData.drone.targetY = 80;
-                poseData.drone.status = 'High Altitude Climb ☁️';
-              } else if (handTargetY > 260) {
-                poseData.drone.targetY = 280;
-                poseData.drone.status = 'Landed Safely on Pad';
-              }
-
-              var pMet = container.querySelector('#vis-metric-pose');
-              if (pMet) pMet.textContent = poseData.activeGesture + ' (' + poseData.drone.status + ')';
-              var hMet = container.querySelector('#vis-metric-hand');
-              if (hMet) hMet.textContent = 'Index PIP Angle: ' + poseData.indexAngle + '° | Confidence: 97%';
-            }
-          }
-
-          // =================================================================
-          // E. Dynamic Real-Time Inference for Lab 7 (Teachable Machine)
-          // =================================================================
-          else if (expType === 'trainer') {
-            // Live feature extraction: average RGB in reticle region
-            var rAvg = skinSumX / Math.max(1, skinCount) * 3;
-            var gAvg = colorSumX / Math.max(1, colorMatchCount) * 2;
-            var bAvg = motionSumX / Math.max(1, motionCount) * 2;
-
-            var dA = Math.hypot(rAvg - trainerData.classes.A.centroid[0], gAvg - trainerData.classes.A.centroid[1]);
-            var dB = Math.hypot(rAvg - trainerData.classes.B.centroid[0], gAvg - trainerData.classes.B.centroid[1]);
-            var dC = Math.hypot(rAvg - trainerData.classes.C.centroid[0], gAvg - trainerData.classes.C.centroid[1]);
-
-            var invA = 1 / (dA + 1), invB = 1 / (dB + 1), invC = 1 / (dC + 1);
-            var sumInv = invA + invB + invC;
-
-            var wA = invA / sumInv;
-            var wB = invB / sumInv;
-            var wC = invC / sumInv;
-
-            trainerData.classes.A.weight = wA;
-            trainerData.classes.B.weight = wB;
-            trainerData.classes.C.weight = wC;
-
-            var cAFill = container.querySelector('#vis-conf-A');
-            if (cAFill) cAFill.style.width = Math.round(wA * 100) + '%';
-            var cAVal = container.querySelector('#vis-conf-val-A');
-            if (cAVal) cAVal.textContent = Math.round(wA * 100) + '%';
-
-            var cBFill = container.querySelector('#vis-conf-B');
-            if (cBFill) cBFill.style.width = Math.round(wB * 100) + '%';
-            var cBVal = container.querySelector('#vis-conf-val-B');
-            if (cBVal) cBVal.textContent = Math.round(wB * 100) + '%';
-
-            var cCFill = container.querySelector('#vis-conf-C');
-            if (cCFill) cCFill.style.width = Math.round(wC * 100) + '%';
-            var cCVal = container.querySelector('#vis-conf-val-C');
-            if (cCVal) cCVal.textContent = Math.round(wC * 100) + '%';
-
-            if (wA > 0.6) {
-              trainerData.targetCraneX = 120; trainerData.carrying = 'Metal Scrap 🔩';
-            } else if (wB > 0.6) {
-              trainerData.targetCraneX = 310; trainerData.carrying = 'Plastic Bottle 🧴';
-            } else if (wC > 0.6) {
-              trainerData.targetCraneX = 500; trainerData.carrying = 'Organic Fruit 🍏';
-            }
-          }
-
-          // =================================================================
-          // F. Autonomous Vehicle Traffic Signal Perception for Lab 8
-          // =================================================================
-          else if (expType === 'self_driving') {
-            if (redMatchCount > 35) {
-              autoData.light = 'RED 🔴';
-              autoData.speed = 0;
-            } else if (greenMatchCount > 35) {
-              autoData.light = 'GREEN 🟢';
-              autoData.speed = 50;
-            }
-            if (motionCount > 10) {
-              var steerTargetX = (motionSumX / motionCount) * (canvas.width / 80);
-              autoData.carX += (steerTargetX - autoData.carX) * 0.1;
-            }
-            var mAut = container.querySelector('#vis-metric-auto');
-            if (mAut) mAut.textContent = 'Speed: ' + autoData.speed + ' km/h | Lead Car: ' + autoData.leadDist.toFixed(1) + 'm | Autopilot: ACTIVE';
-          }
-        } catch (e) {}
-      }
-
-      // --- Master 60 FPS Render Loop ---
-      function drawLoop() {
+      // =====================================================================
+      // MAIN 60-FPS ARCADE ANIMATION LOOP
+      // =====================================================================
+      function drawArcadeLoop() {
         tick++;
+        analyzeWebcam(videoEl, canvas.width, canvas.height);
+
+        // 1. Draw Background (Live Mirrored Webcam or Cyber Arcade Grid)
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-        var hasLiveVideo = (mode === 'webcam' && mediaStream && videoEl && videoEl.readyState >= 2 && videoEl.videoWidth > 0);
-
-        if (hasLiveVideo) {
+        if (mode === 'webcam' && mediaStream && videoEl.readyState >= 2) {
           ctx.save();
           ctx.translate(canvas.width, 0);
           ctx.scale(-1, 1);
           ctx.drawImage(videoEl, 0, 0, canvas.width, canvas.height);
           ctx.restore();
-
-          if (tick % 2 === 0) {
-            processWebcamFrame(videoEl);
-          }
-
-          if (xrayMode === 'edge') {
-            applySobelEdgeShader();
-          }
-        } else if (mode === 'webcam') {
-          ctx.fillStyle = '#0f172a';
+          ctx.fillStyle = 'rgba(15, 23, 42, 0.28)';
           ctx.fillRect(0, 0, canvas.width, canvas.height);
-          ctx.fillStyle = '#38bdf8';
-          ctx.font = 'bold 16px Inter, sans-serif';
-          ctx.textAlign = 'center';
-          ctx.fillText('📷 Initializing camera video stream...', canvas.width / 2, canvas.height / 2);
         } else {
-          // Virtual Studio Canvas
-          var grad = ctx.createLinearGradient(0, 0, 0, canvas.height);
-          grad.addColorStop(0, '#090e1a');
-          grad.addColorStop(1, '#1e293b');
-          ctx.fillStyle = grad;
+          var bgGrad = ctx.createLinearGradient(0, 0, 0, canvas.height);
+          bgGrad.addColorStop(0, '#0f172a');
+          bgGrad.addColorStop(1, '#1e1b4b');
+          ctx.fillStyle = bgGrad;
           ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-          // Grid coordinates
           ctx.strokeStyle = 'rgba(56, 189, 248, 0.12)';
           ctx.lineWidth = 1;
-          for (var gx = 0; gx < canvas.width; gx += 38) {
+          for (var gx = 0; gx < canvas.width; gx += 40) {
             ctx.beginPath(); ctx.moveTo(gx, 0); ctx.lineTo(gx, canvas.height); ctx.stroke();
           }
-          for (var gy = 0; gy < canvas.height; gy += 38) {
+          for (var gy = 0; gy < canvas.height; gy += 40) {
             ctx.beginPath(); ctx.moveTo(0, gy); ctx.lineTo(canvas.width, gy); ctx.stroke();
           }
-
-          var sweep = (tick * 0.025) % (Math.PI * 2);
-          ctx.save();
-          ctx.translate(canvas.width / 2, canvas.height / 2);
-          ctx.rotate(sweep);
-          ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(320, 0);
-          ctx.strokeStyle = 'rgba(56, 189, 248, 0.22)';
-          ctx.lineWidth = 2;
-          ctx.stroke();
-          ctx.restore();
         }
 
-        // Bounding Box Reticle
-        var boxW = 144, boxH = 144;
-        var boxX = virtualObj.x - boxW / 2;
-        var boxY = virtualObj.y - boxH / 2;
+        // -----------------------------------------------------------------
+        // GAME 1 RENDERER: 🍉 AI NINJA FRUIT SLICER
+        // -----------------------------------------------------------------
+        if (expType === 'fruit_ninja') {
+          if (tick % fruitGame.spawnRate === 0 && fruitGame.fruits.length < 7) {
+            spawnFruit();
+          }
 
-        if (xrayMode !== 'edge') {
-          ctx.strokeStyle = '#38bdf8';
-          ctx.lineWidth = 2.5;
-          ctx.strokeRect(boxX, boxY, boxW, boxH);
+          // Update & draw whole fruits
+          for (var fi = fruitGame.fruits.length - 1; fi >= 0; fi--) {
+            var fr = fruitGame.fruits[fi];
+            fr.x += fr.vx;
+            fr.y += fr.vy;
+            fr.vy += 0.22; // gravity
+            fr.rot += fr.vrot;
 
-          var cr = 14;
-          ctx.strokeStyle = '#facc15';
-          ctx.lineWidth = 3.5;
-          ctx.beginPath(); ctx.moveTo(boxX, boxY + cr); ctx.lineTo(boxX, boxY); ctx.lineTo(boxX + cr, boxY); ctx.stroke();
-          ctx.beginPath(); ctx.moveTo(boxX + boxW - cr, boxY); ctx.lineTo(boxX + boxW, boxY); ctx.lineTo(boxX + boxW, boxY + cr); ctx.stroke();
-          ctx.beginPath(); ctx.moveTo(boxX, boxY + boxH - cr); ctx.lineTo(boxX, boxY + boxH); ctx.lineTo(boxX + cr, boxY + boxH); ctx.stroke();
-          ctx.beginPath(); ctx.moveTo(boxX + boxW - cr, boxY + boxH); ctx.lineTo(boxX + boxW, boxY + boxH); ctx.lineTo(boxX + boxW, boxY + boxH - cr); ctx.stroke();
-
-          ctx.fillStyle = '#38bdf8';
-          ctx.font = 'bold 12px Inter, sans-serif';
-          ctx.textAlign = 'left';
-          ctx.fillText('AI VISION TARGET (' + Math.round(virtualObj.x) + ',' + Math.round(virtualObj.y) + ')', boxX, boxY - 10);
-        }
-
-        // ===================================================================
-        // 1. MOTION LAB
-        // ===================================================================
-        if (expType === 'motion') {
-          // Render & Update Bubbles
-          motionData.bubbles.forEach(function(b) {
-            b.x += b.vx; b.y += b.vy;
-            if (b.x < b.r + 10 || b.x > canvas.width - b.r - 10) b.vx *= -1;
-            if (b.y < b.r + 10 || b.y > canvas.height - b.r - 10) b.vy *= -1;
-
-            ctx.beginPath(); ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2);
-            ctx.fillStyle = b.color + '44'; ctx.fill();
-            ctx.strokeStyle = b.color; ctx.lineWidth = 2.8; ctx.stroke();
-            ctx.beginPath(); ctx.arc(b.x - 9, b.y - 9, 7, 0, Math.PI * 2);
-            ctx.fillStyle = '#ffffffbb'; ctx.fill();
-
-            // Pointer / Virtual Hit
-            if (Math.hypot(virtualObj.x - b.x, virtualObj.y - b.y) < b.r + 42) {
-              b.x = 60 + Math.random() * (canvas.width - 120);
-              b.y = 60 + Math.random() * (canvas.height - 120);
-              motionData.score++;
-              motionData.streak++;
-              for (var k = 0; k < 12; k++) {
-                var pA = (k / 12) * Math.PI * 2;
-                motionData.particles.push({ x: b.x, y: b.y, vx: Math.cos(pA) * 3.5, vy: Math.sin(pA) * 3.5, color: b.color, alpha: 1 });
+            // Check collision with pointer / motion blade
+            if (Math.hypot(pointer.x - fr.x, pointer.y - fr.y) < fr.r + 24) {
+              if (fr.isBomb) {
+                fruitGame.score = Math.max(0, fruitGame.score - 20);
+                fruitGame.combo = 1;
+                if (window.ExperimindAudio) window.ExperimindAudio.retry();
+              } else {
+                fruitGame.score += fr.pts * fruitGame.combo;
+                fruitGame.combo = Math.min(10, fruitGame.combo + 1);
+                if (window.ExperimindAudio) window.ExperimindAudio.pop();
+                if (fruitGame.score > 0 && fruitGame.score % 100 === 0 && window.ExperimindConfetti) {
+                  window.ExperimindConfetti.burst();
+                }
               }
-              if (window.ExperimindAudio) window.ExperimindAudio.bubblePop();
-              var mEl = container.querySelector('#vis-metric-motion');
-              if (mEl) mEl.textContent = motionData.score + ' Targets (Streak: ' + motionData.streak + 'x 🔥)';
-            }
-          });
-
-          // Draw Particles
-          for (var pIdx = motionData.particles.length - 1; pIdx >= 0; pIdx--) {
-            var pt = motionData.particles[pIdx];
-            pt.x += pt.vx; pt.y += pt.vy; pt.alpha -= 0.04;
-            if (pt.alpha <= 0) { motionData.particles.splice(pIdx, 1); continue; }
-            ctx.save(); ctx.globalAlpha = Math.max(0, pt.alpha);
-            ctx.beginPath(); ctx.arc(pt.x, pt.y, 4, 0, Math.PI * 2);
-            ctx.fillStyle = pt.color; ctx.fill(); ctx.restore();
-          }
-
-          if (!hasLiveVideo) {
-            ctx.font = '46px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-            ctx.fillText('👋', virtualObj.x, virtualObj.y);
-          }
-        }
-
-        // ===================================================================
-        // 2. AR FACE FILTER & EMOTION LAB (68-Point Mesh + Joy-O-Meter)
-        // ===================================================================
-        else if (expType === 'face') {
-          var fx = virtualObj.x, fy = virtualObj.y;
-
-          // Draw 68-Point Face Mesh
-          ctx.strokeStyle = 'rgba(56, 189, 248, 0.45)';
-          ctx.lineWidth = 1.5;
-          // Jaw contour (17 points)
-          ctx.beginPath();
-          for (var jw = -8; jw <= 8; jw++) {
-            var jx = fx + jw * 6.5;
-            var jy = fy - 20 + Math.abs(jw) * 4.5 + (jw === 0 ? 38 : 34);
-            if (jw === -8) ctx.moveTo(jx, jy); else ctx.lineTo(jx, jy);
-          }
-          ctx.stroke();
-
-          // Eyebrows
-          ctx.beginPath();
-          ctx.moveTo(fx - 45, fy - 36); ctx.lineTo(fx - 30, fy - 42); ctx.lineTo(fx - 15, fy - 38);
-          ctx.moveTo(fx + 15, fy - 38); ctx.lineTo(fx + 30, fy - 42); ctx.lineTo(fx + 45, fy - 36);
-          ctx.stroke();
-
-          // Eyes with blink animation
-          var eyeH = (tick % 120 < 6) ? 1 : 6;
-          ctx.beginPath();
-          ctx.ellipse(fx - 26, fy - 24, 10, eyeH, 0, 0, Math.PI * 2);
-          ctx.ellipse(fx + 26, fy - 24, 10, eyeH, 0, 0, Math.PI * 2);
-          ctx.fillStyle = '#38bdf8'; ctx.fill(); ctx.stroke();
-
-          // Nose
-          ctx.beginPath();
-          ctx.moveTo(fx, fy - 22); ctx.lineTo(fx, fy + 4); ctx.lineTo(fx - 7, fy + 8); ctx.lineTo(fx + 7, fy + 8);
-          ctx.stroke();
-
-          // Mouth & Smile Curvature
-          var smileCurve = Math.sin(tick * 0.05) * 6 + 14;
-          ctx.strokeStyle = '#10b981'; ctx.lineWidth = 3;
-          ctx.beginPath();
-          ctx.moveTo(fx - 24, fy + 22);
-          ctx.quadraticCurveTo(fx, fy + 22 + smileCurve, fx + 24, fy + 22);
-          ctx.stroke();
-
-          // AR Props
-          if (faceData.activeFilter === 'cat') {
-            // Ears
-            ctx.fillStyle = '#ec4899';
-            ctx.beginPath(); ctx.moveTo(fx - 48, fy - 60); ctx.lineTo(fx - 26, fy - 110); ctx.lineTo(fx - 6, fy - 65); ctx.fill();
-            ctx.beginPath(); ctx.moveTo(fx + 6, fy - 65); ctx.lineTo(fx + 26, fy - 110); ctx.lineTo(fx + 48, fy - 60); ctx.fill();
-            // Whiskers
-            ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 2.5;
-            ctx.beginPath(); ctx.moveTo(fx - 18, fy + 8); ctx.lineTo(fx - 68, fy + 2); ctx.stroke();
-            ctx.beginPath(); ctx.moveTo(fx - 18, fy + 18); ctx.lineTo(fx - 68, fy + 20); ctx.stroke();
-            ctx.beginPath(); ctx.moveTo(fx + 18, fy + 8); ctx.lineTo(fx + 68, fy + 2); ctx.stroke();
-            ctx.beginPath(); ctx.moveTo(fx + 18, fy + 18); ctx.lineTo(fx + 68, fy + 20); ctx.stroke();
-            // Nose
-            ctx.beginPath(); ctx.arc(fx, fy + 8, 7, 0, Math.PI * 2); ctx.fillStyle = '#f43f5e'; ctx.fill();
-          } else if (faceData.activeFilter === 'robot') {
-            ctx.fillStyle = 'rgba(15, 23, 42, 0.88)';
-            ctx.fillRect(fx - 56, fy - 36, 112, 36);
-            ctx.strokeStyle = '#38bdf8'; ctx.lineWidth = 3;
-            ctx.strokeRect(fx - 56, fy - 36, 112, 36);
-            // Laser sweep
-            var scanX = fx - 50 + ((tick * 3) % 100);
-            ctx.strokeStyle = '#f43f5e'; ctx.lineWidth = 2;
-            ctx.beginPath(); ctx.moveTo(scanX, fy - 34); ctx.lineTo(scanX, fy - 2); ctx.stroke();
-            // Antenna
-            ctx.beginPath(); ctx.moveTo(fx, fy - 36); ctx.lineTo(fx, fy - 76); ctx.strokeStyle = '#94a3b8'; ctx.stroke();
-            ctx.beginPath(); ctx.arc(fx, fy - 78, 7, 0, Math.PI * 2); ctx.fillStyle = (tick % 30 < 15) ? '#f59e0b' : '#38bdf8'; ctx.fill();
-          } else if (faceData.activeFilter === 'crown') {
-            ctx.fillStyle = '#facc15';
-            ctx.beginPath();
-            ctx.moveTo(fx - 52, fy - 65); ctx.lineTo(fx - 52, fy - 110); ctx.lineTo(fx - 26, fy - 80);
-            ctx.lineTo(fx, fy - 120); ctx.lineTo(fx + 26, fy - 80); ctx.lineTo(fx + 52, fy - 110);
-            ctx.lineTo(fx + 52, fy - 65); ctx.closePath(); ctx.fill();
-            ctx.strokeStyle = '#ca8a04'; ctx.lineWidth = 2.5; ctx.stroke();
-            // Jewels
-            ctx.fillStyle = '#ef4444'; ctx.beginPath(); ctx.arc(fx, fy - 90, 5, 0, Math.PI * 2); ctx.fill();
-            ctx.fillStyle = '#3b82f6'; ctx.beginPath(); ctx.arc(fx - 34, fy - 78, 4, 0, Math.PI * 2); ctx.arc(fx + 34, fy - 78, 4, 0, Math.PI * 2); ctx.fill();
-          } else if (faceData.activeFilter === 'glasses') {
-            ctx.fillStyle = '#0f172a';
-            ctx.beginPath(); ctx.roundRect ? ctx.roundRect(fx - 56, fy - 26, 50, 28, 6) : ctx.rect(fx - 56, fy - 26, 50, 28); ctx.fill();
-            ctx.beginPath(); ctx.roundRect ? ctx.roundRect(fx + 6, fy - 26, 50, 28, 6) : ctx.rect(fx + 6, fy - 26, 50, 28); ctx.fill();
-            ctx.strokeStyle = '#f59e0b'; ctx.lineWidth = 3;
-            ctx.strokeRect(fx - 56, fy - 26, 50, 28); ctx.strokeRect(fx + 6, fy - 26, 50, 28);
-            ctx.beginPath(); ctx.moveTo(fx - 6, fy - 14); ctx.lineTo(fx + 6, fy - 14); ctx.stroke();
-          } else {
-            // Wizard Hat
-            ctx.fillStyle = '#4338ca';
-            ctx.beginPath(); ctx.moveTo(fx - 60, fy - 60); ctx.lineTo(fx + 60, fy - 60); ctx.lineTo(fx + 10, fy - 140); ctx.closePath(); ctx.fill();
-            ctx.strokeStyle = '#facc15'; ctx.lineWidth = 3; ctx.stroke();
-            ctx.fillStyle = '#facc15'; ctx.beginPath(); ctx.arc(fx + 10, fy - 142, 6, 0, Math.PI * 2); ctx.fill();
-          }
-
-          ctx.fillStyle = '#fef08a'; ctx.font = 'bold 12px Inter, sans-serif'; ctx.textAlign = 'center';
-          ctx.fillText('EMOTION: ' + faceData.emotion, fx, fy + 68);
-        }
-
-        // ===================================================================
-        // 3. COLOR BEACON & MARS ROVER LAB
-        // ===================================================================
-        else if (expType === 'color') {
-          // Color Beacon target on canvas
-          ctx.beginPath(); ctx.arc(virtualObj.x, virtualObj.y, 38, 0, Math.PI * 2);
-          ctx.fillStyle = colorData.targetColor; ctx.fill();
-          ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 3.5; ctx.stroke();
-          ctx.fillStyle = '#ffffff'; ctx.font = 'bold 12px Inter, sans-serif';
-          ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-          ctx.fillText(colorData.targetName + ' Beacon', virtualObj.x, virtualObj.y);
-
-          // Mars Rover Simulation
-          var rvr = colorData.rover;
-          if (colorData.targetName === 'Green') {
-            rvr.x += Math.cos(rvr.angle) * rvr.speed;
-            rvr.y += Math.sin(rvr.angle) * rvr.speed;
-            colorData.command = 'FORWARD 🟢 (Thrusters Active)';
-          } else if (colorData.targetName === 'Blue') {
-            rvr.angle += 0.04;
-            colorData.command = 'STEER RIGHT 🔵 (Yaw Rotating)';
-          } else if (colorData.targetName === 'Yellow') {
-            rvr.angle -= 0.03;
-            colorData.command = 'SEARCH SCAN 🟡 (Headlights ON)';
-          } else {
-            colorData.command = 'EMERGENCY BRAKE 🔴 (Halted)';
-          }
-
-          if (rvr.x > canvas.width - 40) rvr.x = 40; if (rvr.x < 40) rvr.x = canvas.width - 40;
-          if (rvr.y > canvas.height - 40) rvr.y = 40; if (rvr.y < 40) rvr.y = canvas.height - 40;
-
-          // Render Crystals
-          colorData.crystals.forEach(function(cry) {
-            if (!cry.collected) {
-              ctx.beginPath(); ctx.arc(cry.x, cry.y, 9, 0, Math.PI * 2);
-              ctx.fillStyle = cry.color; ctx.fill();
-              ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 2; ctx.stroke();
-              // Check rover pickup
-              if (Math.hypot(rvr.x - cry.x, rvr.y - cry.y) < 28) {
-                cry.collected = true;
-                colorData.crystalsCollected++;
-                if (window.ExperimindAudio) window.ExperimindAudio.snap();
-                var cEl = container.querySelector('#vis-metric-crystals');
-                if (cEl) cEl.textContent = colorData.crystalsCollected + ' / 5 Crystals 💎';
+              // Spawn 2 sliced halves + juice splash particles
+              fruitGame.halves.push({ x: fr.x - 10, y: fr.y, vx: -3.5, vy: -3, emoji: fr.emoji, life: 1.0 });
+              fruitGame.halves.push({ x: fr.x + 10, y: fr.y, vx: 3.5, vy: -3, emoji: fr.emoji, life: 1.0 });
+              for (var sp = 0; sp < 10; sp++) {
+                fruitGame.splashes.push({
+                  x: fr.x, y: fr.y,
+                  vx: (Math.random() - 0.5) * 9,
+                  vy: (Math.random() - 0.5) * 9,
+                  color: fr.color,
+                  r: 4 + Math.random() * 5,
+                  life: 1.0
+                });
               }
+              fruitGame.fruits.splice(fi, 1);
+              var scEl = container.querySelector('#fn-score');
+              var cbEl = container.querySelector('#fn-combo');
+              if (scEl) scEl.textContent = fruitGame.score + ' pts';
+              if (cbEl) cbEl.textContent = fruitGame.combo + 'x 🔥';
+              continue;
             }
-          });
 
-          // Draw Rover
-          ctx.save();
-          ctx.translate(rvr.x, rvr.y);
-          ctx.rotate(rvr.angle);
-          ctx.fillStyle = '#e2e8f0'; ctx.fillRect(-20, -14, 40, 28);
-          ctx.fillStyle = '#3b82f6'; ctx.fillRect(-12, -9, 24, 18);
-          // Wheels
-          ctx.fillStyle = '#0f172a';
-          ctx.fillRect(-24, -18, 12, 6); ctx.fillRect(12, -18, 12, 6);
-          ctx.fillRect(-24, 12, 12, 6); ctx.fillRect(12, 12, 12, 6);
-          ctx.restore();
+            if (fr.y > canvas.height + 50) {
+              fruitGame.fruits.splice(fi, 1);
+              continue;
+            }
 
-          ctx.fillStyle = '#fef08a'; ctx.font = 'bold 11px Inter, sans-serif'; ctx.textAlign = 'center';
-          ctx.fillText('MARS ROVER 🛸', rvr.x, rvr.y - 22);
-
-          var mCol = container.querySelector('#vis-metric-color');
-          if (mCol) mCol.textContent = 'State: ' + colorData.command;
-        }
-
-        // ===================================================================
-        // 4. SHAPE & CONTOUR LAB
-        // ===================================================================
-        else if (expType === 'shape') {
-          var sx = virtualObj.x, sy = virtualObj.y;
-          ctx.strokeStyle = '#38bdf8'; ctx.lineWidth = 3.5;
-          ctx.fillStyle = 'rgba(56, 189, 248, 0.25)';
-
-          if (shapeData.drawMode && customShapePoints.length > 1) {
+            ctx.save();
+            ctx.translate(fr.x, fr.y);
+            ctx.rotate(fr.rot);
             ctx.beginPath();
-            ctx.moveTo(customShapePoints[0].x, customShapePoints[0].y);
-            for (var csi = 1; csi < customShapePoints.length; csi++) {
-              ctx.lineTo(customShapePoints[csi].x, customShapePoints[csi].y);
-            }
+            ctx.arc(0, 0, fr.r, 0, Math.PI * 2);
+            ctx.fillStyle = fr.color + '44';
+            ctx.fill();
+            ctx.lineWidth = 2.5;
+            ctx.strokeStyle = fr.color;
             ctx.stroke();
-          } else if (shapeData.detectedShape.indexOf('Circle') !== -1) {
-            ctx.beginPath(); ctx.arc(sx, sy, 48, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
-          } else if (shapeData.detectedShape.indexOf('Square') !== -1) {
-            ctx.fillRect(sx - 44, sy - 44, 88, 88); ctx.strokeRect(sx - 44, sy - 44, 88, 88);
-          } else if (shapeData.detectedShape.indexOf('Triangle') !== -1) {
-            ctx.beginPath(); ctx.moveTo(sx, sy - 52); ctx.lineTo(sx - 50, sy + 40); ctx.lineTo(sx + 50, sy + 40); ctx.closePath();
-            ctx.fill(); ctx.stroke();
-          } else if (shapeData.detectedShape.indexOf('Star') !== -1) {
+            ctx.font = '38px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(fr.emoji, 0, 2);
+            ctx.restore();
+          }
+
+          // Draw juice splashes
+          for (var si = fruitGame.splashes.length - 1; si >= 0; si--) {
+            var s = fruitGame.splashes[si];
+            s.x += s.vx; s.y += s.vy; s.life -= 0.04;
+            if (s.life <= 0) { fruitGame.splashes.splice(si, 1); continue; }
+            ctx.globalAlpha = s.life;
+            ctx.beginPath(); ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+            ctx.fillStyle = s.color; ctx.fill();
+            ctx.globalAlpha = 1;
+          }
+
+          // Draw sliced halves
+          for (var hi = fruitGame.halves.length - 1; hi >= 0; hi--) {
+            var h = fruitGame.halves[hi];
+            h.x += h.vx; h.y += h.vy; h.vy += 0.35; h.life -= 0.035;
+            if (h.life <= 0) { fruitGame.halves.splice(hi, 1); continue; }
+            ctx.globalAlpha = h.life;
+            ctx.font = '26px sans-serif';
+            ctx.fillText(h.emoji, h.x, h.y);
+            ctx.globalAlpha = 1;
+          }
+
+          // Draw Glowing Katana Blade Trail
+          if (bladeTrail.length > 1) {
             ctx.beginPath();
-            for (var si = 0; si < 10; si++) {
-              var sAng = (si * Math.PI) / 5 - Math.PI / 2;
-              var sRad = (si % 2 === 0) ? 52 : 24;
-              var spx = sx + Math.cos(sAng) * sRad;
-              var spy = sy + Math.sin(sAng) * sRad;
-              if (si === 0) ctx.moveTo(spx, spy); else ctx.lineTo(spx, spy);
+            bladeTrail.forEach(function(pt, idx) {
+              if (idx === 0) ctx.moveTo(pt.x, pt.y);
+              else ctx.lineTo(pt.x, pt.y);
+              pt.life -= 0.06;
+            });
+            ctx.strokeStyle = '#38bdf8';
+            ctx.lineWidth = 7;
+            ctx.lineCap = 'round';
+            ctx.stroke();
+            ctx.strokeStyle = '#ffffff';
+            ctx.lineWidth = 3;
+            ctx.stroke();
+            bladeTrail = bladeTrail.filter(function(pt) { return pt.life > 0; });
+          }
+
+          ctx.font = 'bold 16px Inter, sans-serif';
+          ctx.fillStyle = '#fde047';
+          ctx.textAlign = 'left';
+          ctx.fillText('⚔️ SCORE: ' + fruitGame.score + '   |   🔥 COMBO: ' + fruitGame.combo + 'x', 20, 30);
+        }
+
+        // -----------------------------------------------------------------
+        // GAME 2 RENDERER: 🎹 AIR XYLOPHONE & RAINBOW MUSIC SYNTH
+        // -----------------------------------------------------------------
+        else if (expType === 'air_harp') {
+          var targetNoteIdx = harpGame.songNotes[harpGame.songStep % harpGame.songNotes.length];
+
+          harpGame.bars.forEach(function(bar, idx) {
+            if (bar.cooldown > 0) bar.cooldown--;
+            var isTarget = (idx === targetNoteIdx);
+            var bx = bar.x, by = 45, bw = bar.w, bh = 115 + idx * 8;
+
+            // Check if hand/pointer enters bar hitbox
+            if (pointer.x >= bx && pointer.x <= bx + bw && pointer.y >= by && pointer.y <= by + bh) {
+              if (bar.cooldown === 0) {
+                bar.cooldown = 18;
+                harpGame.notesPlayed++;
+                playNoteFreq(bar.freq, 0.42);
+                harpGame.rings.push({ x: bx + bw / 2, y: by + bh / 2, r: 10, color: bar.color, life: 1.0 });
+                if (isTarget) {
+                  harpGame.songStep = (harpGame.songStep + 1) % harpGame.songNotes.length;
+                  if (harpGame.songStep === 0 && window.ExperimindConfetti) window.ExperimindConfetti.burst();
+                }
+                var hc = container.querySelector('#harp-count');
+                var hs = container.querySelector('#harp-song');
+                if (hc) hc.textContent = harpGame.notesPlayed + ' Notes 🎵';
+                if (hs) hs.textContent = 'Step ' + (harpGame.songStep + 1) + ' / ' + harpGame.songNotes.length + ' ⭐';
+              }
             }
-            ctx.closePath(); ctx.fill(); ctx.stroke();
-          } else {
-            // Hexagon
+
+            var bounce = bar.cooldown > 10 ? 8 : 0;
+            ctx.fillStyle = bar.color;
+            ctx.strokeStyle = isTarget ? '#ffffff' : '#0f172a';
+            ctx.lineWidth = isTarget ? 4 : 2;
             ctx.beginPath();
-            for (var hi = 0; hi < 6; hi++) {
-              var hAng = (hi * Math.PI) / 3;
-              var hpx = sx + Math.cos(hAng) * 48;
-              var hpy = sy + Math.sin(hAng) * 48;
-              if (hi === 0) ctx.moveTo(hpx, hpy); else ctx.lineTo(hpx, hpy);
+            ctx.roundRect(bx, by + bounce, bw, bh, 12);
+            ctx.fill();
+            ctx.stroke();
+
+            ctx.fillStyle = '#ffffff';
+            ctx.font = 'bold 13px Inter, sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText(bar.label.split(' ')[0], bx + bw / 2, by + bh - 18 + bounce);
+            if (isTarget) {
+              ctx.font = '24px sans-serif';
+              ctx.fillText('⭐', bx + bw / 2, by + 28 + bounce);
             }
-            ctx.closePath(); ctx.fill(); ctx.stroke();
-          }
-
-          ctx.fillStyle = '#fef08a'; ctx.font = 'bold 12px Inter, sans-serif'; ctx.textAlign = 'center';
-          ctx.fillText('CONTOUR: ' + shapeData.detectedShape, sx, sy + 68);
-        }
-
-        // ===================================================================
-        // 5. 21-KEYPOINT HAND DRONE LAB
-        // ===================================================================
-        else if (expType === 'pose') {
-          var lms = getLandmarks(virtualObj.x, virtualObj.y, poseData.activeGesture);
-          drawHandSkeleton(lms);
-
-          ctx.fillStyle = '#fde047'; ctx.font = 'bold 13px Inter, sans-serif'; ctx.textAlign = 'center';
-          ctx.fillText('21-KEYPOINT SKELETAL MESH', virtualObj.x, boxY + boxH + 20);
-
-          var dr = poseData.drone;
-          poseData.propellerAngle += 0.5;
-
-          if (poseData.activeGesture.indexOf('Open') !== -1) {
-            dr.targetY = 90; dr.status = 'Hovering (Propellers High)';
-          } else if (poseData.activeGesture.indexOf('Fist') !== -1) {
-            dr.targetY = 280; dr.status = 'Landed Safely on Pad';
-          } else if (poseData.activeGesture.indexOf('Point') !== -1) {
-            dr.x = (dr.x + 2.8) % (canvas.width - 60);
-            dr.targetY = 130; dr.status = 'Cruising East ➔';
-          } else if (poseData.activeGesture.indexOf('Peace') !== -1) {
-            dr.targetY = 100; dr.status = 'Aerial Selfie Snapshot 📸';
-            if (tick % 40 < 5) {
-              ctx.fillStyle = 'rgba(255,255,255,0.7)';
-              ctx.fillRect(0, 0, canvas.width, canvas.height);
-            }
-          } else if (poseData.activeGesture.indexOf('Thumbs') !== -1) {
-            dr.targetY = 110; dr.status = 'Turbo Rockets Firing 🔥';
-            // Rocket exhaust particles
-            poseData.particles.push({ x: dr.x - 14, y: dr.y + 14, vy: 3 + Math.random() * 3, alpha: 1 });
-            poseData.particles.push({ x: dr.x + 14, y: dr.y + 14, vy: 3 + Math.random() * 3, alpha: 1 });
-          }
-          dr.y += (dr.targetY - dr.y) * 0.08;
-
-          // Rocket particles
-          for (var ptk = poseData.particles.length - 1; ptk >= 0; ptk--) {
-            var rpt = poseData.particles[ptk];
-            rpt.y += rpt.vy; rpt.alpha -= 0.06;
-            if (rpt.alpha <= 0) { poseData.particles.splice(ptk, 1); continue; }
-            ctx.fillStyle = 'rgba(245, 158, 11, ' + rpt.alpha + ')';
-            ctx.beginPath(); ctx.arc(rpt.x, rpt.y, 3, 0, Math.PI * 2); ctx.fill();
-          }
-
-          var dx = dr.x, dy = dr.y;
-          // Propellers
-          ctx.strokeStyle = 'rgba(56, 189, 248, 0.75)'; ctx.lineWidth = 3;
-          ctx.beginPath();
-          ctx.ellipse(dx - 30, dy - 14, 18, 4, poseData.propellerAngle, 0, Math.PI * 2);
-          ctx.ellipse(dx + 30, dy - 14, 18, 4, -poseData.propellerAngle, 0, Math.PI * 2);
-          ctx.stroke();
-
-          // Drone Body
-          ctx.fillStyle = '#1e3a8a';
-          ctx.beginPath();
-          ctx.roundRect ? ctx.roundRect(dx - 24, dy - 12, 48, 24, 8) : ctx.rect(dx - 24, dy - 12, 48, 24);
-          ctx.fill(); ctx.strokeStyle = '#38bdf8'; ctx.lineWidth = 2.5; ctx.stroke();
-
-          ctx.beginPath(); ctx.arc(dx, dy, 6, 0, Math.PI * 2);
-          ctx.fillStyle = (tick % 30 < 15) ? '#10b981' : '#f59e0b'; ctx.fill();
-
-          ctx.fillStyle = '#ffffff'; ctx.font = 'bold 11px Inter, sans-serif'; ctx.textAlign = 'center';
-          ctx.fillText('AI DRONE (' + Math.round(360 - dy) + 'm)', dx, dy + 26);
-
-          var mPose = container.querySelector('#vis-metric-pose');
-          if (mPose) mPose.textContent = poseData.activeGesture + ' (' + dr.status + ')';
-        }
-
-        // ===================================================================
-        // 6. 3x3 CONVOLUTION KERNEL LAB
-        // ===================================================================
-        else if (expType === 'kernel') {
-          var kx = virtualObj.x - 55, ky = virtualObj.y - 55;
-          ctx.fillStyle = 'rgba(15, 23, 42, 0.92)';
-          ctx.fillRect(kx, ky, 110, 110);
-          ctx.strokeStyle = '#f59e0b'; ctx.lineWidth = 3;
-          ctx.strokeRect(kx, ky, 110, 110);
-
-          ctx.fillStyle = '#38bdf8'; ctx.font = 'bold 12px monospace'; ctx.textAlign = 'center';
-          var mat = kernelData.kernelMatrix;
-          for (var r = 0; r < 3; r++) {
-            for (var c = 0; c < 3; c++) {
-              ctx.fillText(mat[r][c] > 0 ? '+' + mat[r][c] : String(mat[r][c]), kx + 18 + c * 36, ky + 28 + r * 34);
-            }
-          }
-
-          ctx.fillStyle = '#fef08a'; ctx.font = 'bold 12px Inter, sans-serif';
-          ctx.fillText('3×3 CONVOLUTION KERNEL', virtualObj.x, ky + 130);
-        }
-
-        // ===================================================================
-        // 7. TEACHABLE MACHINE & ROBOT SORTING ARM LAB
-        // ===================================================================
-        else if (expType === 'trainer') {
-          var crn = trainerData;
-          crn.craneX += (crn.targetCraneX - crn.craneX) * 0.08;
-
-          // Crane Base & Boom
-          ctx.fillStyle = '#334155'; ctx.fillRect(canvas.width / 2 - 25, canvas.height - 24, 50, 24);
-          ctx.strokeStyle = '#f59e0b'; ctx.lineWidth = 6;
-          ctx.beginPath(); ctx.moveTo(canvas.width / 2, canvas.height - 20); ctx.lineTo(crn.craneX, 250); ctx.stroke();
-          ctx.fillStyle = '#0f172a'; ctx.beginPath(); ctx.arc(crn.craneX, 250, 10, 0, Math.PI * 2); ctx.fill();
-
-          // Gripper
-          ctx.strokeStyle = '#94a3b8'; ctx.lineWidth = 3;
-          ctx.beginPath(); ctx.moveTo(crn.craneX - 12, 264); ctx.lineTo(crn.craneX, 250); ctx.lineTo(crn.craneX + 12, 264); ctx.stroke();
-
-          // Bins
-          var bins = [
-            { x: 120, label: 'Bin A: Metal 🔩', color: '#3b82f6' },
-            { x: 310, label: 'Bin B: Plastic 🧴', color: '#10b981' },
-            { x: 500, label: 'Bin C: Organic 🍏', color: '#f59e0b' }
-          ];
-
-          bins.forEach(function(bn) {
-            ctx.fillStyle = bn.color + '33'; ctx.fillRect(bn.x - 50, canvas.height - 54, 100, 50);
-            ctx.strokeStyle = bn.color; ctx.lineWidth = 2.5; ctx.strokeRect(bn.x - 50, canvas.height - 54, 100, 50);
-            ctx.fillStyle = '#ffffff'; ctx.font = 'bold 11px Inter, sans-serif'; ctx.textAlign = 'center';
-            ctx.fillText(bn.label, bn.x, canvas.height - 26);
           });
+
+          // Draw expanding sound rings
+          for (var ri = harpGame.rings.length - 1; ri >= 0; ri--) {
+            var rg = harpGame.rings[ri];
+            rg.r += 4.5; rg.life -= 0.04;
+            if (rg.life <= 0) { harpGame.rings.splice(ri, 1); continue; }
+            ctx.globalAlpha = rg.life;
+            ctx.beginPath(); ctx.arc(rg.x, rg.y, rg.r, 0, Math.PI * 2);
+            ctx.strokeStyle = rg.color; ctx.lineWidth = 4; ctx.stroke();
+            ctx.globalAlpha = 1;
+          }
+
+          ctx.font = '34px sans-serif';
+          ctx.textAlign = 'center';
+          ctx.fillText('🪄', pointer.x, pointer.y);
         }
 
-        // ===================================================================
-        // 8. SELF-DRIVING CAR LAB
-        // ===================================================================
-        else {
-          // Perspective Road
-          ctx.fillStyle = '#1e293b';
-          ctx.beginPath(); ctx.moveTo(220, 160); ctx.lineTo(400, 160); ctx.lineTo(canvas.width, canvas.height); ctx.lineTo(0, canvas.height); ctx.fill();
+        // -----------------------------------------------------------------
+        // GAME 3 RENDERER: 🎨 MAGIC AIR CANVAS & QUICK-DRAW AI
+        // -----------------------------------------------------------------
+        else if (expType === 'air_canvas') {
+          paintGame.strokes.forEach(function(st) {
+            if (st.points.length < 2) return;
+            ctx.strokeStyle = st.color;
+            ctx.lineWidth = 6;
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+            ctx.beginPath();
+            st.points.forEach(function(pt, i) {
+              if (i === 0) ctx.moveTo(pt.x, pt.y);
+              else ctx.lineTo(pt.x, pt.y);
+            });
+            ctx.stroke();
 
-          // Lane Divider Lines
-          ctx.strokeStyle = '#facc15'; ctx.lineWidth = 4; ctx.setLineDash([16, 12]);
-          ctx.lineDashOffset = -tick * (autoData.speed / 10);
-          ctx.beginPath(); ctx.moveTo(310, 160); ctx.lineTo(310, canvas.height); ctx.stroke();
+            if (st.mirror) {
+              ctx.beginPath();
+              st.points.forEach(function(pt, i) {
+                var mx = canvas.width - pt.x;
+                if (i === 0) ctx.moveTo(mx, pt.y);
+                else ctx.lineTo(mx, pt.y);
+              });
+              ctx.stroke();
+            }
+          });
+
+          if (paintGame.mirrorMode) {
+            ctx.strokeStyle = 'rgba(255,255,255,0.25)';
+            ctx.setLineDash([6, 6]);
+            ctx.beginPath(); ctx.moveTo(canvas.width / 2, 0); ctx.lineTo(canvas.width / 2, canvas.height); ctx.stroke();
+            ctx.setLineDash([]);
+          }
+
+          ctx.font = '30px sans-serif';
+          ctx.textAlign = 'center';
+          ctx.fillText('🖌️', pointer.x, pointer.y);
+        }
+
+        // -----------------------------------------------------------------
+        // GAME 4 RENDERER: ⚽ AR STADIUM GOALKEEPER
+        // -----------------------------------------------------------------
+        else if (expType === 'goalkeeper') {
+          // Draw Goalpost Net
+          ctx.strokeStyle = '#ffffff';
+          ctx.lineWidth = 6;
+          ctx.strokeRect(75, 55, canvas.width - 150, canvas.height - 85);
+          ctx.strokeStyle = 'rgba(255,255,255,0.18)';
+          ctx.lineWidth = 1;
+          for (var nx = 115; nx < canvas.width - 75; nx += 40) {
+            ctx.beginPath(); ctx.moveTo(nx, 55); ctx.lineTo(nx, canvas.height - 30); ctx.stroke();
+          }
+
+          var b = goalieGame.ball;
+          b.z += b.speed;
+          var curX = 320 + (b.targetX - 320) * b.z;
+          var curY = 205 + (b.targetY - 205) * b.z;
+          var curR = 12 + b.z * 32;
+
+          // Target reticle when ball approaches
+          ctx.beginPath();
+          ctx.arc(b.targetX, b.targetY, 36, 0, Math.PI * 2);
+          ctx.strokeStyle = 'rgba(250, 204, 21, 0.55)';
+          ctx.lineWidth = 2.5;
+          ctx.setLineDash([5, 5]);
+          ctx.stroke();
           ctx.setLineDash([]);
 
-          // Cyan / Yellow Lane Boundary Perception Overlays
-          ctx.strokeStyle = '#38bdf8'; ctx.lineWidth = 2.5;
-          ctx.beginPath(); ctx.moveTo(220, 160); ctx.lineTo(0, canvas.height); ctx.stroke();
-          ctx.strokeStyle = '#facc15';
-          ctx.beginPath(); ctx.moveTo(400, 160); ctx.lineTo(canvas.width, canvas.height); ctx.stroke();
+          // Draw approaching ball
+          ctx.font = Math.round(curR * 1.7) + 'px sans-serif';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText(b.emoji, curX, curY);
 
-          // Weather Effects
-          if (autoData.weather === 'rain') {
-            ctx.strokeStyle = 'rgba(147, 197, 253, 0.4)'; ctx.lineWidth = 1.5;
-            for (var rk = 0; rk < 30; rk++) {
-              var rx = (rk * 22 + tick * 8) % canvas.width;
-              var ry = (rk * 16 + tick * 14) % canvas.height;
-              ctx.beginPath(); ctx.moveTo(rx, ry); ctx.lineTo(rx - 6, ry + 14); ctx.stroke();
+          // Check save when ball reaches z >= 0.88
+          if (b.z >= 0.88) {
+            if (Math.hypot(pointer.x - curX, pointer.y - curY) < 72) {
+              goalieGame.saves++;
+              goalieGame.streak++;
+              goalieGame.saveBurst = { x: curX, y: curY, text: '🧤 SUPER SAVE!', col: '#10b981', life: 25 };
+              if (window.ExperimindAudio) window.ExperimindAudio.pop();
+              if (goalieGame.saves % 5 === 0 && window.ExperimindConfetti) window.ExperimindConfetti.burst();
+            } else {
+              goalieGame.missed++;
+              goalieGame.streak = 0;
+              goalieGame.saveBurst = { x: curX, y: curY, text: '💨 GOAL MISSED!', col: '#f59e0b', life: 25 };
             }
-          } else if (autoData.weather === 'fog') {
-            ctx.fillStyle = 'rgba(203, 213, 225, 0.45)';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-          } else if (autoData.weather === 'night') {
-            ctx.fillStyle = 'rgba(15, 23, 42, 0.75)';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            var svEl = container.querySelector('#gk-saves');
+            var stEl = container.querySelector('#gk-streak');
+            if (svEl) svEl.textContent = goalieGame.saves + ' Saves';
+            if (stEl) stEl.textContent = goalieGame.streak + ' in a row!';
+            resetBall();
           }
 
-          // Self-Driving Car
-          var cx = autoData.carX + Math.sin(tick * 0.05) * 6;
-          ctx.fillStyle = '#2563eb';
-          ctx.beginPath(); ctx.roundRect ? ctx.roundRect(cx - 32, 260, 64, 42, 8) : ctx.rect(cx - 32, 260, 64, 42); ctx.fill();
-          ctx.strokeStyle = '#60a5fa'; ctx.lineWidth = 2.5; ctx.stroke();
+          if (goalieGame.saveBurst && goalieGame.saveBurst.life > 0) {
+            goalieGame.saveBurst.life--;
+            ctx.fillStyle = goalieGame.saveBurst.col;
+            ctx.font = 'bold 24px Inter, sans-serif';
+            ctx.fillText(goalieGame.saveBurst.text, goalieGame.saveBurst.x, goalieGame.saveBurst.y - 30);
+          }
 
-          // Headlights
-          ctx.fillStyle = 'rgba(254, 240, 138, 0.35)';
-          ctx.beginPath(); ctx.moveTo(cx - 22, 260); ctx.lineTo(cx - 60, 180); ctx.lineTo(cx + 60, 180); ctx.lineTo(cx + 22, 260); ctx.fill();
-
-          // Traffic Light Box
-          ctx.fillStyle = '#0f172a'; ctx.fillRect(520, 50, 34, 84);
-          ctx.strokeStyle = '#94a3b8'; ctx.lineWidth = 2; ctx.strokeRect(520, 50, 34, 84);
-
-          ctx.beginPath(); ctx.arc(537, 65, 8, 0, Math.PI * 2);
-          ctx.fillStyle = (autoData.light.indexOf('RED') !== -1) ? '#ef4444' : '#450a0a'; ctx.fill();
-
-          ctx.beginPath(); ctx.arc(537, 92, 8, 0, Math.PI * 2);
-          ctx.fillStyle = (autoData.light.indexOf('YELLOW') !== -1) ? '#f59e0b' : '#713f12'; ctx.fill();
-
-          ctx.beginPath(); ctx.arc(537, 119, 8, 0, Math.PI * 2);
-          ctx.fillStyle = (autoData.light.indexOf('GREEN') !== -1) ? '#10b981' : '#064e3b'; ctx.fill();
-
-          ctx.fillStyle = '#fef08a'; ctx.font = 'bold 12px Inter, sans-serif'; ctx.textAlign = 'center';
-          ctx.fillText('AUTOPILOT VEHICLE: ' + autoData.speed + ' km/h', cx, 326);
+          // Draw Goalie Gloves at pointer
+          ctx.beginPath();
+          ctx.arc(pointer.x, pointer.y, 44, 0, Math.PI * 2);
+          ctx.fillStyle = 'rgba(16, 185, 129, 0.25)';
+          ctx.fill();
+          ctx.strokeStyle = '#10b981';
+          ctx.lineWidth = 3;
+          ctx.stroke();
+          ctx.font = '46px sans-serif';
+          ctx.fillText('🧤', pointer.x, pointer.y);
         }
 
-        // Pixel Spy Inspector Tooltip
-        if (xrayMode === 'pixel') {
-          try {
-            var pix = ctx.getImageData(virtualObj.x, virtualObj.y, 1, 1).data;
-            ctx.fillStyle = 'rgba(15, 23, 42, 0.9)'; ctx.fillRect(virtualObj.x + 14, virtualObj.y - 34, 150, 44);
-            ctx.strokeStyle = '#38bdf8'; ctx.lineWidth = 1.5; ctx.strokeRect(virtualObj.x + 14, virtualObj.y - 34, 150, 44);
-            ctx.fillStyle = '#ffffff'; ctx.font = 'bold 11px monospace'; ctx.textAlign = 'left';
-            ctx.fillText('RGB: [' + pix[0] + ', ' + pix[1] + ', ' + pix[2] + ']', virtualObj.x + 22, virtualObj.y - 18);
-            ctx.fillText('Hex: #' + ((1 << 24) + (pix[0] << 16) + (pix[1] << 8) + pix[2]).toString(16).slice(1), virtualObj.x + 22, virtualObj.y - 4);
-          } catch (e) {}
+        // -----------------------------------------------------------------
+        // GAME 5 RENDERER: ✂️ AI ROCK-PAPER-SCISSORS ARENA
+        // -----------------------------------------------------------------
+        else if (expType === 'rps_arena') {
+          // Left Card: Player Hand + 21-Keypoint Skeleton Overlay
+          ctx.fillStyle = 'rgba(30, 58, 138, 0.75)';
+          ctx.strokeStyle = '#60a5fa';
+          ctx.lineWidth = 3;
+          ctx.beginPath(); ctx.roundRect(45, 55, 235, 250, 18); ctx.fill(); ctx.stroke();
+
+          ctx.fillStyle = '#ffffff';
+          ctx.font = 'bold 16px Inter, sans-serif';
+          ctx.textAlign = 'center';
+          ctx.fillText('🧑 YOUR HAND GESTURE', 162, 85);
+          ctx.font = '74px sans-serif';
+          ctx.fillText(rpsGame.playerMove.slice(0, 2), 162, 175 + Math.sin(tick * 0.1) * 6);
+          ctx.font = 'bold 20px Inter, sans-serif';
+          ctx.fillStyle = '#fde047';
+          ctx.fillText(rpsGame.playerMove, 162, 255);
+
+          // VS Badge
+          ctx.fillStyle = '#f59e0b';
+          ctx.beginPath(); ctx.arc(320, 180, 28, 0, Math.PI * 2); ctx.fill();
+          ctx.fillStyle = '#0f172a'; ctx.font = 'bold 18px Inter, sans-serif';
+          ctx.fillText('VS', 320, 180);
+
+          // Right Card: Sparky AI Robot Hand
+          ctx.fillStyle = 'rgba(88, 28, 135, 0.75)';
+          ctx.strokeStyle = '#c084fc';
+          ctx.lineWidth = 3;
+          ctx.beginPath(); ctx.roundRect(360, 55, 235, 250, 18); ctx.fill(); ctx.stroke();
+
+          ctx.fillStyle = '#ffffff';
+          ctx.font = 'bold 16px Inter, sans-serif';
+          ctx.fillText('🤖 SPARKY AI PREDICTOR', 477, 85);
+          ctx.font = '74px sans-serif';
+          ctx.fillText(rpsGame.aiMove.slice(0, 2), 477, 175 - Math.sin(tick * 0.1) * 6);
+          ctx.font = 'bold 20px Inter, sans-serif';
+          ctx.fillStyle = '#34d399';
+          ctx.fillText(rpsGame.aiMove, 477, 255);
         }
 
-        animId = requestAnimationFrame(drawLoop);
+        // -----------------------------------------------------------------
+        // GAME 6 RENDERER: 😎 EMOJI MIMIC & AR HOLOGRAM MASKS
+        // -----------------------------------------------------------------
+        else if (expType === 'emoji_mimic') {
+          var fx = pointer.x, fy = pointer.y;
+          // Draw glowing AI Face Bounding Box + 68-landmark mesh dots
+          ctx.strokeStyle = '#38bdf8';
+          ctx.lineWidth = 2.5;
+          ctx.strokeRect(fx - 75, fy - 90, 150, 180);
+
+          // Draw AR Mask prop anchored to face
+          ctx.font = '68px sans-serif';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          var maskEmoji = '👨‍🚀';
+          var offsetY = -55;
+          if (emojiGame.mask === 'cyber') { maskEmoji = '🥽'; offsetY = -18; }
+          else if (emojiGame.mask === 'crown') { maskEmoji = '👑'; offsetY = -88; }
+          else if (emojiGame.mask === 'cat') { maskEmoji = '🐱'; offsetY = -10; }
+          else if (emojiGame.mask === 'dragon') { maskEmoji = '🐉'; offsetY = -75; }
+          ctx.fillText(maskEmoji, fx, fy + offsetY);
+
+          // Target Emoji HUD in top-left corner
+          var targetCh = emojiGame.challenges[emojiGame.targetIdx];
+          ctx.fillStyle = 'rgba(15, 23, 42, 0.85)';
+          ctx.fillRect(16, 16, 260, 66);
+          ctx.strokeStyle = '#facc15';
+          ctx.strokeRect(16, 16, 260, 66);
+          ctx.fillStyle = '#ffffff';
+          ctx.font = 'bold 15px Inter, sans-serif';
+          ctx.textAlign = 'left';
+          ctx.fillText('🎯 MIMIC THIS: ' + targetCh.emoji + ' ' + targetCh.name, 28, 42);
+          ctx.fillStyle = '#34d399';
+          ctx.font = '13px Inter, sans-serif';
+          ctx.fillText('Matches Won: ' + emojiGame.score + ' 🏆', 28, 66);
+        }
+
+        // -----------------------------------------------------------------
+        // GAME 7 RENDERER: 🚀 TEACHABLE MACHINE SPACE ARCADE
+        // -----------------------------------------------------------------
+        else if (expType === 'tm_arcade') {
+          // Steer ship by pointer X or trained command
+          if (tmArcade.activeCommand === 'LEFT') tmArcade.shipX = Math.max(50, tmArcade.shipX - 4.5);
+          else if (tmArcade.activeCommand === 'RIGHT') tmArcade.shipX = Math.min(canvas.width - 50, tmArcade.shipX + 4.5);
+          else tmArcade.shipX += (pointer.x - tmArcade.shipX) * 0.15;
+
+          if (tick % 18 === 0) {
+            tmArcade.lasers.push({ x: tmArcade.shipX, y: 315 });
+          }
+
+          // Update & draw lasers
+          for (var li = tmArcade.lasers.length - 1; li >= 0; li--) {
+            var lz = tmArcade.lasers[li];
+            lz.y -= 8;
+            if (lz.y < 0) { tmArcade.lasers.splice(li, 1); continue; }
+            ctx.fillStyle = '#facc15';
+            ctx.fillRect(lz.x - 3, lz.y, 6, 18);
+          }
+
+          // Update & draw asteroids
+          tmArcade.asteroids.forEach(function(ast) {
+            ast.y += ast.vy;
+            if (ast.y > canvas.height - 40) {
+              ast.y = 20;
+              ast.x = 60 + Math.random() * (canvas.width - 120);
+            }
+            // Check laser hit
+            for (var li = tmArcade.lasers.length - 1; li >= 0; li--) {
+              var lz = tmArcade.lasers[li];
+              if (Math.hypot(lz.x - ast.x, lz.y - ast.y) < ast.r + 12) {
+                tmArcade.score++;
+                ast.y = 15;
+                ast.x = 60 + Math.random() * (canvas.width - 120);
+                tmArcade.lasers.splice(li, 1);
+                if (window.ExperimindAudio) window.ExperimindAudio.pop();
+                var ts = container.querySelector('#tm-score');
+                if (ts) ts.textContent = tmArcade.score + ' Asteroids Destroyed!';
+                break;
+              }
+            }
+            ctx.font = '36px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText(ast.emoji, ast.x, ast.y);
+          });
+
+          // Draw Player Starfighter
+          ctx.font = '44px sans-serif';
+          ctx.textAlign = 'center';
+          ctx.fillText('🚀', tmArcade.shipX, 340);
+        }
+
+        // -----------------------------------------------------------------
+        // GAME 8 RENDERER: 🕵️ CYBORG X-RAY, MATRIX ASCII & LIDAR LAB
+        // -----------------------------------------------------------------
+        else {
+          if (cyborgLab.lens === 'ascii') {
+            ctx.fillStyle = '#020617';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = '#10b981';
+            ctx.font = 'bold 13px monospace';
+            var chars = ['@', '#', '8', '&', 'o', ':', '*', '.', ' '];
+            for (var r = 16; r < canvas.height; r += 18) {
+              for (var c = 16; c < canvas.width; c += 16) {
+                var d = Math.hypot(c - pointer.x, r - pointer.y);
+                var chIdx = d < 95 ? Math.floor((d / 95) * 4) : (4 + ((r + c + tick) % 5));
+                ctx.fillText(chars[chIdx], c, r);
+              }
+            }
+          } else if (cyborgLab.lens === 'thermal') {
+            var radGrad = ctx.createRadialGradient(pointer.x, pointer.y, 15, pointer.x, pointer.y, 190);
+            radGrad.addColorStop(0, '#ffffff');
+            radGrad.addColorStop(0.25, '#ef4444');
+            radGrad.addColorStop(0.55, '#f59e0b');
+            radGrad.addColorStop(0.8, '#10b981');
+            radGrad.addColorStop(1, '#1e3a8a');
+            ctx.fillStyle = radGrad;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = '#ffffff';
+            ctx.font = 'bold 16px monospace';
+            ctx.fillText('🔥 THERMAL IR PEAK: 37.2°C AT (' + Math.round(pointer.x) + ',' + Math.round(pointer.y) + ')', 20, 32);
+          } else if (cyborgLab.lens === 'edge') {
+            ctx.strokeStyle = '#38bdf8';
+            ctx.lineWidth = 2.5;
+            for (var ring = 25; ring <= 125; ring += 25) {
+              ctx.beginPath();
+              ctx.arc(pointer.x, pointer.y, ring + Math.sin(tick * 0.1 + ring) * 6, 0, Math.PI * 2);
+              ctx.stroke();
+            }
+            ctx.fillStyle = '#fde047';
+            ctx.font = 'bold 15px monospace';
+            ctx.fillText('⚡ SOBEL GRADIENT MAGNITUDE: 248 / 255', 20, 32);
+          } else {
+            // LiDAR Laser Ray Scanner
+            var carX = 320, carY = 345;
+            for (var ang = -1.2; ang <= 1.2; ang += 0.15) {
+              var rx = carX + Math.sin(ang) * 260;
+              var ry = carY - Math.cos(ang) * 260;
+              ctx.beginPath();
+              ctx.moveTo(carX, carY);
+              ctx.lineTo(rx, ry);
+              ctx.strokeStyle = 'rgba(16, 185, 129, 0.35)';
+              ctx.lineWidth = 2;
+              ctx.stroke();
+            }
+            ctx.strokeStyle = '#ef4444';
+            ctx.lineWidth = 3;
+            ctx.strokeRect(pointer.x - 42, pointer.y - 42, 84, 84);
+            ctx.fillStyle = '#fde047';
+            ctx.font = 'bold 14px monospace';
+            var distM = Math.max(1.2, ((350 - pointer.y) / 35)).toFixed(1);
+            ctx.fillText('🎯 LIDAR TARGET: ' + distM + 'm', pointer.x - 55, pointer.y - 50);
+            ctx.font = '42px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText('🚗', carX, carY);
+          }
+        }
+
+        animId = requestAnimationFrame(drawArcadeLoop);
       }
 
-      // --- Interactive Event Bindings ---
-      canvas.addEventListener('mousemove', function(ev) {
+      // =====================================================================
+      // POINTER, TOUCH & BUTTON LISTENERS
+      // =====================================================================
+      function updatePointerFromEvent(ev) {
         var rect = canvas.getBoundingClientRect();
-        virtualObj.x = (ev.clientX - rect.left) * (canvas.width / rect.width);
-        virtualObj.y = (ev.clientY - rect.top) * (canvas.height / rect.height);
-        if (shapeData.drawMode && isDrawingCustomShape) {
-          customShapePoints.push({ x: virtualObj.x, y: virtualObj.y });
+        var clientX = ev.touches ? ev.touches[0].clientX : ev.clientX;
+        var clientY = ev.touches ? ev.touches[0].clientY : ev.clientY;
+        pointer.prevX = pointer.x;
+        pointer.prevY = pointer.y;
+        pointer.x = (clientX - rect.left) * (canvas.width / rect.width);
+        pointer.y = (clientY - rect.top) * (canvas.height / rect.height);
+        pointer.vx = pointer.x - pointer.prevX;
+        pointer.vy = pointer.y - pointer.prevY;
+        bladeTrail.push({ x: pointer.x, y: pointer.y, life: 1.0 });
+        if (bladeTrail.length > 18) bladeTrail.shift();
+
+        if (expType === 'air_canvas' && pointer.isDown && paintGame.currentStroke) {
+          if (paintGame.rainbowMode) {
+            paintGame.currentStroke.color = 'hsl(' + ((tick * 5) % 360) + ', 90%, 60%)';
+          }
+          paintGame.currentStroke.points.push({ x: pointer.x, y: pointer.y });
+          if (paintGame.currentStroke.points.length > 15) {
+            var gEl = container.querySelector('#paint-guess');
+            if (gEl) gEl.textContent = paintGame.prompts[paintGame.promptIdx].guess;
+          }
+        }
+      }
+
+      canvas.addEventListener('mousedown', function(ev) {
+        pointer.isDown = true;
+        updatePointerFromEvent(ev);
+        if (expType === 'air_canvas') {
+          paintGame.currentStroke = {
+            points: [{ x: pointer.x, y: pointer.y }],
+            color: paintGame.rainbowMode ? 'hsl(' + ((tick * 5) % 360) + ', 90%, 60%)' : paintGame.brushColor,
+            mirror: paintGame.mirrorMode
+          };
+          paintGame.strokes.push(paintGame.currentStroke);
         }
       });
+      window.addEventListener('mouseup', function() { pointer.isDown = false; });
+      canvas.addEventListener('mousemove', updatePointerFromEvent);
 
-      // Canvas Click Eyedropper for Color Lab
-      canvas.addEventListener('click', function(ev) {
-        if (expType === 'color') {
-          try {
-            var rect = canvas.getBoundingClientRect();
-            var px = Math.round((ev.clientX - rect.left) * (canvas.width / rect.width));
-            var py = Math.round((ev.clientY - rect.top) * (canvas.height / rect.height));
-            var pix = ctx.getImageData(px, py, 1, 1).data;
-            colorData.targetR = pix[0];
-            colorData.targetG = pix[1];
-            colorData.targetB = pix[2];
-            colorData.targetColor = '#' + ((1 << 24) + (pix[0] << 16) + (pix[1] << 8) + pix[2]).toString(16).slice(1);
-            colorData.targetName = 'Sampled';
-            var mCol = container.querySelector('#vis-metric-color');
-            if (mCol) mCol.textContent = 'Custom Color Locked (' + colorData.targetColor + ') — Tracking Active!';
-            if (window.ExperimindAudio) window.ExperimindAudio.snap();
-          } catch (e) {}
-        }
-      });
-
-      canvas.addEventListener('mousedown', function() {
-        if (shapeData.drawMode) {
-          isDrawingCustomShape = true;
-          customShapePoints = [{ x: virtualObj.x, y: virtualObj.y }];
-        }
-      });
-
-      window.addEventListener('mouseup', function() {
-        if (shapeData.drawMode && isDrawingCustomShape) {
-          isDrawingCustomShape = false;
-          shapeData.detectedShape = '✨ Custom Polygon (' + customShapePoints.length + ' points)';
-          shapeData.perimeter = Math.round(customShapePoints.length * 3.2);
-          shapeData.area = Math.round(shapeData.perimeter * 14);
-          var sEl = container.querySelector('#vis-metric-shape');
-          if (sEl) sEl.textContent = shapeData.detectedShape + ' (P: ' + shapeData.perimeter + 'px | A: ' + shapeData.area + 'px²)';
-        }
-      });
-
-      canvas.addEventListener('touchmove', function(ev) {
-        if (ev.touches && ev.touches[0]) {
-          var rect = canvas.getBoundingClientRect();
-          virtualObj.x = (ev.touches[0].clientX - rect.left) * (canvas.width / rect.width);
-          virtualObj.y = (ev.touches[0].clientY - rect.top) * (canvas.height / rect.height);
-          ev.preventDefault();
-        }
-      }, { passive: false });
-
-      // Optical X-Ray Pills
-      container.querySelectorAll('[data-vis-xray]').forEach(function(pill) {
-        pill.addEventListener('click', function() {
-          xrayMode = pill.getAttribute('data-vis-xray');
-          container.querySelectorAll('[data-vis-xray]').forEach(function(p) {
-            p.className = 'vis-XrayPill' + (p === pill ? ' vis-XrayPill--active' : '');
-          });
+      // Tab Switching
+      container.querySelectorAll('[data-vis-exp]').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+          expType = btn.getAttribute('data-vis-exp');
           if (window.ExperimindAudio) window.ExperimindAudio.click();
-        });
-      });
-
-      // Lab Tab Switching
-      container.querySelectorAll('[data-vis-exp]').forEach(function(tab) {
-        tab.addEventListener('click', function() {
-          expType = tab.getAttribute('data-vis-exp');
           render();
         });
       });
 
-      // Motion Sensitivity Slider
-      var sensSlider = container.querySelector('#vis-motion-sens');
-      if (sensSlider) {
-        sensSlider.addEventListener('input', function(e) {
-          motionData.sensitivity = parseInt(e.target.value, 10);
-          var vEl = container.querySelector('#vis-sens-val');
-          if (vEl) vEl.textContent = motionData.sensitivity;
+      // Game 1 Controls
+      var fnBurst = container.querySelector('#fn-burst-btn');
+      if (fnBurst) {
+        fnBurst.addEventListener('click', function() {
+          for (var i = 0; i < 8; i++) spawnFruit();
+          if (window.ExperimindAudio) window.ExperimindAudio.pop();
         });
       }
 
-      // AR Face Filter Selector
-      container.querySelectorAll('[data-set-filter]').forEach(function(btn) {
+      // Game 2 Controls
+      container.querySelectorAll('[data-harp-note]').forEach(function(btn) {
         btn.addEventListener('click', function() {
-          faceData.activeFilter = btn.getAttribute('data-set-filter');
-          container.querySelectorAll('[data-set-filter]').forEach(function(b) {
-            b.className = 'sim-OptionBtn' + (b === btn ? ' sim-OptionBtn--active' : '');
-          });
-          if (window.ExperimindAudio) window.ExperimindAudio.pop();
-        });
-      });
-
-      // Color Beacon Pickers
-      container.querySelectorAll('[data-set-color]').forEach(function(btn) {
-        btn.addEventListener('click', function() {
-          colorData.targetColor = btn.getAttribute('data-set-color');
-          colorData.targetName = btn.getAttribute('data-color-name');
-          colorData.targetR = parseInt(btn.getAttribute('data-r'), 10);
-          colorData.targetG = parseInt(btn.getAttribute('data-g'), 10);
-          colorData.targetB = parseInt(btn.getAttribute('data-b'), 10);
-          container.querySelectorAll('[data-set-color]').forEach(function(b) {
-            b.className = 'sim-OptionBtn' + (b === btn ? ' sim-OptionBtn--active' : '');
-          });
-          if (window.ExperimindAudio) window.ExperimindAudio.click();
-        });
-      });
-
-      // Shape Detective Pickers
-      container.querySelectorAll('[data-set-shape]').forEach(function(btn) {
-        btn.addEventListener('click', function() {
-          shapeData.detectedShape = btn.getAttribute('data-set-shape');
-          shapeData.drawMode = false;
-          customShapePoints = [];
-          if (shapeData.detectedShape.indexOf('Circle') !== -1) {
-            shapeData.perimeter = 248; shapeData.area = 4900; shapeData.circularity = 0.98;
-          } else if (shapeData.detectedShape.indexOf('Square') !== -1) {
-            shapeData.perimeter = 352; shapeData.area = 7744; shapeData.circularity = 0.78;
-          } else if (shapeData.detectedShape.indexOf('Triangle') !== -1) {
-            shapeData.perimeter = 296; shapeData.area = 4330; shapeData.circularity = 0.60;
-          } else if (shapeData.detectedShape.indexOf('Star') !== -1) {
-            shapeData.perimeter = 412; shapeData.area = 5820; shapeData.circularity = 0.42;
-          } else {
-            shapeData.perimeter = 288; shapeData.area = 5990; shapeData.circularity = 0.90;
-          }
-          container.querySelectorAll('[data-set-shape]').forEach(function(b) {
-            b.className = 'sim-OptionBtn' + (b === btn ? ' sim-OptionBtn--active' : '');
-          });
-          var sMet = container.querySelector('#vis-metric-shape');
-          if (sMet) sMet.textContent = shapeData.detectedShape + ' (P: ' + shapeData.perimeter + 'px | A: ' + shapeData.area + 'px² | Circ: ' + shapeData.circularity + ')';
-          if (window.ExperimindAudio) window.ExperimindAudio.click();
-        });
-      });
-
-      var toggleDrawBtn = container.querySelector('#vis-toggle-draw');
-      if (toggleDrawBtn) {
-        toggleDrawBtn.addEventListener('click', function() {
-          shapeData.drawMode = !shapeData.drawMode;
-          toggleDrawBtn.textContent = shapeData.drawMode ? '✅ Click to Finish Custom Drawing' : '✏️ Draw Custom Shape on Canvas';
-          if (!shapeData.drawMode && customShapePoints.length > 2) {
-            if (window.ExperimindAudio) window.ExperimindAudio.fanfare();
+          var idx = parseInt(btn.getAttribute('data-harp-note'), 10);
+          var bar = harpGame.bars[idx];
+          if (bar) {
+            playNoteFreq(bar.freq, 0.45);
+            harpGame.notesPlayed++;
+            harpGame.rings.push({ x: bar.x + bar.w / 2, y: 110, r: 12, color: bar.color, life: 1.0 });
+            var hc = container.querySelector('#harp-count');
+            if (hc) hc.textContent = harpGame.notesPlayed + ' Notes 🎵';
           }
         });
-      }
+      });
 
-      // Hand Pose Pickers
-      container.querySelectorAll('[data-set-gesture]').forEach(function(btn) {
+      // Game 3 Controls
+      var mirBtn = container.querySelector('#paint-mirror-btn');
+      if (mirBtn) mirBtn.addEventListener('click', function() { paintGame.mirrorMode = !paintGame.mirrorMode; render(); });
+      var rbwBtn = container.querySelector('#paint-rainbow-btn');
+      if (rbwBtn) rbwBtn.addEventListener('click', function() { paintGame.rainbowMode = !paintGame.rainbowMode; render(); });
+      var nxtP = container.querySelector('#paint-next-prompt');
+      if (nxtP) nxtP.addEventListener('click', function() {
+        paintGame.promptIdx = (paintGame.promptIdx + 1) % paintGame.prompts.length;
+        paintGame.strokes = [];
+        if (window.ExperimindConfetti) window.ExperimindConfetti.burst();
+        render();
+      });
+      var clrP = container.querySelector('#paint-clear-btn');
+      if (clrP) clrP.addEventListener('click', function() { paintGame.strokes = []; render(); });
+
+      // Game 4 Controls
+      var gkShoot = container.querySelector('#gk-shoot-btn');
+      if (gkShoot) gkShoot.addEventListener('click', function() { resetBall(); goalieGame.ball.emoji = '🔥'; });
+
+      // Game 5 Controls
+      container.querySelectorAll('[data-rps-move]').forEach(function(btn) {
         btn.addEventListener('click', function() {
-          poseData.activeGesture = btn.getAttribute('data-set-gesture');
-          if (poseData.activeGesture.indexOf('Open') !== -1) poseData.indexAngle = 172;
-          else if (poseData.activeGesture.indexOf('Fist') !== -1) poseData.indexAngle = 38;
-          else if (poseData.activeGesture.indexOf('Point') !== -1) poseData.indexAngle = 168;
-          else if (poseData.activeGesture.indexOf('Peace') !== -1) poseData.indexAngle = 170;
-          else poseData.indexAngle = 44;
-
-          container.querySelectorAll('[data-set-gesture]').forEach(function(b) {
-            b.className = 'sim-OptionBtn' + (b === btn ? ' sim-OptionBtn--active' : '');
-          });
-          if (window.ExperimindAudio) window.ExperimindAudio.pop();
-        });
-      });
-
-      // Convolution Kernel Pickers
-      container.querySelectorAll('[data-set-kernel]').forEach(function(btn) {
-        btn.addEventListener('click', function() {
-          var k = btn.getAttribute('data-set-kernel');
-          kernelData.activeKernel = k;
-          if (k === 'sobel_vert') {
-            kernelData.kernelMatrix = [[-1, 0, 1], [-2, 0, 2], [-1, 0, 1]];
-            kernelData.kernelLabel = 'Vertical Sobel Edge Detector';
-          } else if (k === 'sobel_horiz') {
-            kernelData.kernelMatrix = [[-1, -2, -1], [0, 0, 0], [1, 2, 1]];
-            kernelData.kernelLabel = 'Horizontal Sobel Edge Detector';
-          } else if (k === 'ridge') {
-            kernelData.kernelMatrix = [[0, -1, 0], [-1, 4, -1], [0, -1, 0]];
-            kernelData.kernelLabel = 'Laplacian Ridge Filter';
-          } else if (k === 'sharpen') {
-            kernelData.kernelMatrix = [[0, -1, 0], [-1, 5, -1], [0, -1, 0]];
-            kernelData.kernelLabel = 'Sharpening Center Ridge Filter';
-          } else if (k === 'blur') {
-            kernelData.kernelMatrix = [[1, 2, 1], [2, 4, 2], [1, 2, 1]];
-            kernelData.kernelLabel = 'Gaussian Smoothing Box Blur';
-          } else {
-            kernelData.kernelMatrix = [[-2, -1, 0], [-1, 1, 1], [0, 1, 2]];
-            kernelData.kernelLabel = '3D Emboss Filter';
-          }
-          container.querySelectorAll('[data-set-kernel]').forEach(function(b) {
-            b.className = 'sim-OptionBtn' + (b === btn ? ' sim-OptionBtn--active' : '');
-          });
-          var mK = container.querySelector('#vis-metric-kernel');
-          if (mK) mK.textContent = kernelData.kernelLabel;
-
-          // Update Matrix Grid Cells
-          var cells = container.querySelectorAll('.vis-MatrixCell');
-          var idx = 0;
-          for (var r = 0; r < 3; r++) {
-            for (var c = 0; c < 3; c++) {
-              if (cells[idx]) {
-                var v = kernelData.kernelMatrix[r][c];
-                cells[idx].textContent = v > 0 ? '+' + v : v;
-              }
-              idx++;
-            }
-          }
-          if (window.ExperimindAudio) window.ExperimindAudio.click();
-        });
-      });
-
-      // Interactive Matrix Cell Click Handler
-      container.querySelectorAll('.vis-MatrixCell').forEach(function(cell) {
-        cell.addEventListener('click', function() {
-          var r = parseInt(cell.getAttribute('data-row'), 10);
-          var c = parseInt(cell.getAttribute('data-col'), 10);
-          var cur = kernelData.kernelMatrix[r][c];
-          var nextVals = [-2, -1, 0, 1, 2, 5];
-          var nextIdx = (nextVals.indexOf(cur) + 1) % nextVals.length;
-          kernelData.kernelMatrix[r][c] = nextVals[nextIdx];
-          cell.textContent = nextVals[nextIdx] > 0 ? '+' + nextVals[nextIdx] : nextVals[nextIdx];
-          kernelData.kernelLabel = 'Custom Interactive 3×3 Matrix Filter';
-          var mK = container.querySelector('#vis-metric-kernel');
-          if (mK) mK.textContent = kernelData.kernelLabel;
-          if (window.ExperimindAudio) window.ExperimindAudio.snap();
-        });
-      });
-
-      // Teachable Machine Sample Recording
-      container.querySelectorAll('[data-record-sample]').forEach(function(btn) {
-        btn.addEventListener('click', function() {
-          var cls = btn.getAttribute('data-record-sample');
-          trainerData.classes[cls].samples++;
-          btn.textContent = '📸 Record Class ' + cls + ' (' + trainerData.classes[cls].samples + ')';
-          if (window.ExperimindAudio) window.ExperimindAudio.click();
-        });
-      });
-
-      // Teachable Model Training
-      var trainBtn = container.querySelector('#vis-train-btn');
-      if (trainBtn) {
-        trainBtn.addEventListener('click', function() {
-          trainerData.isTraining = true;
-          trainBtn.textContent = '⏳ Training 30 Epochs (Loss: 1.85 ➔ 0.02)...';
-          trainBtn.disabled = true;
-          setTimeout(function() {
-            trainerData.isTraining = false;
-            trainBtn.textContent = '✅ Model Trained Successfully! (Loss: 0.02)';
-            trainBtn.disabled = false;
-            trainerData.targetCraneX = 120; // route to metal bin
-            trainerData.score++;
-            var trMet = container.querySelector('#vis-metric-trainer');
-            if (trMet) trMet.textContent = 'Routing: ' + trainerData.carrying + ' | Total Sorted: ' + trainerData.score + ' items';
+          var pMove = btn.getAttribute('data-rps-move');
+          var moves = ['🪨 Rock', '📄 Paper', '✂️ Scissors'];
+          var aMove = moves[Math.floor(Math.random() * 3)];
+          rpsGame.playerMove = pMove;
+          rpsGame.aiMove = aMove;
+          if (pMove === aMove) {
+            rpsGame.resultText = '🤝 TIE ROUND! Both picked ' + pMove + '!';
+          } else if (
+            (pMove.indexOf('Rock') !== -1 && aMove.indexOf('Scissors') !== -1) ||
+            (pMove.indexOf('Paper') !== -1 && aMove.indexOf('Rock') !== -1) ||
+            (pMove.indexOf('Scissors') !== -1 && aMove.indexOf('Paper') !== -1)
+          ) {
+            rpsGame.playerScore++;
+            rpsGame.resultText = '🎉 YOU WIN! ' + pMove + ' beats ' + aMove + '!';
             if (window.ExperimindAudio) window.ExperimindAudio.fanfare();
             if (window.ExperimindConfetti) window.ExperimindConfetti.burst();
-          }, 900);
+          } else {
+            rpsGame.aiScore++;
+            rpsGame.resultText = '🤖 SPARKY WINS! ' + aMove + ' beats ' + pMove + '!';
+            if (window.ExperimindAudio) window.ExperimindAudio.pop();
+          }
+          render();
+        });
+      });
+
+      // Game 6 Controls
+      container.querySelectorAll('[data-mask]').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+          emojiGame.mask = btn.getAttribute('data-mask');
+          if (window.ExperimindAudio) window.ExperimindAudio.click();
+          render();
+        });
+      });
+      var emMatch = container.querySelector('#emoji-match-btn');
+      if (emMatch) {
+        emMatch.addEventListener('click', function() {
+          emojiGame.score++;
+          emojiGame.targetIdx = (emojiGame.targetIdx + 1) % emojiGame.challenges.length;
+          if (window.ExperimindAudio) window.ExperimindAudio.fanfare();
+          if (window.ExperimindConfetti) window.ExperimindConfetti.burst();
+          render();
         });
       }
 
-      // Self-Driving Traffic Light Pickers
-      container.querySelectorAll('[data-set-light]').forEach(function(btn) {
+      // Game 7 Controls
+      container.querySelectorAll('[data-tm-cmd]').forEach(function(btn) {
         btn.addEventListener('click', function() {
-          var l = btn.getAttribute('data-set-light');
-          autoData.light = l;
-          if (l.indexOf('RED') !== -1) autoData.speed = 0;
-          else if (l.indexOf('YELLOW') !== -1) autoData.speed = 25;
-          else autoData.speed = 50;
-
-          container.querySelectorAll('[data-set-light]').forEach(function(b) {
-            b.className = 'sim-OptionBtn' + (b === btn ? ' sim-OptionBtn--active' : '');
-          });
-          var mAuto = container.querySelector('#vis-metric-auto');
-          if (mAuto) mAuto.textContent = 'Speed: ' + autoData.speed + ' km/h | Lead Car: ' + autoData.leadDist.toFixed(1) + 'm | Autopilot: ACTIVE';
-          if (window.ExperimindAudio) window.ExperimindAudio.click();
+          var cmd = btn.getAttribute('data-tm-cmd');
+          tmArcade.samples[cmd]++;
+          tmArcade.activeCommand = cmd;
+          if (cmd === 'LEFT') { tmArcade.probs = { LEFT: 88, RIGHT: 6, LASER: 6 }; tmArcade.shipX = Math.max(60, tmArcade.shipX - 70); }
+          if (cmd === 'RIGHT') { tmArcade.probs = { LEFT: 6, RIGHT: 88, LASER: 6 }; tmArcade.shipX = Math.min(580, tmArcade.shipX + 70); }
+          if (cmd === 'LASER') {
+            tmArcade.probs = { LEFT: 5, RIGHT: 5, LASER: 90 };
+            for (var k = -1; k <= 1; k++) tmArcade.lasers.push({ x: tmArcade.shipX + k * 24, y: 310 });
+          }
+          if (window.ExperimindAudio) window.ExperimindAudio.pop();
+          render();
         });
       });
 
-      // Self-Driving Weather Selector
-      container.querySelectorAll('[data-set-weather]').forEach(function(btn) {
+      // Game 8 Controls
+      container.querySelectorAll('[data-cyborg-lens]').forEach(function(btn) {
         btn.addEventListener('click', function() {
-          autoData.weather = btn.getAttribute('data-set-weather');
-          container.querySelectorAll('[data-set-weather]').forEach(function(b) {
-            b.className = 'sim-OptionBtn' + (b === btn ? ' sim-OptionBtn--active' : '');
-          });
-          if (window.ExperimindAudio) window.ExperimindAudio.click();
+          cyborgLab.lens = btn.getAttribute('data-cyborg-lens');
+          if (window.ExperimindAudio) window.ExperimindAudio.pop();
+          render();
         });
       });
 
-      // Camera Hardware Consent Buttons
+      // Webcam Hardware Start / Stop
       container.querySelector('#vis-start-cam').addEventListener('click', function() {
         if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-          statusBadge.className = 'vision-StatusBadge vision-StatusBadge--warn';
-          statusBadge.textContent = 'ℹ️ Hardware webcam unavailable in this browser environment — running in interactive Virtual Camera Simulator mode!';
+          statusBadge.className = 'vision-StatusBadge';
+          statusBadge.textContent = 'ℹ️ Hardware webcam blocked in this sandbox — playing in Interactive Mouse/Touch Arcade Mode!';
           return;
         }
-        statusBadge.textContent = '⏳ Requesting explicit user camera permission...';
-
-        var constraints = { video: { width: { ideal: 640 }, height: { ideal: 480 }, facingMode: 'user' } };
-
-        function onStreamSuccess(stream) {
+        statusBadge.textContent = '⏳ Starting Webcam... Wave your hands when the camera light turns on!';
+        navigator.mediaDevices.getUserMedia({ video: { width: 640, height: 480 } }).then(function(stream) {
           mediaStream = stream;
-          mode = 'webcam';
           videoEl.srcObject = stream;
-          videoEl.onloadedmetadata = function() {
-            videoEl.play().catch(function() {});
-          };
           videoEl.play().catch(function() {});
+          mode = 'webcam';
           statusBadge.className = 'vision-StatusBadge vision-StatusBadge--live';
-          statusBadge.innerHTML = '🔴 <strong>LIVE HARDWARE WEBCAM ACTIVE</strong> (Wave hands or hold objects to interact!)';
-        }
-
-        navigator.mediaDevices.getUserMedia(constraints).then(onStreamSuccess).catch(function() {
-          navigator.mediaDevices.getUserMedia({ video: true }).then(onStreamSuccess).catch(function() {
-            mode = 'virtual';
-            statusBadge.className = 'vision-StatusBadge vision-StatusBadge--warn';
-            statusBadge.innerHTML = 'ℹ️ Camera permission declined or no webcam plugged in — running in <strong>Camera-Free Virtual Simulator Mode</strong>!';
-          });
+          statusBadge.textContent = '🔴 LIVE WEBCAM ACTIVE — Wave your hands in the air to slice fruit, play music & block shots!';
+        }).catch(function() {
+          mode = 'virtual';
+          statusBadge.className = 'vision-StatusBadge';
+          statusBadge.textContent = '🎮 Playing in Interactive Mouse / Touch Arcade Mode!';
         });
       });
 
       container.querySelector('#vis-stop-cam').addEventListener('click', function() {
         stopHardwareCamera();
         mode = 'virtual';
-        statusBadge.className = 'vision-StatusBadge';
-        statusBadge.textContent = '⏹️ Camera Stopped & Hardware Released. Running in Camera-Free Virtual Simulator Mode.';
+        render();
       });
 
       container.querySelector('#vis-virtual-btn').addEventListener('click', function() {
         stopHardwareCamera();
         mode = 'virtual';
-        statusBadge.className = 'vision-StatusBadge';
-        statusBadge.textContent = '🎮 Camera-Free Virtual Vision Simulator Active (Move pointer inside canvas)';
+        render();
       });
 
-      animId = requestAnimationFrame(drawLoop);
+      if (expType === 'fruit_ninja' && fruitGame.fruits.length === 0) {
+        for (var i = 0; i < 4; i++) spawnFruit();
+      }
+      drawArcadeLoop();
     }
 
     render();

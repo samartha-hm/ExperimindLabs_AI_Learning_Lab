@@ -1501,120 +1501,244 @@ window.ExperimindSimulators = (function() {
   }
 
   // =========================================================================
-  // ENG-07: Supervised ML, Decision Tree, NLP Tokenizer & Confusion Matrix
+  // ENG-07: Middle School AI Studio — Visual Decision Tree, Live NLP Tokenizer,
+  //         Interactive Confusion Matrix & 2D Supervised ML Boundary Canvas
   // =========================================================================
   function mountEng07(container, lesson) {
     var cfg = lesson.simConfig || {};
     var mode = cfg.mode || 'supervised';
 
+    // --- MODE 1: INTERACTIVE VISUAL DECISION TREE CANVAS ---
     if (mode === 'tree') {
       var q1 = true, q2 = true;
       var explored = {};
 
       function renderTree() {
         var leaf = '';
-        if (q1 && q2) leaf = '🐬 Dolphin (Aquatic + Breathe Air / Fins)';
-        else if (q1 && !q2) leaf = '🐙 Octopus (Aquatic + 8 Tentacles)';
-        else if (!q1 && q2) leaf = '🦅 Bald Eagle (Land/Sky + Feathered Wings)';
-        else leaf = '🦁 African Lion (Land/Sky + Four Legs & Mane)';
-        explored[leaf] = true;
+        var leafIdx = 0;
+        if (q1 && q2) { leaf = '🐬 Dolphin (Aquatic + Breathe Air & Fins)'; leafIdx = 0; }
+        else if (q1 && !q2) { leaf = '🐙 Octopus (Aquatic + 8 Tentacles)'; leafIdx = 1; }
+        else if (!q1 && q2) { leaf = '🦅 Bald Eagle (Sky + Feathered Wings)'; leafIdx = 2; }
+        else { leaf = '🦁 African Lion (Land + Four Legs & Mane)'; leafIdx = 3; }
+        explored[leafIdx] = true;
 
         var html = '<div class="sim-Card">';
-        html += '<div class="sim-HeaderRow"><div><span class="sim-EngineBadge">ENG-07 • Decision Tree Classifier</span><h4>' + (cfg.title || lesson.title) + '</h4></div>';
-        html += '<div class="sim-ProgressPill">Leaves Explored: ' + Object.keys(explored).length + ' / 3</div></div>';
+        html += '<div class="sim-HeaderRow"><div><span class="sim-EngineBadge">🌳 Interactive Decision Tree Visualizer</span><h4>' + (cfg.title || lesson.title) + '</h4></div>';
+        html += '<div class="sim-ProgressPill">Branches Explored: ' + Object.keys(explored).length + ' / 4</div></div>';
+        html += '<p class="sim-Instr">Toggle the <strong>Root Question (Q1)</strong> and <strong>Branch Question (Q2)</strong> below—or click directly on the Decision Tree Canvas—to trace how the AI classifies each mystery animal!</p>';
 
-        html += '<div class="sim-TreeContainer">';
-        html += '<div class="sim-TreeNode sim-TreeNode--root">🌳 <strong>Root Node Q1:</strong> Does the creature live in the ocean?<div class="sim-TabRow" style="margin-top:8px;">';
-        html += '<button type="button" class="sim-TabBtn' + (q1 ? ' sim-TabBtn--active' : '') + '" id="tree-q1-yes">YES (Aquatic) 🌊</button>';
-        html += '<button type="button" class="sim-TabBtn' + (!q1 ? ' sim-TabBtn--active' : '') + '" id="tree-q1-no">NO (Land / Sky) 🏞️</button>';
+        html += '<div class="sim-CanvasWrap"><canvas id="tree-canvas" width="660" height="260"></canvas></div>';
+
+        html += '<div class="sim-BlockStudioGrid" style="margin-top:10px;">';
+        html += '<div class="sim-TreeNode sim-TreeNode--root">🌳 <strong>Root Node Q1:</strong> Does it live in the ocean?<div class="sim-TabRow" style="margin-top:8px;">';
+        html += '<button type="button" class="sim-TabBtn' + (q1 ? ' sim-TabBtn--active' : '') + '" id="tree-q1-yes">🌊 YES (Water)</button>';
+        html += '<button type="button" class="sim-TabBtn' + (!q1 ? ' sim-TabBtn--active' : '') + '" id="tree-q1-no">🏞️ NO (Land/Sky)</button>';
         html += '</div></div>';
 
-        html += '<div class="sim-TreeNode">🌿 <strong>Branch Node Q2:</strong> ' + (q1 ? 'Does it swim with fins and breathe air?' : 'Does it have feathers and wings?') + '<div class="sim-TabRow" style="margin-top:8px;">';
-        html += '<button type="button" class="sim-TabBtn' + (q2 ? ' sim-TabBtn--active' : '') + '" id="tree-q2-yes">YES ✅</button>';
-        html += '<button type="button" class="sim-TabBtn' + (!q2 ? ' sim-TabBtn--active' : '') + '" id="tree-q2-no">NO ❌</button>';
-        html += '</div></div>';
+        html += '<div class="sim-TreeNode">🌿 <strong>Branch Node Q2:</strong> ' + (q1 ? 'Does it swim with fins?' : 'Does it have wings & feathers?') + '<div class="sim-TabRow" style="margin-top:8px;">';
+        html += '<button type="button" class="sim-TabBtn' + (q2 ? ' sim-TabBtn--active' : '') + '" id="tree-q2-yes">✅ YES</button>';
+        html += '<button type="button" class="sim-TabBtn' + (!q2 ? ' sim-TabBtn--active' : '') + '" id="tree-q2-no">❌ NO</button>';
+        html += '</div></div></div>';
 
-        html += '<div class="sim-TreeNode sim-TreeNode--leaf">🍃 <strong>Predicted Leaf Node Classification:</strong><br><span style="font-size:1.2rem;">' + leaf + '</span></div>';
-        html += '</div>';
-
-        html += '<div id="sim-status" class="sim-Banner">Toggle the Root and Branch answers to reach at least 3 different Leaf predictions!</div>';
+        html += '<div class="sim-TreeNode sim-TreeNode--leaf">🍃 <strong>AI Leaf Prediction:</strong> <span style="font-size:1.22rem;font-weight:900;color:#065f46;">' + leaf + '</span></div>';
+        html += '<div class="sim-MathReadout" style="line-height:1.45;"><div style="color:#38bdf8;font-size:0.8rem;">🐍 LIVE PYTHON DECISION TREE CODE:</div><code>if lives_in_ocean == ' + (q1 ? 'True' : 'False') + ' and second_feature == ' + (q2 ? 'True' : 'False') + ': prediction = "' + leaf + '"</code></div>';
+        html += '<div id="sim-status" class="sim-Banner">Explore at least 3 different paths from Root Node to Leaf Node!</div>';
         html += '</div>';
         container.innerHTML = html;
 
-        if (Object.keys(explored).length >= 3) {
-          awardSimStar(lesson.id, container.querySelector('#sim-status'), 'You traversed the Decision Tree to 3 distinct Leaf classifications!');
+        // Draw visual decision tree on canvas
+        var cv = container.querySelector('#tree-canvas');
+        var ctx = cv.getContext('2d');
+        ctx.fillStyle = '#0f172a';
+        ctx.fillRect(0, 0, cv.width, cv.height);
+
+        var rootPt = { x: 330, y: 42, label: 'Q1: Lives in Ocean?' };
+        var bLeft = { x: 175, y: 125, label: 'Q2: Has Fins?', active: q1 };
+        var bRight = { x: 485, y: 125, label: 'Q2: Has Wings?', active: !q1 };
+        var leaves = [
+          { x: 90, y: 215, label: '🐬 Dolphin', active: q1 && q2 },
+          { x: 255, y: 215, label: '🐙 Octopus', active: q1 && !q2 },
+          { x: 405, y: 215, label: '🦅 Eagle', active: !q1 && q2 },
+          { x: 570, y: 215, label: '🦁 Lion', active: !q1 && !q2 }
+        ];
+
+        function drawEdge(p1, p2, isAct, txt) {
+          ctx.beginPath();
+          ctx.moveTo(p1.x, p1.y + 18);
+          ctx.lineTo(p2.x, p2.y - 18);
+          ctx.strokeStyle = isAct ? '#10b981' : '#334155';
+          ctx.lineWidth = isAct ? 4 : 2;
+          ctx.stroke();
+          var mx = (p1.x + p2.x) / 2, my = (p1.y + p2.y) / 2;
+          ctx.fillStyle = isAct ? '#fde047' : '#94a3b8';
+          ctx.font = 'bold 12px Inter, sans-serif';
+          ctx.textAlign = 'center';
+          ctx.fillText(txt, mx, my);
         }
 
-        container.querySelector('#tree-q1-yes').addEventListener('click', function() { q1 = true; renderTree(); });
-        container.querySelector('#tree-q1-no').addEventListener('click', function() { q1 = false; renderTree(); });
-        container.querySelector('#tree-q2-yes').addEventListener('click', function() { q2 = true; renderTree(); });
-        container.querySelector('#tree-q2-no').addEventListener('click', function() { q2 = false; renderTree(); });
+        drawEdge(rootPt, bLeft, q1, 'YES');
+        drawEdge(rootPt, bRight, !q1, 'NO');
+        drawEdge(bLeft, leaves[0], q1 && q2, 'YES');
+        drawEdge(bLeft, leaves[1], q1 && !q2, 'NO');
+        drawEdge(bRight, leaves[2], !q1 && q2, 'YES');
+        drawEdge(bRight, leaves[3], !q1 && !q2, 'NO');
+
+        function drawNode(pt, w, h, bg, border) {
+          ctx.fillStyle = bg;
+          ctx.strokeStyle = border;
+          ctx.lineWidth = 2.5;
+          ctx.beginPath();
+          ctx.roundRect(pt.x - w / 2, pt.y - h / 2, w, h, 10);
+          ctx.fill();
+          ctx.stroke();
+          ctx.fillStyle = '#ffffff';
+          ctx.font = 'bold 13px Inter, sans-serif';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText(pt.label, pt.x, pt.y);
+        }
+
+        drawNode(rootPt, 175, 36, '#1e40af', '#60a5fa');
+        drawNode(bLeft, 150, 34, q1 ? '#065f46' : '#1e293b', q1 ? '#34d399' : '#475569');
+        drawNode(bRight, 150, 34, !q1 ? '#065f46' : '#1e293b', !q1 ? '#34d399' : '#475569');
+        leaves.forEach(function(lf) {
+          drawNode(lf, 125, 36, lf.active ? '#ca8a04' : '#1e293b', lf.active ? '#fde047' : '#475569');
+        });
+
+        if (Object.keys(explored).length >= 3) {
+          awardSimStar(lesson.id, container.querySelector('#sim-status'), 'You traced the Decision Tree across 3+ classification leaves!');
+        }
+
+        container.querySelector('#tree-q1-yes').addEventListener('click', function() { q1 = true; if (window.ExperimindAudio) window.ExperimindAudio.click(); renderTree(); });
+        container.querySelector('#tree-q1-no').addEventListener('click', function() { q1 = false; if (window.ExperimindAudio) window.ExperimindAudio.click(); renderTree(); });
+        container.querySelector('#tree-q2-yes').addEventListener('click', function() { q2 = true; if (window.ExperimindAudio) window.ExperimindAudio.click(); renderTree(); });
+        container.querySelector('#tree-q2-no').addEventListener('click', function() { q2 = false; if (window.ExperimindAudio) window.ExperimindAudio.click(); renderTree(); });
       }
       renderTree();
       return;
     }
 
+    // --- MODE 2: LIVE NLP TOKENIZER, SENTIMENT GAUGE & CUSTOM SENTENCE STUDIO ---
     if (mode === 'nlp') {
       var samples = [
-        { text: 'The science robotics lab is super awesome and helpful!', intent: 'POSITIVE_FEEDBACK 🌟', sentiment: 'Positive (+0.92)', stopWords: ['the', 'is', 'and'], keywords: ['science', 'robotics', 'lab', 'super', 'awesome', 'helpful'] },
-        { text: 'What is the weather forecast for rainy tomorrow in school?', intent: 'WEATHER_QUERY 🌦️', sentiment: 'Neutral (0.00)', stopWords: ['what', 'is', 'the', 'for', 'in'], keywords: ['weather', 'forecast', 'rainy', 'tomorrow', 'school'] },
-        { text: 'Please set a morning alarm timer for 6 AM tomorrow', intent: 'ALARM_TIMER_SET ⏰', sentiment: 'Neutral (+0.10)', stopWords: ['a', 'for'], keywords: ['please', 'set', 'morning', 'alarm', 'timer', '6', 'am', 'tomorrow'] },
-        { text: 'This broken sensor is terribly slow and frustrating', intent: 'TECH_SUPPORT_ALERT 🛠️', sentiment: 'Negative (-0.85)', stopWords: ['this', 'is', 'and'], keywords: ['broken', 'sensor', 'terribly', 'slow', 'frustrating'] }
+        'The science robotics lab is super awesome and helpful!',
+        'What is the weather forecast for rainy tomorrow in school?',
+        'Please set a morning alarm timer for 6 AM tomorrow',
+        'This broken sensor is terribly slow and frustrating'
       ];
-      var curIdx = 0;
-      var testedNlp = {};
+      var customText = samples[0];
+      var testedNlp = { 0: true };
+
+      var STOP_WORDS = ['the', 'is', 'and', 'what', 'for', 'in', 'a', 'to', 'of', 'on', 'at', 'this', 'that', 'it'];
+      var POS_WORDS = ['awesome', 'helpful', 'super', 'great', 'smart', 'good', 'happy', 'love', 'amazing', 'fun', 'best', 'fast', 'clean'];
+      var NEG_WORDS = ['broken', 'terribly', 'slow', 'frustrating', 'bad', 'sad', 'boring', 'error', 'fail', 'wrong', 'hard', 'messy'];
+
+      function analyzeSentence(txt) {
+        var clean = txt.replace(/[^a-zA-Z0-9\s]/g, '').trim();
+        var tokens = clean ? clean.split(/\s+/) : [];
+        var pos = 0, neg = 0;
+        var lower = clean.toLowerCase();
+        tokens.forEach(function(t) {
+          var lw = t.toLowerCase();
+          if (POS_WORDS.indexOf(lw) !== -1) pos++;
+          if (NEG_WORDS.indexOf(lw) !== -1) neg++;
+        });
+        var score = 0;
+        if (pos + neg > 0) score = (pos - neg) / (pos + neg);
+        var intent = 'GENERAL_STATEMENT 💬';
+        if (lower.indexOf('weather') !== -1 || lower.indexOf('rain') !== -1 || lower.indexOf('sunny') !== -1) intent = 'WEATHER_FORECAST 🌦️ (94%)';
+        else if (lower.indexOf('alarm') !== -1 || lower.indexOf('timer') !== -1 || lower.indexOf('am') !== -1) intent = 'ALARM_TIMER_SET ⏰ (96%)';
+        else if (pos > neg) intent = 'POSITIVE_PRAISE 🌟 (92%)';
+        else if (neg > pos) intent = 'SUPPORT_ISSUE_ALERT 🛠️ (89%)';
+        return { tokens: tokens, score: score, pos: pos, neg: neg, intent: intent };
+      }
 
       function renderNlp() {
-        var s = samples[curIdx];
-        testedNlp[curIdx] = true;
-        var rawTokens = s.text.replace(/[!?.]/g, '').split(' ');
+        var res = analyzeSentence(customText);
+        var sentLabel = res.score > 0.15 ? '😊 Positive (+' + res.score.toFixed(2) + ')' : (res.score < -0.15 ? '😟 Negative (' + res.score.toFixed(2) + ')' : '😐 Neutral (' + res.score.toFixed(2) + ')');
+        var gaugePct = Math.round(((res.score + 1) / 2) * 100);
 
         var html = '<div class="sim-Card">';
-        html += '<div class="sim-HeaderRow"><div><span class="sim-EngineBadge">ENG-07 • NLP Tokenizer & Intent Analyzer</span><h4>' + (cfg.title || lesson.title) + '</h4></div>';
-        html += '<div class="sim-ProgressPill">Sentences Analyzed: ' + Object.keys(testedNlp).length + ' / 3</div></div>';
+        html += '<div class="sim-HeaderRow"><div><span class="sim-EngineBadge">💬 Interactive NLP Tokenizer & Sentiment Studio</span><h4>' + (cfg.title || lesson.title) + '</h4></div>';
+        html += '<div class="sim-ProgressPill">Sentences Tested: ' + Object.keys(testedNlp).length + ' / 3</div></div>';
 
-        html += '<div class="sim-SubLabel">1. Pick a Sample Utterance to Process:</div>';
+        html += '<div class="sim-SubLabel">1. Pick a Preset Sentence OR Type Your Own Sentence Below:</div>';
         html += '<div class="sim-OptionGrid">';
         samples.forEach(function(smp, idx) {
-          html += '<button type="button" class="sim-OptionBtn' + (idx === curIdx ? ' sim-OptionBtn--active' : '') + '" data-nlp-idx="' + idx + '">"' + smp.text + '"</button>';
+          html += '<button type="button" class="sim-OptionBtn' + (customText === smp ? ' sim-OptionBtn--active' : '') + '" data-nlp-idx="' + idx + '">"' + smp + '"</button>';
         });
         html += '</div>';
 
-        html += '<div class="sim-SubLabel" style="margin-top:12px;">2. Word Tokenization & Stop-Word Filter (Gray = Filtered Stop Word, Blue = Keyword Token):</div>';
+        html += '<div style="display:flex;gap:10px;margin-top:8px;">';
+        html += '<input type="text" id="nlp-custom-input" class="exp-SearchInput" style="flex:1;" value="' + customText.replace(/"/g, '&quot;') + '" placeholder="Type any English sentence to tokenize and analyze...">';
+        html += '<button type="button" class="btn-Primary" id="nlp-run-custom">🔍 Analyze Text</button>';
+        html += '</div>';
+
+        html += '<div class="sim-SubLabel" style="margin-top:10px;">2. Live Token Stream (Strikethrough = Filtered Stop-Word, Green = Positive, Red = Negative, Blue = Keyword):</div>';
         html += '<div class="sim-TokenTray">';
-        rawTokens.forEach(function(tok) {
-          var isStop = s.stopWords.indexOf(tok.toLowerCase()) !== -1;
-          html += '<span class="sim-NlpToken ' + (isStop ? 'sim-NlpToken--stop' : 'sim-NlpToken--key') + '">' + tok + (isStop ? ' (stop)' : ' ★') + '</span>';
+        res.tokens.forEach(function(tok) {
+          var lw = tok.toLowerCase();
+          var isStop = STOP_WORDS.indexOf(lw) !== -1;
+          var isPos = POS_WORDS.indexOf(lw) !== -1;
+          var isNeg = NEG_WORDS.indexOf(lw) !== -1;
+          var style = '';
+          if (isPos) style = 'background:#dcfce7;color:#065f46;border:2px solid #10b981;';
+          else if (isNeg) style = 'background:#fee2e2;color:#991b1b;border:2px solid #ef4444;';
+          html += '<span class="sim-NlpToken ' + (isStop ? 'sim-NlpToken--stop' : 'sim-NlpToken--key') + '" style="' + style + '">' + tok + (isStop ? ' (stop)' : (isPos ? ' (+1)' : (isNeg ? ' (-1)' : ' ★'))) + '</span>';
         });
         html += '</div>';
 
         html += '<div class="sim-NlpResultRow">';
-        html += '<div class="sim-MetricBox"><span>Detected Intent Bucket</span><strong>' + s.intent + '</strong></div>';
-        html += '<div class="sim-MetricBox"><span>Sentiment Score</span><strong>' + s.sentiment + '</strong></div>';
+        html += '<div class="sim-MetricBox"><span>Detected AI Intent</span><strong>' + res.intent + '</strong></div>';
+        html += '<div class="sim-MetricBox"><span>Sentiment Polarity</span><strong>' + sentLabel + '</strong></div>';
+        html += '<div class="sim-MetricBox"><span>Token Statistics</span><strong>' + res.tokens.length + ' Tokens (' + res.pos + ' Pos / ' + res.neg + ' Neg)</strong></div>';
         html += '</div>';
 
-        html += '<div id="sim-status" class="sim-Banner">Click at least 3 different sentences above to inspect tokenization and sentiment!</div>';
+        html += '<div style="background:#f8fafc;padding:12px 16px;border-radius:12px;border:2px solid #cbd5e1;">';
+        html += '<div style="display:flex;justify-content:space-between;font-size:0.88rem;font-weight:800;margin-bottom:6px;"><span>😟 Negative (-1.0)</span><span>😐 Neutral (0.0)</span><span>😊 Positive (+1.0)</span></div>';
+        html += '<div style="height:14px;background:linear-gradient(90deg,#ef4444,#eab308,#10b981);border-radius:999px;position:relative;">';
+        html += '<div style="position:absolute;top:-5px;left:calc(' + gaugePct + '% - 12px);width:24px;height:24px;background:#ffffff;border:4px solid #0f172a;border-radius:50%;"></div>';
+        html += '</div></div>';
+
+        html += '<div id="sim-status" class="sim-Banner">Test at least 3 different sentences (or type your own) to complete this NLP lab!</div>';
         html += '</div>';
         container.innerHTML = html;
 
         if (Object.keys(testedNlp).length >= 3) {
-          awardSimStar(lesson.id, container.querySelector('#sim-status'), 'You analyzed tokenization, stop-words, and intent across 3 utterances!');
+          awardSimStar(lesson.id, container.querySelector('#sim-status'), 'You mastered NLP tokenization, stop-word filtering, and sentiment analysis!');
         }
 
         container.querySelectorAll('[data-nlp-idx]').forEach(function(b) {
           b.addEventListener('click', function() {
-            curIdx = parseInt(b.getAttribute('data-nlp-idx'), 10);
+            var idx = parseInt(b.getAttribute('data-nlp-idx'), 10);
+            customText = samples[idx];
+            testedNlp[idx] = true;
             if (window.ExperimindAudio) window.ExperimindAudio.click();
             renderNlp();
           });
         });
+
+        var runBtn = container.querySelector('#nlp-run-custom');
+        var inEl = container.querySelector('#nlp-custom-input');
+        if (runBtn && inEl) {
+          runBtn.addEventListener('click', function() {
+            if (inEl.value.trim()) {
+              customText = inEl.value.trim();
+              testedNlp['custom_' + Object.keys(testedNlp).length] = true;
+              if (window.ExperimindAudio) window.ExperimindAudio.pop();
+              renderNlp();
+            }
+          });
+        }
       }
       renderNlp();
       return;
     }
 
+    // --- MODE 3: INTERACTIVE CONFUSION MATRIX & METRICS WORKBENCH ---
     if (mode === 'confusion_matrix') {
-      var tp = 42, fp = 8, fn = 12, tn = 38;
+      var tp = 44, fp = 6, fn = 8, tn = 42;
+      var scenarioName = '🌊 Monsoon Flood Early-Warning AI';
 
       function renderCM() {
         var total = Math.max(1, tp + fp + fn + tn);
@@ -1624,30 +1748,55 @@ window.ExperimindSimulators = (function() {
         var f1 = (prec + rec > 0) ? (2 * prec * rec) / (prec + rec) : 0;
 
         var html = '<div class="sim-Card">';
-        html += '<div class="sim-HeaderRow"><div><span class="sim-EngineBadge">ENG-07 • Confusion Matrix & F1 Calculator</span><h4>' + (cfg.title || lesson.title) + '</h4></div>';
-        html += '<div class="sim-ProgressPill">F1-Score: <strong>' + f1.toFixed(1) + '%</strong></div></div>';
+        html += '<div class="sim-HeaderRow"><div><span class="sim-EngineBadge">🎯 Stage 5 Evaluation • Confusion Matrix Studio</span><h4>' + scenarioName + '</h4></div>';
+        html += '<div class="sim-ProgressPill">Balanced F1-Score: <strong>' + f1.toFixed(1) + '%</strong></div></div>';
+
+        html += '<div class="sim-TabRow">';
+        [
+          ['🌊 Monsoon Flood Early-Warning AI', 45, 5, 4, 46],
+          ['🩻 Hospital X-Ray Screening AI', 48, 8, 2, 42],
+          ['⚠️ Biased Overfitted Model (Bad!)', 25, 22, 19, 34]
+        ].forEach(function(pr) {
+          html += '<button type="button" class="sim-TabBtn' + (scenarioName === pr[0] ? ' sim-TabBtn--active' : '') + '" data-cm-preset="' + pr.join('|') + '">' + pr[0] + '</button>';
+        });
+        html += '</div>';
 
         html += '<div class="sim-CmGrid">';
-        html += '<div class="sim-CmCell sim-CmCell--good"><strong>True Positive (TP): ' + tp + '</strong><span>Reality: YES • AI: YES</span><input type="range" min="10" max="60" value="' + tp + '" id="cm-tp"></div>';
-        html += '<div class="sim-CmCell sim-CmCell--warn"><strong>False Positive (FP): ' + fp + '</strong><span>Type 1 Error (False Alarm)</span><input type="range" min="1" max="30" value="' + fp + '" id="cm-fp"></div>';
-        html += '<div class="sim-CmCell sim-CmCell--bad"><strong>False Negative (FN): ' + fn + '</strong><span>Type 2 Error (Dangerous Miss)</span><input type="range" min="1" max="30" value="' + fn + '" id="cm-fn"></div>';
-        html += '<div class="sim-CmCell sim-CmCell--good"><strong>True Negative (TN): ' + tn + '</strong><span>Reality: NO • AI: NO</span><input type="range" min="10" max="60" value="' + tn + '" id="cm-tn"></div>';
+        html += '<div class="sim-CmCell sim-CmCell--good"><strong>✅ True Positive (TP): ' + tp + '</strong><span>Actual = YES • Predicted = YES (Correct Hit!)</span><input type="range" min="10" max="60" value="' + tp + '" id="cm-tp"></div>';
+        html += '<div class="sim-CmCell sim-CmCell--warn"><strong>⚠️ False Positive (FP): ' + fp + '</strong><span>Actual = NO • Predicted = YES (False Alarm)</span><input type="range" min="1" max="30" value="' + fp + '" id="cm-fp"></div>';
+        html += '<div class="sim-CmCell sim-CmCell--bad"><strong>🚨 False Negative (FN): ' + fn + '</strong><span>Actual = YES • Predicted = NO (Dangerous Miss!)</span><input type="range" min="1" max="30" value="' + fn + '" id="cm-fn"></div>';
+        html += '<div class="sim-CmCell sim-CmCell--good"><strong>✅ True Negative (TN): ' + tn + '</strong><span>Actual = NO • Predicted = NO (Correct Safe)</span><input type="range" min="10" max="60" value="' + tn + '" id="cm-tn"></div>';
         html += '</div>';
 
         html += '<div class="sim-NlpResultRow">';
-        html += '<div class="sim-MetricBox"><span>Accuracy</span><strong>' + acc.toFixed(1) + '%</strong></div>';
-        html += '<div class="sim-MetricBox"><span>Precision</span><strong>' + prec.toFixed(1) + '%</strong></div>';
-        html += '<div class="sim-MetricBox"><span>Recall</span><strong>' + rec.toFixed(1) + '%</strong></div>';
-        html += '<div class="sim-MetricBox"><span>F1-Score</span><strong>' + f1.toFixed(1) + '%</strong></div>';
+        [
+          ['Accuracy (TP+TN)/Total', acc, '#2563eb'],
+          ['Precision TP/(TP+FP)', prec, '#8b5cf6'],
+          ['Recall TP/(TP+FN)', rec, '#10b981'],
+          ['F1-Score (Harmonic)', f1, '#f59e0b']
+        ].forEach(function(m) {
+          html += '<div class="sim-MetricBox"><span>' + m[0] + '</span><strong>' + m[1].toFixed(1) + '%</strong>';
+          html += '<div style="height:8px;background:#e2e8f0;border-radius:99px;margin-top:6px;overflow:hidden;"><div style="height:100%;width:' + Math.min(100, m[1]) + '%;background:' + m[2] + ';"></div></div></div>';
+        });
         html += '</div>';
 
-        html += '<div id="sim-status" class="sim-Banner">Reduce False Positives (FP) and False Negatives (FN) so both Precision and Recall exceed 85%!</div>';
+        html += '<div id="sim-status" class="sim-Banner">Tune the sliders (or test the presets) so both <strong>Precision</strong> and <strong>Recall</strong> exceed 85%!</div>';
         html += '</div>';
         container.innerHTML = html;
 
         if (prec >= 85 && rec >= 85) {
-          awardSimStar(lesson.id, container.querySelector('#sim-status'), 'High-reliability model achieved! Precision = ' + prec.toFixed(1) + '%, Recall = ' + rec.toFixed(1) + '%!');
+          awardSimStar(lesson.id, container.querySelector('#sim-status'), 'High-reliability AI model verified! Precision = ' + prec.toFixed(1) + '%, Recall = ' + rec.toFixed(1) + '%, F1 = ' + f1.toFixed(1) + '%!');
         }
+
+        container.querySelectorAll('[data-cm-preset]').forEach(function(b) {
+          b.addEventListener('click', function() {
+            var p = b.getAttribute('data-cm-preset').split('|');
+            scenarioName = p[0];
+            tp = parseInt(p[1], 10); fp = parseInt(p[2], 10); fn = parseInt(p[3], 10); tn = parseInt(p[4], 10);
+            if (window.ExperimindAudio) window.ExperimindAudio.pop();
+            renderCM();
+          });
+        });
 
         container.querySelector('#cm-tp').addEventListener('input', function(e) { tp = parseInt(e.target.value, 10); renderCM(); });
         container.querySelector('#cm-fp').addEventListener('input', function(e) { fp = parseInt(e.target.value, 10); renderCM(); });
@@ -1658,55 +1807,121 @@ window.ExperimindSimulators = (function() {
       return;
     }
 
-    // Default mode: 'supervised' or 'rule_vs_ml'
-    var classASamples = 10;
-    var classBSamples = 30;
-    var noiseResistance = 70;
-    var trained = false;
+    // --- MODE 4: INTERACTIVE 2D SUPERVISED ML & DECISION BOUNDARY CANVAS ---
+    var classASamples = 25;
+    var classBSamples = 25;
+    var noiseResistance = 80;
+    var activeBrush = 'A';
+    var customPts = [
+      { x: 0.22, y: 0.75, cls: 'A' }, { x: 0.30, y: 0.65, cls: 'A' }, { x: 0.18, y: 0.55, cls: 'A' }, { x: 0.35, y: 0.82, cls: 'A' },
+      { x: 0.72, y: 0.25, cls: 'B' }, { x: 0.80, y: 0.38, cls: 'B' }, { x: 0.65, y: 0.18, cls: 'B' }, { x: 0.78, y: 0.45, cls: 'B' }
+    ];
+    var trained = true;
 
     function renderSup() {
-      var total = classASamples + classBSamples;
-      var balanceRatio = Math.min(classASamples, classBSamples) / Math.max(1, Math.max(classASamples, classBSamples));
-      var testAcc = Math.min(98, Math.round(52 + balanceRatio * 34 + (noiseResistance / 100) * 12));
+      var countA = classASamples + customPts.filter(function(p) { return p.cls === 'A'; }).length;
+      var countB = classBSamples + customPts.filter(function(p) { return p.cls === 'B'; }).length;
+      var balanceRatio = Math.min(countA, countB) / Math.max(1, Math.max(countA, countB));
+      var testAcc = Math.min(99, Math.round(54 + balanceRatio * 34 + (noiseResistance / 100) * 11));
 
       var html = '<div class="sim-Card">';
-      html += '<div class="sim-HeaderRow"><div><span class="sim-EngineBadge">ENG-07 • Supervised ML & Dataset Bias Lab</span><h4>' + (cfg.title || lesson.title) + '</h4></div>';
-      html += '<div class="sim-ProgressPill">Unseen Test Accuracy: <strong>' + (trained ? testAcc + '%' : 'Not Trained') + '</strong></div></div>';
+      html += '<div class="sim-HeaderRow"><div><span class="sim-EngineBadge">🧠 Interactive Supervised ML & Boundary Studio</span><h4>' + (cfg.title || lesson.title) + '</h4></div>';
+      html += '<div class="sim-ProgressPill">Unseen Test Accuracy: <strong>' + testAcc + '%</strong></div></div>';
 
-      html += '<p class="sim-Instr">Balance your labeled training samples across both classes and click <strong>⚡ Train & Evaluate Model</strong> to achieve >= 90% unseen test accuracy!</p>';
+      html += '<p class="sim-Instr">1️⃣ Click directly on the <strong>2D Feature Space Canvas</strong> to add new labeled training examples, 2️⃣ Balance Class A & Class B sliders so neither group is biased, and 3️⃣ Click <strong>⚡ Train & Test AI Model</strong>!</p>';
+
+      html += '<div class="sim-SpiroLayout">';
+      html += '<div>';
+      html += '<div class="sim-TabRow" style="margin-bottom:8px;">';
+      html += '<button type="button" class="sim-TabBtn' + (activeBrush === 'A' ? ' sim-TabBtn--active' : '') + '" id="brush-a">🍏 Click Canvas to Add Class A (' + countA + ')</button>';
+      html += '<button type="button" class="sim-TabBtn' + (activeBrush === 'B' ? ' sim-TabBtn--active' : '') + '" id="brush-b">🍎 Click Canvas to Add Class B (' + countB + ')</button>';
+      html += '</div>';
+      html += '<div class="sim-CanvasWrap"><canvas id="sup-canvas" width="420" height="270" style="cursor:crosshair;"></canvas></div>';
+      html += '</div>';
 
       html += '<div class="sim-SpiroControls">';
-      html += '<label class="sim-SliderLabel">🍏 Class A Labeled Samples: <strong>' + classASamples + ' samples</strong><input type="range" min="5" max="40" step="5" value="' + classASamples + '" id="ml-ca"></label>';
-      html += '<label class="sim-SliderLabel">🍎 Class B Labeled Samples: <strong>' + classBSamples + ' samples</strong><input type="range" min="5" max="40" step="5" value="' + classBSamples + '" id="ml-cb"></label>';
-      html += '<label class="sim-SliderLabel">🔬 Feature Diversity (Lighting/Angles): <strong>' + noiseResistance + '%</strong><input type="range" min="30" max="100" step="10" value="' + noiseResistance + '" id="ml-div"></label>';
-      html += '</div>';
+      html += '<label class="sim-SliderLabel">🍏 Class A Base Samples: <strong>' + classASamples + '</strong><input type="range" min="5" max="40" step="5" value="' + classASamples + '" id="ml-ca"></label>';
+      html += '<label class="sim-SliderLabel">🍎 Class B Base Samples: <strong>' + classBSamples + '</strong><input type="range" min="5" max="40" step="5" value="' + classBSamples + '" id="ml-cb"></label>';
+      html += '<label class="sim-SliderLabel">🔬 Feature Diversity (Angles & Lighting): <strong>' + noiseResistance + '%</strong><input type="range" min="30" max="100" step="10" value="' + noiseResistance + '" id="ml-div"></label>';
 
-      html += '<div class="sim-NlpResultRow">';
-      html += '<div class="sim-MetricBox"><span>Dataset Balance Ratio</span><strong>' + Math.round(balanceRatio * 100) + '% ' + (balanceRatio >= 0.8 ? '✅ Balanced' : '⚠️ Biased/Skewed') + '</strong></div>';
-      html += '<div class="sim-MetricBox"><span>Total Training Set</span><strong>' + total + ' Labeled Examples</strong></div>';
-      html += '<div class="sim-MetricBox"><span>Unseen Test Accuracy</span><strong>' + (trained ? testAcc + '%' : 'Click Train Below') + '</strong></div>';
-      html += '</div>';
+      html += '<div class="sim-MetricBox" style="margin-bottom:8px;"><span>Dataset Fairness & Balance</span><strong>' + Math.round(balanceRatio * 100) + '% ' + (balanceRatio >= 0.8 ? '✅ Fair & Balanced' : '⚠️ Skewed / Biased!') + '</strong></div>';
+      html += '<button type="button" class="btn-Primary" id="ml-train-btn" style="width:100%;">⚡ Train Model & Verify 90%+ Accuracy</button>';
+      html += '</div></div>';
 
-      html += '<div class="sim-FooterActions"><button type="button" class="btn-Primary" id="ml-train-btn">⚡ Train Model & Run 20% Test Split</button></div>';
-      html += '<div id="sim-status" class="sim-Banner">Adjust sample sliders to eliminate bias (aim for 30+ samples in both Class A and Class B) and click Train!</div>';
+      html += '<div id="sim-status" class="sim-Banner">Click inside the 2D Feature Canvas to plot samples or click <strong>⚡ Train Model</strong>!</div>';
       html += '</div>';
       container.innerHTML = html;
 
+      // Render 2D Feature Space + Decision Boundary Line
+      var cv = container.querySelector('#sup-canvas');
+      var ctx = cv.getContext('2d');
+      ctx.fillStyle = '#0f172a';
+      ctx.fillRect(0, 0, cv.width, cv.height);
+
+      // Shaded classification regions
+      var skew = (countA - countB) * 2.2;
+      ctx.fillStyle = 'rgba(16, 185, 129, 0.14)';
+      ctx.beginPath();
+      ctx.moveTo(0, 0); ctx.lineTo(cv.width, 0); ctx.lineTo(0, cv.height + skew); ctx.closePath();
+      ctx.fill();
+
+      ctx.fillStyle = 'rgba(239, 68, 68, 0.14)';
+      ctx.beginPath();
+      ctx.moveTo(cv.width, cv.height); ctx.lineTo(cv.width, 0); ctx.lineTo(0, cv.height + skew); ctx.closePath();
+      ctx.fill();
+
+      // Learned Decision Boundary Line
+      ctx.beginPath();
+      ctx.moveTo(0, cv.height + skew);
+      ctx.lineTo(cv.width, -skew);
+      ctx.strokeStyle = '#facc15';
+      ctx.lineWidth = 3.5;
+      ctx.setLineDash([8, 6]);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      ctx.fillStyle = '#fde047';
+      ctx.font = 'bold 12px Inter, sans-serif';
+      ctx.fillText('⚡ Learned AI Decision Boundary', 18, 22);
+
+      customPts.forEach(function(pt) {
+        var px = pt.x * cv.width;
+        var py = (1 - pt.y) * cv.height;
+        ctx.beginPath();
+        ctx.arc(px, py, 8, 0, Math.PI * 2);
+        ctx.fillStyle = pt.cls === 'A' ? '#10b981' : '#ef4444';
+        ctx.fill();
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+      });
+
       if (trained && testAcc >= 90) {
-        awardSimStar(lesson.id, container.querySelector('#sim-status'), 'Balanced Supervised Model achieved ' + testAcc + '% accuracy on unseen test data!');
-      } else if (trained) {
-        var st = container.querySelector('#sim-status');
-        if (st) {
-          st.className = 'sim-Banner sim-Banner--warn';
-          st.innerHTML = '⚠️ Test Accuracy is ' + testAcc + '%. Class imbalance causes bias! Equalize Class A and Class B samples above 30 and increase Feature Diversity.';
-        }
+        awardSimStar(lesson.id, container.querySelector('#sim-status'), 'Supervised ML Classifier achieved ' + testAcc + '% unseen test accuracy with balanced decision boundary!');
       }
 
-      container.querySelector('#ml-ca').addEventListener('input', function(e) { classASamples = parseInt(e.target.value, 10); trained = false; renderSup(); });
-      container.querySelector('#ml-cb').addEventListener('input', function(e) { classBSamples = parseInt(e.target.value, 10); trained = false; renderSup(); });
-      container.querySelector('#ml-div').addEventListener('input', function(e) { noiseResistance = parseInt(e.target.value, 10); trained = false; renderSup(); });
+      cv.addEventListener('click', function(ev) {
+        var rect = cv.getBoundingClientRect();
+        var nx = ((ev.clientX - rect.left) * (cv.width / rect.width)) / cv.width;
+        var ny = 1 - (((ev.clientY - rect.top) * (cv.height / rect.height)) / cv.height);
+        customPts.push({ x: nx, y: ny, cls: activeBrush });
+        trained = true;
+        if (window.ExperimindAudio) window.ExperimindAudio.pop();
+        renderSup();
+      });
+
+      container.querySelector('#brush-a').addEventListener('click', function() { activeBrush = 'A'; renderSup(); });
+      container.querySelector('#brush-b').addEventListener('click', function() { activeBrush = 'B'; renderSup(); });
+      container.querySelector('#ml-ca').addEventListener('input', function(e) { classASamples = parseInt(e.target.value, 10); renderSup(); });
+      container.querySelector('#ml-cb').addEventListener('input', function(e) { classBSamples = parseInt(e.target.value, 10); renderSup(); });
+      container.querySelector('#ml-div').addEventListener('input', function(e) { noiseResistance = parseInt(e.target.value, 10); renderSup(); });
       container.querySelector('#ml-train-btn').addEventListener('click', function() {
         trained = true;
+        if (testAcc < 90) {
+          classASamples = 30;
+          classBSamples = 30;
+          noiseResistance = 90;
+        }
         if (window.ExperimindAudio) window.ExperimindAudio.pop();
         renderSup();
       });
@@ -1715,61 +1930,233 @@ window.ExperimindSimulators = (function() {
   }
 
   // =========================================================================
-  // ENG-08: Neural Network & Perceptron Playground
+  // ENG-08: TensorFlow-Playground-Style Multi-Layer Neural Network Builder
+  //         + Live Activation Curve + Live Python/NumPy Code Bridge (Classes 7–8)
+  // =========================================================================
+  // =========================================================================
+  // ENG-08: TensorFlow-Playground-Style Multi-Layer Neural Network Builder
+  //         + Live Activation Curve + Live Python/NumPy Code Bridge (Classes 7–8)
   // =========================================================================
   function mountEng08(container, lesson) {
     var cfg = lesson.simConfig || {};
+    var isMultiLayerLesson = (lesson.id === 'C8-04');
+    var hiddenLayers = isMultiLayerLesson ? 2 : 1;
+    var neuronsPerLayer = isMultiLayerLesson ? 4 : 3;
     var x1 = 1, x2 = 1, x3 = 0;
-    var w1 = 1.2, w2 = 1.0, w3 = 0.8, bias = -1.5;
+    var w1 = 1.4, w2 = 1.2, w3 = 0.8, bias = -1.2;
     var actFn = 'sigmoid';
+    var animId = null;
+    var pulseTick = 0;
+
+    // Lesson-adaptive input labels
+    var inpLabels = ['x1: Sunny Sky ☀️', 'x2: Dry Field 🏟️', 'x3: Coach Ready 📣'];
+    if (lesson.id === 'C8-04') {
+      inpLabels = ['x1: Sensor Feature A 📡', 'x2: Pixel Edge Density 🖼️', 'x3: Temporal Signal 📈'];
+    }
 
     function renderNN() {
-      var z = (x1 * w1) + (x2 * w2) + (x3 * w3) + bias;
+      if (animId) { cancelAnimationFrame(animId); animId = null; }
+      var layerMultiplier = 1 + (hiddenLayers - 1) * 0.18 + (neuronsPerLayer - 3) * 0.08;
+      var z = ((x1 * w1) + (x2 * w2) + (x3 * w3)) * layerMultiplier + bias;
       var out = 0;
       if (actFn === 'step') out = z >= 0 ? 1 : 0;
-      else if (actFn === 'relu') out = Math.max(0, z);
+      else if (actFn === 'relu') out = Math.min(1, Math.max(0, z / 3));
       else out = 1 / (1 + Math.exp(-z));
 
       var fired = out >= 0.75;
 
       var html = '<div class="sim-Card">';
-      html += '<div class="sim-HeaderRow"><div><span class="sim-EngineBadge">ENG-08 • Neural Network & Perceptron Lab</span><h4>' + (cfg.title || lesson.title) + '</h4></div>';
-      html += '<div class="sim-ProgressPill">Output Activation: <strong>' + out.toFixed(2) + (fired ? ' 🔥 FIRED' : ' 💤 QUIET') + '</strong></div></div>';
+      html += '<div class="sim-HeaderRow"><div><span class="sim-EngineBadge">🕸️ Deep Neural Network & TensorFlow Playground</span><h4>' + (cfg.title || lesson.title) + '</h4></div>';
+      html += '<div class="sim-ProgressPill">Output Activation: <strong>' + (out * 100).toFixed(0) + '%' + (fired ? ' 🔥 NEURON FIRED!' : ' 💤 BELOW THRESHOLD') + '</strong></div></div>';
 
-      html += '<div class="sim-TabRow">';
-      [['sigmoid', 'Sigmoid (0..1 Probability)'], ['step', 'Step Function (0 or 1)'], ['relu', 'ReLU max(0, z)']].forEach(function(pair) {
+      // Architecture & Activation Toolbar
+      html += '<div class="sim-TabRow" style="align-items:center;">';
+      [['sigmoid', '📈 Sigmoid (0..1)'], ['step', '🪜 Step (0 or 1)'], ['relu', '⚡ ReLU Ramp']].forEach(function(pair) {
         html += '<button type="button" class="sim-TabBtn' + (actFn === pair[0] ? ' sim-TabBtn--active' : '') + '" data-act="' + pair[0] + '">' + pair[1] + '</button>';
       });
+      html += '<button type="button" class="sim-MiniBtn" id="nn-add-layer">➕ Hidden Layers (' + hiddenLayers + ')</button>';
+      html += '<button type="button" class="sim-MiniBtn" id="nn-add-neurons">🔵 Neurons/Layer (' + neuronsPerLayer + ')</button>';
+      html += '<button type="button" class="btn-Primary" id="nn-autotune" style="margin-left:auto;padding:8px 14px;font-size:0.88rem;">⚡ Auto-Train Weights</button>';
       html += '</div>';
 
+      // Live Animated Multi-Layer Neural Network + Activation Function Plot Canvas
+      html += '<div class="sim-CanvasWrap"><canvas id="nn-canvas" width="660" height="260"></canvas></div>';
+
       html += '<div class="sim-NnGrid">';
-      // Inputs + Weights
       [
-        { idx: 1, label: 'x1: Sunny Sky ☀️', xVal: x1, wVal: w1 },
-        { idx: 2, label: 'x2: Dry Field 🏟️', xVal: x2, wVal: w2 },
-        { idx: 3, label: 'x3: Coach Ready  whistle', xVal: x3, wVal: w3 }
+        { idx: 1, label: inpLabels[0], xVal: x1, wVal: w1 },
+        { idx: 2, label: inpLabels[1], xVal: x2, wVal: w2 },
+        { idx: 3, label: inpLabels[2], xVal: x3, wVal: w3 }
       ].forEach(function(node) {
-        html += '<div class="sim-NnRow">';
-        html += '<button type="button" class="sim-SwitchBtn' + (node.xVal ? ' sim-SwitchBtn--on' : '') + '" data-nn-x="' + node.idx + '">' + node.label + ' = <strong>' + node.xVal + '</strong></button>';
-        html += '<label class="sim-SliderLabel">Weight w' + node.idx + ': <strong>' + node.wVal.toFixed(1) + '</strong><input type="range" min="-2.0" max="2.5" step="0.1" value="' + node.wVal + '" data-nn-w="' + node.idx + '"></label>';
-        html += '<div class="sim-NnProd">Signal: ' + (node.xVal * node.wVal).toFixed(2) + '</div>';
+        html += '<div class="sim-NnRow" style="background:#f8fafc;padding:10px 14px;border-radius:12px;border:2px solid #cbd5e1;margin-bottom:8px;display:grid;grid-template-columns:1.1fr 1.3fr auto;gap:12px;align-items:center;">';
+        html += '<button type="button" class="sim-SwitchBtn' + (node.xVal ? ' sim-SwitchBtn--on' : '') + '" style="margin:0;" data-nn-x="' + node.idx + '">' + node.label + ' = <strong>' + node.xVal + '</strong></button>';
+        html += '<label class="sim-SliderLabel" style="margin:0;">Weight w' + node.idx + ': <strong>' + node.wVal.toFixed(1) + '</strong><input type="range" min="-2.0" max="2.5" step="0.1" value="' + node.wVal + '" data-nn-w="' + node.idx + '"></label>';
+        html += '<div class="sim-NnProd" style="font-weight:900;color:#1e40af;">+' + (node.xVal * node.wVal).toFixed(2) + '</div>';
         html += '</div>';
       });
       html += '</div>';
 
-      html += '<label class="sim-SliderLabel" style="margin-top:10px;">⚖️ Neuron Threshold Bias (b): <strong>' + bias.toFixed(1) + '</strong><input type="range" min="-3.0" max="2.0" step="0.1" value="' + bias + '" id="nn-bias"></label>';
+      html += '<label class="sim-SliderLabel">⚖️ Neuron Bias Threshold (b): <strong>' + bias.toFixed(1) + '</strong><input type="range" min="-3.0" max="2.0" step="0.1" value="' + bias + '" id="nn-bias"></label>';
 
-      html += '<div class="sim-MathReadout">Weighted Sum <code>z = (' + x1 + '×' + w1.toFixed(1) + ') + (' + x2 + '×' + w2.toFixed(1) + ') + (' + x3 + '×' + w3.toFixed(1) + ') + (' + bias.toFixed(1) + ') = ' + z.toFixed(2) + '</code> ➔ <strong>Output = ' + out.toFixed(2) + '</strong></div>';
-      html += '<div id="sim-status" class="sim-Banner">Tune inputs, weights, and bias until Output Activation reaches >= 0.80!</div>';
+      // Live Python / NumPy Code Bridge
+      html += '<div class="sim-MathReadout" style="line-height:1.5;">';
+      html += '<div style="color:#38bdf8;font-size:0.82rem;margin-bottom:4px;">🐍 LIVE PYTHON / NUMPY NEURAL FORWARD PASS:</div>';
+      html += '<code>X = np.array([' + x1 + ', ' + x2 + ', ' + x3 + ']); W = np.array([' + w1.toFixed(1) + ', ' + w2.toFixed(1) + ', ' + w3.toFixed(1) + ']); b = ' + bias.toFixed(1) + '</code><br>';
+      html += '<code>z = np.dot(X, W) * ' + layerMultiplier.toFixed(2) + ' + b  # z = ' + z.toFixed(2) + ' ➔ ' + actFn + '(z) = <strong>' + out.toFixed(3) + '</strong></code>';
+      html += '</div>';
+
+      html += '<div id="sim-status" class="sim-Banner">Add hidden layers or tune weights until Output Activation exceeds 80%!</div>';
       html += '</div>';
       container.innerHTML = html;
 
+      var cv = container.querySelector('#nn-canvas');
+      var ctx = cv.getContext('2d');
+
+      function drawNetworkFrame() {
+        pulseTick++;
+        ctx.fillStyle = '#0f172a';
+        ctx.fillRect(0, 0, cv.width, cv.height);
+
+        // Build columns of nodes: Input Layer -> Hidden Layer(s) -> Output Layer
+        var layers = [];
+        var inpNodes = [
+          { y: 55, val: x1, w: w1, name: 'x1=' + x1 },
+          { y: 130, val: x2, w: w2, name: 'x2=' + x2 },
+          { y: 205, val: x3, w: w3, name: 'x3=' + x3 }
+        ];
+        layers.push({ x: 58, nodes: inpNodes, color: '#2563eb' });
+
+        var totalSpan = 340;
+        var stepX = totalSpan / (hiddenLayers + 1);
+        for (var hl = 0; hl < hiddenLayers; hl++) {
+          var hNodes = [];
+          for (var n = 0; n < neuronsPerLayer; n++) {
+            var hy = 38 + (n * (184 / Math.max(1, neuronsPerLayer - 1)));
+            hNodes.push({ y: hy, val: 1, w: 1, name: 'h' + (hl + 1) + (n + 1) });
+          }
+          layers.push({ x: 58 + stepX * (hl + 1), nodes: hNodes, color: '#6366f1' });
+        }
+
+        layers.push({ x: 58 + totalSpan, nodes: [{ y: 130, val: out, w: 1, name: (out * 100).toFixed(0) + '%' }], color: fired ? '#059669' : '#334155' });
+
+        // Draw synapses and animated signal pulses between consecutive layers
+        for (var li = 0; li < layers.length - 1; li++) {
+          var curL = layers[li];
+          var nxtL = layers[li + 1];
+          curL.nodes.forEach(function(n1, i1) {
+            nxtL.nodes.forEach(function(n2, i2) {
+              ctx.beginPath();
+              ctx.moveTo(curL.x + 18, n1.y);
+              ctx.lineTo(nxtL.x - 18, n2.y);
+              ctx.strokeStyle = (n1.w >= 0) ? 'rgba(16, 185, 129, 0.5)' : 'rgba(239, 68, 68, 0.5)';
+              ctx.lineWidth = 1.8;
+              ctx.stroke();
+
+              if (n1.val > 0) {
+                var t = ((pulseTick * 0.025 + i1 * 0.25 + i2 * 0.15 + li * 0.2) % 1);
+                var px = (curL.x + 18) + (nxtL.x - 18 - (curL.x + 18)) * t;
+                var py = n1.y + (n2.y - n1.y) * t;
+                ctx.beginPath();
+                ctx.arc(px, py, 4.5, 0, Math.PI * 2);
+                ctx.fillStyle = '#fde047';
+                ctx.fill();
+              }
+            });
+          });
+        }
+
+        // Draw Layer Nodes
+        layers.forEach(function(L, li) {
+          L.nodes.forEach(function(nd) {
+            var r = (li === layers.length - 1) ? 26 : 19;
+            ctx.beginPath();
+            ctx.arc(L.x, nd.y, r, 0, Math.PI * 2);
+            ctx.fillStyle = L.color;
+            ctx.fill();
+            ctx.strokeStyle = (li === layers.length - 1 && fired) ? '#fde047' : '#93c5fd';
+            ctx.lineWidth = 2.5;
+            ctx.stroke();
+            ctx.fillStyle = '#ffffff';
+            ctx.font = 'bold 11px Inter, sans-serif';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(nd.name, L.x, nd.y);
+          });
+        });
+
+        // Right side: Live Activation Function Plot (x: 455..635, y: 35..225)
+        var gx0 = 455, gy0 = 35, gw = 180, gh = 190;
+        ctx.fillStyle = '#1e293b';
+        ctx.fillRect(gx0, gy0, gw, gh);
+        ctx.strokeStyle = '#475569';
+        ctx.lineWidth = 1;
+        ctx.strokeRect(gx0, gy0, gw, gh);
+
+        ctx.beginPath();
+        ctx.moveTo(gx0 + gw / 2, gy0); ctx.lineTo(gx0 + gw / 2, gy0 + gh);
+        ctx.moveTo(gx0, gy0 + gh - 20); ctx.lineTo(gx0 + gw, gy0 + gh - 20);
+        ctx.stroke();
+
+        ctx.beginPath();
+        for (var i = 0; i <= gw; i += 3) {
+          var zv = ((i / gw) - 0.5) * 8;
+          var yv = 0;
+          if (actFn === 'step') yv = zv >= 0 ? 1 : 0;
+          else if (actFn === 'relu') yv = Math.min(1, Math.max(0, zv / 3));
+          else yv = 1 / (1 + Math.exp(-zv));
+          var px = gx0 + i;
+          var py = (gy0 + gh - 20) - yv * (gh - 45);
+          if (i === 0) ctx.moveTo(px, py);
+          else ctx.lineTo(px, py);
+        }
+        ctx.strokeStyle = '#38bdf8';
+        ctx.lineWidth = 3;
+        ctx.stroke();
+
+        var clampedZ = Math.max(-4, Math.min(4, z));
+        var dotX = gx0 + ((clampedZ + 4) / 8) * gw;
+        var dotY = (gy0 + gh - 20) - out * (gh - 45);
+        ctx.beginPath();
+        ctx.arc(dotX, dotY, 7, 0, Math.PI * 2);
+        ctx.fillStyle = '#facc15';
+        ctx.fill();
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+
+        ctx.fillStyle = '#e2e8f0';
+        ctx.font = 'bold 11px Inter, sans-serif';
+        ctx.fillText(actFn.toUpperCase() + ' CURVE', gx0 + gw / 2, gy0 + 14);
+
+        animId = requestAnimationFrame(drawNetworkFrame);
+      }
+
+      drawNetworkFrame();
+      activeCleanup = function() {
+        if (animId) cancelAnimationFrame(animId);
+      };
+
       if (out >= 0.80) {
-        awardSimStar(lesson.id, container.querySelector('#sim-status'), 'Neuron activated strongly (Output = ' + out.toFixed(2) + ') with z = ' + z.toFixed(2) + '!');
+        awardSimStar(lesson.id, container.querySelector('#sim-status'), 'Multi-layer neural network activated at ' + (out * 100).toFixed(0) + '% confidence!');
       }
 
       container.querySelectorAll('[data-act]').forEach(function(b) {
         b.addEventListener('click', function() { actFn = b.getAttribute('data-act'); renderNN(); });
+      });
+      container.querySelector('#nn-add-layer').addEventListener('click', function() {
+        hiddenLayers = (hiddenLayers % 3) + 1;
+        if (window.ExperimindAudio) window.ExperimindAudio.pop();
+        renderNN();
+      });
+      container.querySelector('#nn-add-neurons').addEventListener('click', function() {
+        neuronsPerLayer = (neuronsPerLayer >= 5) ? 2 : neuronsPerLayer + 1;
+        if (window.ExperimindAudio) window.ExperimindAudio.pop();
+        renderNN();
+      });
+      container.querySelector('#nn-autotune').addEventListener('click', function() {
+        x1 = 1; x2 = 1; x3 = 1; w1 = 1.6; w2 = 1.5; w3 = 1.2; bias = -0.8;
+        if (window.ExperimindAudio) window.ExperimindAudio.pop();
+        renderNN();
       });
       container.querySelectorAll('[data-nn-x]').forEach(function(b) {
         b.addEventListener('click', function() {
@@ -1800,13 +2187,13 @@ window.ExperimindSimulators = (function() {
   }
 
   // =========================================================================
-  // ENG-09: Computer Vision Pixel Matrix & 3x3 Convolution Filter Lab
+  // ENG-09: Paintable Pixel Matrix & Animated 3x3 Convolution Scanner (Classes 6–8)
   // =========================================================================
   function mountEng09(container, lesson) {
     var cfg = lesson.simConfig || {};
-    var showNums = true;
     var kernelName = 'vert_edge';
     var scannedCount = 0;
+    var scanRow = 2, scanCol = 2;
 
     var PRESETS = {
       'vline': [
@@ -1832,13 +2219,21 @@ window.ExperimindSimulators = (function() {
         [255,255,255,255,255,255],
         [0,0,255,255,0,0],
         [0,0,255,255,0,0]
+      ],
+      'smiley': [
+        [0,255,0,0,255,0],
+        [0,255,0,0,255,0],
+        [0,0,0,0,0,0],
+        [255,0,0,0,0,255],
+        [0,255,255,255,255,0],
+        [0,0,0,0,0,0]
       ]
     };
 
     var KERNELS = {
       'vert_edge': { label: 'Vertical Edge Filter', k: [[-1,0,1],[-1,0,1],[-1,0,1]] },
       'horiz_edge': { label: 'Horizontal Edge Filter', k: [[-1,-1,-1],[0,0,0],[1,1,1]] },
-      'sharpen': { label: 'Sharpen Center Filter', k: [[0,-1,0],[-1,5,-1],[0,-1,0]] }
+      'sharpen': { label: 'Sharpen Filter', k: [[0,-1,0],[-1,5,-1],[0,-1,0]] }
     };
 
     var grid = PRESETS.cross.map(function(r) { return r.slice(); });
@@ -1867,52 +2262,63 @@ window.ExperimindSimulators = (function() {
     function renderPixels() {
       var fmap = computeFeatureMap();
       var html = '<div class="sim-Card">';
-      html += '<div class="sim-HeaderRow"><div><span class="sim-EngineBadge">ENG-09 • Computer Vision Pixel & Kernel Lab</span><h4>' + (cfg.title || lesson.title) + '</h4></div>';
-      html += '<div class="sim-ProgressPill">Kernel Scans: ' + scannedCount + ' / 2</div></div>';
-      html += '<p class="sim-Instr">Click any pixel in the left 6×6 Input Matrix to toggle brightness (`0` vs `255`), and switch Convolution Kernels to inspect the output Feature Map!</p>';
+      html += '<div class="sim-HeaderRow"><div><span class="sim-EngineBadge">🔍 Computer Vision Pixel Matrix & 3×3 Filter Studio</span><h4>' + (cfg.title || lesson.title) + '</h4></div>';
+      html += '<div class="sim-ProgressPill">Filter Scans: ' + scannedCount + ' / 2</div></div>';
+      html += '<p class="sim-Instr">Click any square in the <strong>Input Pixel Grid</strong> to paint light (`255`) or dark (`0`), or click <strong>▶️ Step 3×3 Scanner</strong> to watch the yellow filter window extract edges!</p>';
 
       html += '<div class="sim-TabRow">';
       Object.keys(KERNELS).forEach(function(kId) {
         html += '<button type="button" class="sim-TabBtn' + (kernelName === kId ? ' sim-TabBtn--active' : '') + '" data-kernel="' + kId + '">' + KERNELS[kId].label + '</button>';
       });
+      html += '<button type="button" class="btn-Primary" id="px-step-scan" style="margin-left:auto;padding:8px 14px;font-size:0.88rem;">▶️ Step 3×3 Scanner Window</button>';
       html += '</div>';
 
       html += '<div class="sim-PixelDualGrid">';
-      // Input Pixel Grid
-      html += '<div><div class="sim-SubLabel">Input Image Matrix (0 = Black, 255 = White):</div><div class="sim-PixelMatrix">';
+      html += '<div><div class="sim-SubLabel">1. Input Pixel Grid (Click to Paint 0 or 255):</div><div class="sim-PixelMatrix">';
       for (var r = 0; r < 6; r++) {
         for (var c = 0; c < 6; c++) {
           var v = grid[r][c];
+          var inWindow = Math.abs(r - scanRow) <= 1 && Math.abs(c - scanCol) <= 1;
           var bg = 'rgb(' + v + ',' + v + ',' + v + ')';
           var fg = v > 128 ? '#0f172a' : '#f8fafc';
-          html += '<button type="button" class="sim-PixelCell" style="background:' + bg + ';color:' + fg + ';" data-px="' + r + ',' + c + '">' + (showNums ? v : '') + '</button>';
+          var border = inWindow ? 'outline:3px solid #facc15;z-index:2;' : '';
+          html += '<button type="button" class="sim-PixelCell" style="background:' + bg + ';color:' + fg + ';' + border + '" data-px="' + r + ',' + c + '">' + v + '</button>';
         }
       }
       html += '</div></div>';
 
-      // Convolved Feature Map
-      html += '<div><div class="sim-SubLabel">Convolved Feature Map (' + KERNELS[kernelName].label + '):</div><div class="sim-PixelMatrix">';
+      html += '<div><div class="sim-SubLabel">2. Extracted Feature Map (' + KERNELS[kernelName].label + '):</div><div class="sim-PixelMatrix">';
       for (var fr = 0; fr < 6; fr++) {
         for (var fc = 0; fc < 6; fc++) {
           var fv = fmap[fr][fc];
+          var isCenter = (fr === scanRow && fc === scanCol);
           var fbg = 'rgb(0,' + fv + ',' + Math.min(255, fv + 40) + ')';
           var ffg = fv > 130 ? '#0f172a' : '#f8fafc';
-          html += '<div class="sim-PixelCell" style="background:' + fbg + ';color:' + ffg + ';">' + (showNums ? fv : '') + '</div>';
+          var fborder = isCenter ? 'outline:3px solid #facc15;z-index:2;' : '';
+          html += '<div class="sim-PixelCell" style="background:' + fbg + ';color:' + ffg + ';' + fborder + '">' + fv + '</div>';
         }
       }
       html += '</div></div></div>';
 
-      html += '<div class="sim-FooterActions">';
-      html += '<button type="button" class="btn-Secondary" data-px-preset="vline">Vertical Bar</button>';
-      html += '<button type="button" class="btn-Secondary" data-px-preset="hline">Horizontal Bar</button>';
-      html += '<button type="button" class="btn-Secondary" data-px-preset="cross">Plus Cross</button>';
+      // Live Python / OpenCV Code Bridge
+      html += '<div class="sim-MathReadout" style="line-height:1.45;">';
+      html += '<div style="color:#38bdf8;font-size:0.82rem;margin-bottom:3px;">🐍 LIVE PYTHON / OPENCV CONVOLUTION CODE:</div>';
+      html += '<code>kernel = np.array(' + JSON.stringify(KERNELS[kernelName].k) + ')  # ' + KERNELS[kernelName].label + '</code><br>';
+      html += '<code>feature_map[' + scanRow + ', ' + scanCol + '] = np.abs(np.sum(patch_3x3 * kernel)) // 2  # Output = <strong>' + fmap[scanRow][scanCol] + '</strong></code>';
       html += '</div>';
-      html += '<div id="sim-status" class="sim-Banner">Click pixels or switch between Vertical and Horizontal Edge Filters!</div>';
+
+      html += '<div class="sim-FooterActions">';
+      html += '<button type="button" class="btn-Secondary" data-px-preset="smiley">😊 Smiley Preset</button>';
+      html += '<button type="button" class="btn-Secondary" data-px-preset="vline">┃ Vertical Bar</button>';
+      html += '<button type="button" class="btn-Secondary" data-px-preset="hline">━ Horizontal Bar</button>';
+      html += '<button type="button" class="btn-Secondary" data-px-preset="cross">➕ Plus Cross</button>';
+      html += '</div>';
+      html += '<div id="sim-status" class="sim-Banner">Paint pixels or switch between Vertical and Horizontal Edge Filters!</div>';
       html += '</div>';
       container.innerHTML = html;
 
       if (scannedCount >= 2) {
-        awardSimStar(lesson.id, container.querySelector('#sim-status'), 'You extracted edge feature maps across multiple convolution filters!');
+        awardSimStar(lesson.id, container.querySelector('#sim-status'), 'You extracted Computer Vision feature maps using 3×3 convolution filters!');
       }
 
       container.querySelectorAll('[data-px]').forEach(function(cell) {
@@ -1920,10 +2326,19 @@ window.ExperimindSimulators = (function() {
           var rc = cell.getAttribute('data-px').split(',');
           var rr = parseInt(rc[0], 10), cc = parseInt(rc[1], 10);
           grid[rr][cc] = grid[rr][cc] > 128 ? 0 : 255;
+          scanRow = rr; scanCol = cc;
           scannedCount++;
           if (window.ExperimindAudio) window.ExperimindAudio.click();
           renderPixels();
         });
+      });
+
+      container.querySelector('#px-step-scan').addEventListener('click', function() {
+        scanCol++;
+        if (scanCol > 4) { scanCol = 1; scanRow = (scanRow >= 4) ? 1 : scanRow + 1; }
+        scannedCount++;
+        if (window.ExperimindAudio) window.ExperimindAudio.pop();
+        renderPixels();
       });
 
       container.querySelectorAll('[data-kernel]').forEach(function(btn) {
@@ -1948,7 +2363,7 @@ window.ExperimindSimulators = (function() {
   }
 
   // =========================================================================
-  // ENG-10: Smart IoT Sensor Workbench & AI Ethics / 4Ws Governance Auditor
+  // ENG-10: Animated Smart IoT Schematic Canvas & 4Ws / AI Ethics Studio
   // =========================================================================
   function mountEng10(container, lesson) {
     var cfg = lesson.simConfig || {};
@@ -1961,31 +2376,31 @@ window.ExperimindSimulators = (function() {
       function renderEthics() {
         var doneCount = Object.keys(approved).length;
         var html = '<div class="sim-Card">';
-        html += '<div class="sim-HeaderRow"><div><span class="sim-EngineBadge">ENG-10 • AI Governance & 4Ws Auditor</span><h4>' + (cfg.title || lesson.title) + '</h4></div>';
-        html += '<div class="sim-ProgressPill">' + doneCount + ' / ' + scenarios.length + ' Audited</div></div>';
-        html += '<p class="sim-Instr">Review each real-world scenario below and click <strong>🛡️ Activate Ethical Guardrail / Verify Scope</strong> to lock in the responsible standard!</p>';
+        html += '<div class="sim-HeaderRow"><div><span class="sim-EngineBadge">🛡️ AI Governance, 4Ws & Ethics Studio</span><h4>' + (cfg.title || lesson.title) + '</h4></div>';
+        html += '<div class="sim-ProgressPill">' + doneCount + ' / ' + scenarios.length + ' Guardrails Active</div></div>';
+        html += '<p class="sim-Instr">Inspect each real-world AI scenario below and click <strong>🛡️ Activate Responsible AI Guardrail</strong> to protect privacy, fairness, and safety!</p>';
 
-        html += '<div class="sim-EthicsList">';
+        html += '<div class="sim-EthicsList" style="display:flex;flex-direction:column;gap:12px;">';
         scenarios.forEach(function(sc, idx) {
           var isDone = !!approved[idx];
-          html += '<div class="sim-EthicsCard' + (isDone ? ' sim-EthicsCard--done' : '') + '">';
-          html += '<div class="sim-EthicsHeader"><strong>' + sc.title + '</strong><span class="sim-RiskBadge">' + sc.risk + '</span></div>';
-          html += '<p class="sim-EthicsDesc">' + sc.desc + '</p>';
+          html += '<div class="sim-EthicsCard" style="background:' + (isDone ? '#ecfdf5' : '#f8fafc') + ';border:2px solid ' + (isDone ? '#10b981' : '#cbd5e1') + ';border-radius:14px;padding:16px;">';
+          html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;flex-wrap:wrap;gap:8px;"><strong>' + (idx + 1) + '. ' + sc.title + '</strong><span class="sim-EngineBadge" style="margin:0;">' + sc.risk + '</span></div>';
+          html += '<p style="font-size:0.96rem;color:#334155;margin-bottom:12px;">' + sc.desc + '</p>';
           if (isDone) {
-            html += '<div class="sim-GuardrailActive">✅ <strong>Verified Standard:</strong> ' + sc.safeAction + '</div>';
+            html += '<div style="font-weight:800;color:#065f46;">✅ Verified Standard: ' + sc.safeAction + '</div>';
           } else {
-            html += '<button type="button" class="btn-Primary" data-audit-idx="' + idx + '">🛡️ Apply Guardrail: ' + sc.safeAction + '</button>';
+            html += '<button type="button" class="btn-Primary" data-audit-idx="' + idx + '">🛡️ Activate Guardrail: ' + sc.safeAction + '</button>';
           }
           html += '</div>';
         });
         html += '</div>';
 
-        html += '<div id="sim-status" class="sim-Banner">Audit all ' + scenarios.length + ' scenarios above to earn your Governance Star!</div>';
+        html += '<div id="sim-status" class="sim-Banner">Activate all ' + scenarios.length + ' responsible AI guardrails above!</div>';
         html += '</div>';
         container.innerHTML = html;
 
         if (doneCount === scenarios.length && scenarios.length > 0) {
-          awardSimStar(lesson.id, container.querySelector('#sim-status'), 'All ' + scenarios.length + ' ethical guardrails and 4Ws scopes verified!');
+          awardSimStar(lesson.id, container.querySelector('#sim-status'), 'All ' + scenarios.length + ' AI Ethics & 4Ws Problem Scoping standards verified!');
         }
 
         container.querySelectorAll('[data-audit-idx]').forEach(function(btn) {
@@ -2001,38 +2416,131 @@ window.ExperimindSimulators = (function() {
       return;
     }
 
-    // Default mode: 'iot' (Smart Home / Smart Agriculture / Smart City IoT Sensor Lab)
+    // Default mode: 'iot' — Domain-Adaptive Animated Smart IoT Schematic Canvas
     var s1 = 34, s2 = 22, s3 = 1;
     var changes = 0;
+    var iotAnimId = null;
+    var tick = 0;
 
     function renderIot() {
+      if (iotAnimId) { cancelAnimationFrame(iotAnimId); iotAnimId = null; }
       var preset = cfg.presetMode || 'smart_home';
+      var s1Label = (preset === 'smart_city') ? '🌊 River Water Level (m)' : '🌡️ Temperature Sensor (°C)';
+      var s2Label = (preset === 'smart_agri') ? '🌱 Soil Moisture (%)' : (preset === 'smart_city' ? '🌧️ Monsoon Rainfall (%)' : '☀️ Daylight Level (%)');
+      var s3Label = (preset === 'smart_city') ? '📡 Edge Disaster Node' : '📡 PIR Motion Sensor';
+
       var fanOn = s1 >= 30 && s3 === 1;
       var valveOn = s2 < 35;
       var alertOn = (s1 >= 38 || s2 >= 80);
 
       var html = '<div class="sim-Card">';
-      html += '<div class="sim-HeaderRow"><div><span class="sim-EngineBadge">ENG-10 • Smart IoT Sensor & Actuator Network</span><h4>' + (cfg.title || lesson.title) + '</h4></div>';
-      html += '<div class="sim-ProgressPill">Sensor Tests: ' + changes + ' / 3</div></div>';
+      html += '<div class="sim-HeaderRow"><div><span class="sim-EngineBadge">🛰️ Smart IoT Sensor & Edge AI Schematic</span><h4>' + (cfg.title || lesson.title) + '</h4></div>';
+      html += '<div class="sim-ProgressPill">Experiments Run: ' + changes + ' / 3</div></div>';
+
+      html += '<div class="sim-CanvasWrap"><canvas id="iot-canvas" width="660" height="230"></canvas></div>';
 
       html += '<div class="sim-SpiroControls">';
-      html += '<label class="sim-SliderLabel">🌡️ Sensor 1 (Temperature / River Level): <strong>' + s1 + ' units</strong><input type="range" min="15" max="45" value="' + s1 + '" id="iot-s1"></label>';
-      html += '<label class="sim-SliderLabel">💧 Sensor 2 (' + (preset === 'smart_agri' ? 'Soil Moisture %' : 'Daylight / Rainfall %') + '): <strong>' + s2 + '%</strong><input type="range" min="5" max="95" step="5" value="' + s2 + '" id="iot-s2"></label>';
-      html += '<button type="button" class="sim-SwitchBtn' + (s3 ? ' sim-SwitchBtn--on' : '') + '" id="iot-s3">📡 Sensor 3 (Motion / Edge Node Online): <strong>' + (s3 ? 'DETECTED (1)' : 'CLEAR (0)') + '</strong></button>';
+      html += '<label class="sim-SliderLabel">' + s1Label + ': <strong>' + s1 + ' units</strong><input type="range" min="15" max="45" value="' + s1 + '" id="iot-s1"></label>';
+      html += '<label class="sim-SliderLabel">' + s2Label + ': <strong>' + s2 + '%</strong><input type="range" min="5" max="95" step="5" value="' + s2 + '" id="iot-s2"></label>';
+      html += '<button type="button" class="sim-SwitchBtn' + (s3 ? ' sim-SwitchBtn--on' : '') + '" id="iot-s3">' + s3Label + ': <strong>' + (s3 ? 'ACTIVE (1)' : 'STANDBY (0)') + '</strong></button>';
+      html += '</div>';
+
+      // Live Python / MicroPython IoT Code Bridge
+      html += '<div class="sim-MathReadout" style="line-height:1.45;">';
+      html += '<div style="color:#38bdf8;font-size:0.82rem;margin-bottom:3px;">🐍 LIVE MICROPYTHON EDGE AI CONTROLLER:</div>';
+      html += '<code>if sensor_1 (' + s1 + ') >= 30 and motion (' + s3 + ') == 1: relay_fan.on()  # ' + (fanOn ? 'ON' : 'OFF') + '</code><br>';
+      html += '<code>if sensor_2 (' + s2 + '%) < 35: irrigation_valve.open()          # ' + (valveOn ? 'OPEN' : 'SHUT') + '</code>';
       html += '</div>';
 
       html += '<div class="sim-NlpResultRow">';
-      html += '<div class="sim-MetricBox"><span>🌀 Smart Cooling / Relay</span><strong>' + (fanOn ? '🟢 ON (Temp>=30 & Motion=1)' : '⚪ STANDBY (Saving Power)') + '</strong></div>';
-      html += '<div class="sim-MetricBox"><span>🚿 Automated Valve / LEDs</span><strong>' + (valveOn ? '🟢 ACTIVE (Level < 35%)' : '⚪ OFF (Threshold Met)') + '</strong></div>';
-      html += '<div class="sim-MetricBox"><span>🚨 Early-Warning Siren</span><strong>' + (alertOn ? '🔴 TRIGGERED (High Spike!)' : '🟢 NORMAL SAFE') + '</strong></div>';
+      html += '<div class="sim-MetricBox"><span>🌀 Smart Relay / Fan</span><strong>' + (fanOn ? '🟢 SPINNING (Active)' : '⚪ STANDBY (Saving Power)') + '</strong></div>';
+      html += '<div class="sim-MetricBox"><span>🚿 Drip Valve / Solar LEDs</span><strong>' + (valveOn ? '🟢 FLOWING (< 35%)' : '⚪ OFF (Threshold Met)') + '</strong></div>';
+      html += '<div class="sim-MetricBox"><span>🚨 Early-Warning Siren</span><strong>' + (alertOn ? '🔴 ACTIVE (Emergency Spike!)' : '🟢 NORMAL SAFE') + '</strong></div>';
       html += '</div>';
 
-      html += '<div id="sim-status" class="sim-Banner">Adjust the 3 IoT sensor inputs above to observe how actuators respond automatically!</div>';
+      html += '<div id="sim-status" class="sim-Banner">Slide the IoT sensors above and watch the animated Edge AI Hub control the actuators!</div>';
       html += '</div>';
       container.innerHTML = html;
 
+      var cv = container.querySelector('#iot-canvas');
+      var ctx = cv.getContext('2d');
+
+      function drawIotSchematic() {
+        tick++;
+        ctx.fillStyle = '#0f172a';
+        ctx.fillRect(0, 0, cv.width, cv.height);
+
+        var hub = { x: 330, y: 115 };
+        var leftNodes = [
+          { x: 105, y: 50, title: '🌡️ S1: ' + s1 + ' units', active: s1 >= 30 },
+          { x: 105, y: 115, title: '💧 S2: ' + s2 + '%', active: s2 < 35 || s2 >= 80 },
+          { x: 105, y: 180, title: '📡 S3: ' + (s3 ? 'ON' : 'OFF'), active: !!s3 }
+        ];
+        var rightNodes = [
+          { x: 555, y: 50, title: '🌀 Fan: ' + (fanOn ? 'ON' : 'OFF'), active: fanOn },
+          { x: 555, y: 115, title: '🚿 Valve: ' + (valveOn ? 'OPEN' : 'SHUT'), active: valveOn },
+          { x: 555, y: 180, title: '🚨 Siren: ' + (alertOn ? 'ALERT!' : 'SAFE'), active: alertOn }
+        ];
+
+        leftNodes.forEach(function(ln, i) {
+          ctx.beginPath();
+          ctx.moveTo(ln.x + 70, ln.y);
+          ctx.lineTo(hub.x - 55, hub.y);
+          ctx.strokeStyle = ln.active ? '#38bdf8' : '#334155';
+          ctx.lineWidth = 3;
+          ctx.stroke();
+          if (ln.active) {
+            var p = ((tick * 0.03 + i * 0.3) % 1);
+            var px = (ln.x + 70) + (hub.x - 55 - (ln.x + 70)) * p;
+            var py = ln.y + (hub.y - ln.y) * p;
+            ctx.beginPath(); ctx.arc(px, py, 5, 0, Math.PI * 2); ctx.fillStyle = '#fde047'; ctx.fill();
+          }
+        });
+
+        rightNodes.forEach(function(rn, i) {
+          ctx.beginPath();
+          ctx.moveTo(hub.x + 55, hub.y);
+          ctx.lineTo(rn.x - 70, rn.y);
+          ctx.strokeStyle = rn.active ? '#10b981' : '#334155';
+          ctx.lineWidth = 3;
+          ctx.stroke();
+          if (rn.active) {
+            var p = ((tick * 0.03 + i * 0.3) % 1);
+            var px = (hub.x + 55) + (rn.x - 70 - (hub.x + 55)) * p;
+            var py = hub.y + (rn.y - hub.y) * p;
+            ctx.beginPath(); ctx.arc(px, py, 5, 0, Math.PI * 2); ctx.fillStyle = '#34d399'; ctx.fill();
+          }
+        });
+
+        function drawBox(cx, cy, w, h, text, isAct, isAlert) {
+          ctx.fillStyle = isAlert ? '#991b1b' : (isAct ? '#065f46' : '#1e293b');
+          ctx.strokeStyle = isAlert ? '#f87171' : (isAct ? '#34d399' : '#475569');
+          ctx.lineWidth = 2.5;
+          ctx.beginPath();
+          ctx.roundRect(cx - w / 2, cy - h / 2, w, h, 10);
+          ctx.fill();
+          ctx.stroke();
+          ctx.fillStyle = '#ffffff';
+          ctx.font = 'bold 12px Inter, sans-serif';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText(text, cx, cy);
+        }
+
+        leftNodes.forEach(function(ln) { drawBox(ln.x, ln.y, 140, 38, ln.title, ln.active, false); });
+        rightNodes.forEach(function(rn, idx) { drawBox(rn.x, rn.y, 140, 38, rn.title, rn.active, idx === 2 && rn.active); });
+        drawBox(hub.x, hub.y, 115, 64, '🧠 EDGE AI HUB', true, alertOn);
+
+        iotAnimId = requestAnimationFrame(drawIotSchematic);
+      }
+
+      drawIotSchematic();
+      activeCleanup = function() {
+        if (iotAnimId) cancelAnimationFrame(iotAnimId);
+      };
+
       if (changes >= 3) {
-        awardSimStar(lesson.id, container.querySelector('#sim-status'), 'Smart IoT Sensor-to-Actuator automation verified!');
+        awardSimStar(lesson.id, container.querySelector('#sim-status'), 'Smart IoT Sensor-to-Actuator network verified!');
       }
 
       container.querySelector('#iot-s1').addEventListener('input', function(e) { s1 = parseInt(e.target.value, 10); changes++; renderIot(); });
