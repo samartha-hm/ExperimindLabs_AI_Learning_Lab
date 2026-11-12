@@ -14,6 +14,8 @@ This directory contains standalone offline packages and installation helpers for
 
 ```
 Offline_AI_Software_Installers/
+├── Scratch_3_Desktop_Setup.exe              (195.3 MB Official Windows Installer - PRE-DOWNLOADED)
+├── GCompris_Educational_Suite_Setup.exe     (63.3 MB Official Windows Installer - PRE-DOWNLOADED)
 ├── Blockly_Games/
 │   ├── index.html                           (Standalone Offline Blockly Puzzles)
 │   └── Launch_Blockly_Games.bat             (1-Click Kiosk Launcher)
@@ -23,7 +25,7 @@ Offline_AI_Software_Installers/
 ├── CodeOrg_AI_For_Oceans/
 │   ├── index.html                           (Standalone Offline Marine AI Conservation Lab)
 │   └── Launch_CodeOrg_AI_For_Oceans.bat     (1-Click Kiosk Launcher)
-├── Silent_Install_All_Software.bat          (Silent multi-installer for Scratch & GCompris)
+├── Silent_Install_All_Software.bat          (1-Click Silent Multi-Installer for Scratch & GCompris)
 └── README_FREE_AI_SOFTWARE.md               (This documentation)
 ```
 
@@ -44,13 +46,13 @@ Offline_AI_Software_Installers/
 * **What it does:** Recreates Code.org's iconic ocean conservation tutorial. Students train an AI classifier to distinguish sea life from plastic trash, train neural weights, and deploy an autonomous underwater cleaning robot to evaluate model accuracy and algorithmic bias.
 
 ### 4. MIT Scratch 3.0 Desktop (Official Offline Windows App)
-* **How to install:** Download `Scratch_3_Desktop_Setup.exe` into this folder and run `Silent_Install_All_Software.bat`.
-* **Official Download URL:** [https://downloads.scratch.mit.edu/desktop/Scratch%20Setup.exe](https://downloads.scratch.mit.edu/desktop/Scratch%20Setup.exe)
+* **Pre-downloaded File:** `Scratch_3_Desktop_Setup.exe` (195.3 MB official installer included).
+* **How to install:** Double-click `Silent_Install_All_Software.bat` (or run `Scratch_3_Desktop_Setup.exe /S` directly).
 * **Built-in Alternative:** Students can also click **⚡ Play Built-In Offline Block Studio** directly inside Experimind (`#lesson/C3-04`).
 
 ### 5. GCompris Educational Suite (Official Offline Windows App)
-* **How to install:** Download `GCompris_Educational_Suite_Setup.exe` into this folder and run `Silent_Install_All_Software.bat`.
-* **Official Download URL:** [https://www.gcompris.net/download/qt/windows/gcompris-qt-4.3-Windows-x86_64.exe](https://www.gcompris.net/download/qt/windows/gcompris-qt-4.3-Windows-x86_64.exe)
+* **Pre-downloaded File:** `GCompris_Educational_Suite_Setup.exe` (63.3 MB official installer included).
+* **How to install:** Double-click `Silent_Install_All_Software.bat` (or run `GCompris_Educational_Suite_Setup.exe /S` directly).
 * **Built-in Alternative:** Students can also click **⚡ Play Built-In Offline Logic Sorter** directly inside Experimind (`#lesson/LKG-02`).
 
 ---

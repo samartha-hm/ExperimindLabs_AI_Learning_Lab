@@ -6,3 +6,7 @@ Desktop.ini
 .idea/
 *.log
 
+# Large Binary Installers (>100MB exceeds GitHub push limits; kept locally on USB drive)
+*.exe
+10_Brand_Assets/*_Original_Square.png
+

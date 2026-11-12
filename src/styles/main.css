@@ -69,13 +69,41 @@ body {
   border: none;
   cursor: pointer;
   text-align: left;
+  padding: 2px 4px;
+  border-radius: 8px;
+  transition: opacity 0.15s ease, transform 0.15s ease;
+}
+
+.exp-BrandLink:hover {
+  opacity: 0.92;
+  transform: translateY(-1px);
+}
+
+.exp-BrandLink:active {
+  transform: translateY(1px);
 }
 
 .exp-LogoImg {
-  height: 54px;
+  height: 62px;
   width: auto;
-  max-width: 250px;
+  max-width: 350px;
   object-fit: contain;
+  display: block;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.05));
+}
+
+@media (max-width: 1200px) {
+  .exp-LogoImg {
+    height: 52px;
+    max-width: 290px;
+  }
+}
+
+@media (max-width: 768px) {
+  .exp-LogoImg {
+    height: 44px;
+    max-width: 240px;
+  }
 }
 
 .exp-NavMenu {

@@ -1,4 +1,4 @@
-﻿# Experimind AI Learning Lab — Release Packaging & Distribution Tool
+# Experimind AI Learning Lab — Release Packaging & Distribution Tool
 # Automates: Checksum Generation -> Pre-Deployment Verification -> Zip Archive Bundling -> Git Release Push
 
 param(
@@ -60,13 +60,17 @@ $itemsToInclude = @(
   "favicon.ico",
   "favicon.png",
   "Launch_Experimind_Lab.bat",
+  "Create_Desktop_Shortcut.bat",
+  "Deploy_Lab_Enterprise_Silent.ps1",
   "Update_Experimind_Lab.bat",
   "Update_Experimind_Lab.ps1",
   "Verify_Lab_Readiness.ps1",
   "Generate_Checksums.ps1",
+  "Build_Release_Package.ps1",
   "00_MASTER_REQUIREMENTS.md",
   "README.md",
   "10_Brand_Assets",
+  "Offline_AI_Software_Installers",
   "src"
 )
 

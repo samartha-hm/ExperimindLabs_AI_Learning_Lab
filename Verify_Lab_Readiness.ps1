@@ -21,7 +21,13 @@ $required = @(
   "src\videoPlayer.js",
   "src\audio\soundEngine.js",
   "src\styles\main.css",
-  "src\app.js"
+  "src\app.js",
+  "Offline_AI_Software_Installers\Scratch_3_Desktop_Setup.exe",
+  "Offline_AI_Software_Installers\GCompris_Educational_Suite_Setup.exe",
+  "Offline_AI_Software_Installers\Blockly_Games\index.html",
+  "Offline_AI_Software_Installers\Teachable_Machine_Offline\index.html",
+  "Offline_AI_Software_Installers\CodeOrg_AI_For_Oceans\index.html",
+  "Offline_AI_Software_Installers\Silent_Install_All_Software.bat"
 )
 $missing = 0
 foreach ($rel in $required) {

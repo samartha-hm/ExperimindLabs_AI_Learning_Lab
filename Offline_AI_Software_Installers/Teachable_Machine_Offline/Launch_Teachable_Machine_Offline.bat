@@ -14,3 +14,4 @@ if exist "%ProgramFiles%\Google\Chrome\Application\chrome.exe" (
   exit /b 0
 )
 start "" "%ENTRY%"
+
