@@ -1,4 +1,4 @@
-# Experimind AI Learning Lab — Release Packaging & Distribution Tool
+﻿# Experimind AI Learning Lab — Release Packaging & Distribution Tool
 # Automates: Checksum Generation -> Pre-Deployment Verification -> Zip Archive Bundling -> Git Release Push
 
 param(
@@ -96,6 +96,6 @@ if ($PushGit) {
   git push origin main
   Write-Host "[GIT SUCCESS] Remote GitHub update channel successfully published!" -ForegroundColor Green
 } else {
-  Write-Host "`n[TIP] Run with -PushGit to automatically publish this update to all school labs via GitHub!" -ForegroundColor Yellow
+  Write-Host "[TIP] Run with -PushGit to automatically publish this update to all school labs via GitHub." -ForegroundColor Yellow
 }
 

@@ -1,10 +1,10 @@
 ﻿{
     "productName":  "Experimind AI Learning Lab",
     "version":  "5.0.0",
-    "build":  "20261112.1710",
+    "build":  "20261112.1808",
     "channel":  "stable",
     "releaseDate":  "2026-11-12",
-    "gitCommit":  "9aab592",
+    "gitCommit":  "e9977e2",
     "organization":  "Experimind Labs",
     "tagline":  "Innovation for Education",
     "repository":  "https://github.com/samartha-hm/ExperimindLabs_AI_Learning_Lab.git",
