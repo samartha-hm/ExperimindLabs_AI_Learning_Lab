@@ -31,3 +31,4 @@ Use this skill to audit, harden, and verify the security posture of the applicat
 ### 4. Non-Admin Windows Lab Execution
 - Ensure `Launch_Experimind_Lab.bat` and `Update_Experimind_Lab.bat` require no elevated Administrator privileges.
 - Compatible with Windows 10/11 standard student accounts with constrained user folder write permissions.
+

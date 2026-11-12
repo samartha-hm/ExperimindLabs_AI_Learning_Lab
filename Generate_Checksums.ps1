@@ -30,7 +30,7 @@ $filesToHash = @(
 )
 
 $outputLines = @()
-$header = "# Experimind AI Learning Lab — SHA-256 Cryptographic Checksum Manifest"
+$header = "# Experimind AI Learning Lab - SHA-256 Cryptographic Checksum Manifest"
 $outputLines += $header
 $outputLines += "# Generated on: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss UTC')"
 $outputLines += "# Verification format: <sha256_hash>  <relative_path>`n"
@@ -50,3 +50,4 @@ foreach ($file in $filesToHash) {
 $checksumPath = Join-Path $root "CHECKSUMS.sha256"
 $outputLines | Set-Content -Path $checksumPath -Encoding UTF8
 Write-Host "`nSuccessfully wrote integrity manifest: CHECKSUMS.sha256" -ForegroundColor Cyan
+

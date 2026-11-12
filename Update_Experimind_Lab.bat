@@ -12,3 +12,4 @@ powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0Update_Experimind_Lab.
 echo.
 echo Press any key to exit...
 pause >nul
+

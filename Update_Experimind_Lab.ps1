@@ -1,4 +1,4 @@
-﻿# Experimind AI Learning Lab — Secure Zero-Admin Update Engine
+# Experimind AI Learning Lab — Secure Zero-Admin Update Engine
 # Supports both Online GitHub Synchronization and Offline USB Patch Deployment.
 # Features automated rollback backup: if verification fails, your previous version is restored instantly.
 
@@ -214,3 +214,4 @@ if ($patchFile) {
   Write-Host "   - Plug the USB into this lab computer and re-run Update_Experimind_Lab.bat." -ForegroundColor Gray
   Write-Host "   - The updater will automatically detect the USB and apply the update with rollback protection.`n" -ForegroundColor Gray
 }
+

@@ -81,7 +81,7 @@ foreach ($item in $itemsToInclude) {
 Remove-Item -Path $tempStage -Recurse -Force -ErrorAction SilentlyContinue
 
 $zipSizeMb = [math]::Round(((Get-Item $zipPath).Length / 1MB), 2)
-Write-Host "[SUCCESS] Release bundle packaged successfully: $zipPath ($zipSizeMb MB)" -ForegroundColor Green
+Write-Host "[SUCCESS] Release bundle packaged successfully: $zipPath (${zipSizeMb} MB)" -ForegroundColor Green
 
 # 5. Git commit & push if requested
 if ($PushGit) {
@@ -93,3 +93,4 @@ if ($PushGit) {
 } else {
   Write-Host "`n[TIP] Run with -PushGit to automatically publish this update to all school labs via GitHub!" -ForegroundColor Yellow
 }
+

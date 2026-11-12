@@ -40,3 +40,4 @@ Use this skill whenever building a new version of Experimind AI Learning Lab to 
      powershell -ExecutionPolicy Bypass -File .\Build_Release_Package.ps1 -NewVersion "5.0.0" -PushGit
      ```
    - This automatically commits the changes and pushes to `origin main`, making the update instantly discoverable by `Update_Experimind_Lab.bat` on all connected lab machines.
+

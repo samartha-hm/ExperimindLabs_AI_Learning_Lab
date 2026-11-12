@@ -52,3 +52,4 @@ Experimind AI Learning Lab employs a dual-channel update model designed specific
 2. Insert the USB into the disconnected student computer.
 3. Double-click `Update_Experimind_Lab.bat`.
 4. The updater automatically scans removable drives, discovers `Experimind_Update.zip`, backs up local files, applies the update, verifies integrity, and completes with zero internet required.
+

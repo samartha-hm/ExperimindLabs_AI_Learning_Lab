@@ -25,3 +25,4 @@ These rules govern all architectural, code, and asset modifications within Exper
 ## 4. Cryptographic Integrity Validation
 - All production files must match their SHA-256 hashes in `CHECKSUMS.sha256`.
 - The Content Security Policy (CSP) in `index.html` must remain active and restrict script/media sources strictly to `'self'`, safe data URIs, and local blob streams.
+
