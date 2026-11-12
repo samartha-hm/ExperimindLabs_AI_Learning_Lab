@@ -1,4 +1,4 @@
-﻿# Experimind AI Learning Lab — Release Packaging & Distribution Tool
+# Experimind AI Learning Lab — Release Packaging & Distribution Tool
 # Automates: Checksum Generation -> Pre-Deployment Verification -> Zip Archive Bundling -> Git Release Push
 
 param(

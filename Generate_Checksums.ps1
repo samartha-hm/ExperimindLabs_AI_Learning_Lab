@@ -1,4 +1,4 @@
-﻿# Experimind AI Learning Lab — Cryptographic SHA-256 Checksum Generator
+# Experimind AI Learning Lab — Cryptographic SHA-256 Checksum Generator
 # Generates and updates CHECKSUMS.sha256 for Zero-Trust file integrity verification.
 
 $ErrorActionPreference = "Stop"
