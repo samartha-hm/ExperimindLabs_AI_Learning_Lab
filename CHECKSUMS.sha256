@@ -1,9 +1,9 @@
 ﻿# Experimind AI Learning Lab - SHA-256 Cryptographic Checksum Manifest
-# Generated on: 2026-11-12 18:35:08 UTC
+# Generated on: 2026-11-12 19:08:14 UTC
 # Verification format: <sha256_hash>  <relative_path>
 
 cefdeb9e4bd04ad367cd56935afe358a58a2b92309ff784a86bfe27bacd4d56d  index.html
-e4f48ad21769971313f3943bc1d764a5ea852e6ff93849caafd8f89e2522741a  version.json
+737b6dff248aacbb4baa72fa57101e98341d98b5491ee05fa31f5165fc75e447  version.json
 c460f68caf0b33c093a3fea9f7a37cdced12ab6e1a49c2534c29a639860a4119  Launch_Experimind_Lab.bat
 c23a96e13b9e088e775fc3333aa1c164cf374c551192bc54c1f1149a6d2cd121  Create_Desktop_Shortcut.bat
 d4bd2dd2cfd50ad62d90358d7fb6851a16d0f529875c454612bedd2e6ca88ee6  Verify_Lab_Readiness.ps1
