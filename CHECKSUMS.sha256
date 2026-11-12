@@ -1,11 +1,12 @@
 ﻿# Experimind AI Learning Lab - SHA-256 Cryptographic Checksum Manifest
-# Generated on: 2026-11-12 15:57:51 UTC
+# Generated on: 2026-11-12 16:09:23 UTC
 # Verification format: <sha256_hash>  <relative_path>
 
 be91e191a36c2b880cff9b184936b1bc41e869dd417529db018fc17178bb16a7  index.html
-b4efc2e5be5bd603a518b5d292e9dcd1b652816e7b54f780fe96f6b76783c010  version.json
+eda1b668b75bc430ef628152278ac149f57469e4a4d87ce738dc5c8ee464b6e0  version.json
 c460f68caf0b33c093a3fea9f7a37cdced12ab6e1a49c2534c29a639860a4119  Launch_Experimind_Lab.bat
-0a37f93fdd141e25cb7095eff813a3935862ba393312cc70aeb216074f18082b  Verify_Lab_Readiness.ps1
+c23a96e13b9e088e775fc3333aa1c164cf374c551192bc54c1f1149a6d2cd121  Create_Desktop_Shortcut.bat
+66f38227b06e9d4eaa74a4d077f206a4d846899ac078f3f1871adbadf6216f87  Verify_Lab_Readiness.ps1
 2bd4519a0a77eedffa3804054485d0a6019b3afd4f9f0587cf973a96679baf92  favicon.ico
 c9700277034a7c6117e5d27f1726f87320026b366841967485d8b596e43bf6b9  favicon.png
 0f035cbf9ac7daba11e06c76354cfcd9e16be0a6104f701a84d80317dd3c9c7a  10_Brand_Assets\Experimind_Labs_Official_Logo.png

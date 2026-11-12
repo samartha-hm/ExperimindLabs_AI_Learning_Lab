@@ -11,6 +11,7 @@ $filesToHash = @(
   "index.html",
   "version.json",
   "Launch_Experimind_Lab.bat",
+  "Create_Desktop_Shortcut.bat",
   "Verify_Lab_Readiness.ps1",
   "favicon.ico",
   "favicon.png",
