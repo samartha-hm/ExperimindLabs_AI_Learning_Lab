@@ -1,9 +1,9 @@
 ﻿# Experimind AI Learning Lab - SHA-256 Cryptographic Checksum Manifest
-# Generated on: 2026-11-12 18:08:18 UTC
+# Generated on: 2026-11-12 18:35:08 UTC
 # Verification format: <sha256_hash>  <relative_path>
 
-be91e191a36c2b880cff9b184936b1bc41e869dd417529db018fc17178bb16a7  index.html
-f8261eb51867ab4cf5ed6ebea4932d8f946521dcaf6a625fb2fac9e6c5c07055  version.json
+cefdeb9e4bd04ad367cd56935afe358a58a2b92309ff784a86bfe27bacd4d56d  index.html
+e4f48ad21769971313f3943bc1d764a5ea852e6ff93849caafd8f89e2522741a  version.json
 c460f68caf0b33c093a3fea9f7a37cdced12ab6e1a49c2534c29a639860a4119  Launch_Experimind_Lab.bat
 c23a96e13b9e088e775fc3333aa1c164cf374c551192bc54c1f1149a6d2cd121  Create_Desktop_Shortcut.bat
 d4bd2dd2cfd50ad62d90358d7fb6851a16d0f529875c454612bedd2e6ca88ee6  Verify_Lab_Readiness.ps1
@@ -20,5 +20,5 @@ c59dff87e2603ef6ca77d030effeff653ba855f593cf9f0454fe7176f41cd119  src\audio\soun
 ca0731ade383ec31d60651d7bdefca8b8a7e4c14decd872094d31bd3ed39ce48  src\simulators\engines.js
 ab6da0842ee73203e796d9f1581a80f58d496bafe219d1fc98178bfa4ba034f0  src\vision\visionLab.js
 4c2c8f06707e5137d92a3b0a044468f402dd106566d837648a3ebcea9d8050c7  src\videoPlayer.js
-f683e48179428520dca90d7ba1cec8223196584d02d8b8bde37e5d3bb3fae079  src\styles\main.css
-eb30e32ecc645ee51af4170703465bfb929ca994ca6073f4aed5c15c32ad3510  src\app.js
+da0eb12c4040765c5ea0b49fb7bda91f59f4098e80fa2a7512406a37f7346a5f  src\styles\main.css
+d3482ef1f00453d71c3b85ffc412635bb944b1438247ce8391effad04981cfd1  src\app.js

@@ -33,13 +33,15 @@ body {
   font-family: 'Inter', 'Nunito', 'Segoe UI', system-ui, -apple-system, sans-serif;
   background-color: var(--bg-page);
   color: var(--ink-primary);
-  font-size: 18px;
-  line-height: 1.6;
+  font-size: 15.5px;
+  line-height: 1.5;
   min-height: 100vh;
   overflow-x: hidden;
+  zoom: 0.88;
+  transition: zoom 0.15s ease;
 }
 
-/* Sticky Widescreen Top Navigation Bar — Big & Easy to Click */
+/* Sticky Widescreen Top Navigation Bar — Sleek & Compact */
 .exp-TopBar {
   position: sticky;
   top: 0;
@@ -53,18 +55,18 @@ body {
   max-width: 1860px;
   width: 100%;
   margin: 0 auto;
-  padding: 14px clamp(20px, 3.5vw, 44px);
+  padding: 10px clamp(16px, 2.5vw, 36px);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
+  gap: 12px;
   flex-wrap: wrap;
 }
 
 .exp-BrandLink {
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 12px;
   background: none;
   border: none;
   cursor: pointer;
@@ -84,9 +86,9 @@ body {
 }
 
 .exp-LogoImg {
-  height: 62px;
+  height: 52px;
   width: auto;
-  max-width: 350px;
+  max-width: 300px;
   object-fit: contain;
   display: block;
   filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.05));
@@ -94,34 +96,34 @@ body {
 
 @media (max-width: 1200px) {
   .exp-LogoImg {
-    height: 52px;
-    max-width: 290px;
+    height: 44px;
+    max-width: 250px;
   }
 }
 
 @media (max-width: 768px) {
   .exp-LogoImg {
-    height: 44px;
-    max-width: 240px;
+    height: 38px;
+    max-width: 210px;
   }
 }
 
 .exp-NavMenu {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   flex-wrap: wrap;
 }
 
 .exp-NavBtn {
-  padding: 12px 20px;
-  border-radius: 16px;
+  padding: 9px 16px;
+  border-radius: 13px;
   border: 2px solid #cbd5e1;
-  border-bottom: 4px solid #94a3b8;
+  border-bottom: 3px solid #94a3b8;
   background: #f8fafc;
   color: var(--ink-primary);
   font-weight: 800;
-  font-size: 1rem;
+  font-size: 0.94rem;
   cursor: pointer;
   transition: transform 0.1s ease, background 0.15s ease;
 }
@@ -148,31 +150,83 @@ body {
 .exp-UtilityCluster {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
   flex-wrap: wrap;
+}
+
+/* Modern Screen Zoom Widget */
+.exp-ZoomControls {
+  display: inline-flex;
+  align-items: center;
+  background: #f8fafc;
+  border: 2px solid #cbd5e1;
+  border-bottom: 3px solid #94a3b8;
+  border-radius: 13px;
+  overflow: hidden;
+}
+
+.exp-ZoomBtn {
+  background: transparent;
+  border: none;
+  padding: 7px 11px;
+  font-size: 1rem;
+  font-weight: 900;
+  color: var(--ink-primary);
+  cursor: pointer;
+  line-height: 1;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.exp-ZoomBtn:hover {
+  background: #eff6ff;
+  color: var(--brand-blue);
+}
+
+.exp-ZoomBtn:active {
+  background: #dbeafe;
+}
+
+.exp-ZoomLabel {
+  background: #ffffff;
+  border: none;
+  border-left: 1px solid #cbd5e1;
+  border-right: 1px solid #cbd5e1;
+  padding: 7px 11px;
+  font-size: 0.88rem;
+  font-weight: 800;
+  color: var(--brand-blue);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s ease;
+}
+
+.exp-ZoomLabel:hover {
+  background: #f0f9ff;
+  color: #1d4ed8;
 }
 
 .exp-StarBadge {
   background: linear-gradient(135deg, #fef08a, #facc15);
   color: #78350f;
   border: 2px solid #f59e0b;
-  border-bottom: 4px solid #d97706;
-  padding: 10px 18px;
-  border-radius: 16px;
+  border-bottom: 3px solid #d97706;
+  padding: 8px 14px;
+  border-radius: 13px;
   font-weight: 900;
-  font-size: 1.02rem;
+  font-size: 0.94rem;
 }
 
 .exp-TogglePill {
-  padding: 10px 18px;
-  border-radius: 16px;
+  padding: 8px 15px;
+  border-radius: 13px;
   border: 2px solid #cbd5e1;
-  border-bottom: 4px solid #94a3b8;
+  border-bottom: 3px solid #94a3b8;
   background: #ffffff;
   color: var(--ink-primary);
   font-weight: 800;
-  font-size: 0.98rem;
+  font-size: 0.92rem;
   cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
 }
 
 .exp-TogglePill--on {
@@ -187,22 +241,22 @@ body {
   max-width: 1860px;
   width: 100%;
   margin: 0 auto;
-  padding: 28px clamp(20px, 3.5vw, 48px) 60px;
+  padding: 20px clamp(16px, 2.5vw, 36px) 44px;
 }
 
 /* Kid-Friendly Hero Banner */
 .exp-HeroBanner {
   background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 55%, #4f46e5 100%);
   color: #ffffff;
-  border-radius: var(--radius-xl);
-  border-bottom: 6px solid #172554;
-  padding: 36px clamp(24px, 3.5vw, 48px);
+  border-radius: var(--radius-lg);
+  border-bottom: 5px solid #172554;
+  padding: 24px clamp(18px, 2.5vw, 36px);
   display: grid;
   grid-template-columns: 1.5fr 1fr;
-  gap: 32px;
+  gap: 24px;
   align-items: center;
   box-shadow: var(--shadow-md);
-  margin-bottom: 32px;
+  margin-bottom: 22px;
 }
 
 @media (max-width: 980px) {
@@ -215,59 +269,59 @@ body {
   display: inline-block;
   background: #facc15;
   color: #0f172a;
-  padding: 6px 16px;
+  padding: 5px 14px;
   border-radius: 999px;
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   font-weight: 900;
   letter-spacing: 0.04em;
   text-transform: uppercase;
-  margin-bottom: 14px;
+  margin-bottom: 10px;
 }
 
 .exp-HeroBanner h1 {
-  font-size: clamp(2rem, 3.2vw, 2.85rem);
+  font-size: clamp(1.65rem, 2.5vw, 2.25rem);
   font-weight: 900;
   line-height: 1.15;
-  margin-bottom: 14px;
+  margin-bottom: 10px;
 }
 
 .exp-HeroBanner p {
   color: #e0f2fe;
-  font-size: 1.18rem;
+  font-size: 1.05rem;
   font-weight: 500;
   max-width: 62ch;
-  margin-bottom: 24px;
+  margin-bottom: 18px;
 }
 
 .exp-HeroActionRow {
   display: flex;
-  gap: 14px;
+  gap: 12px;
   flex-wrap: wrap;
 }
 
 .exp-HeroKpiGrid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 14px;
+  gap: 12px;
 }
 
 .exp-HeroKpiCard {
   background: rgba(255, 255, 255, 0.14);
   border: 2px solid rgba(255, 255, 255, 0.28);
   border-radius: var(--radius-md);
-  padding: 18px;
+  padding: 14px;
   text-align: center;
 }
 
 .exp-HeroKpiCard strong {
   display: block;
-  font-size: 1.65rem;
+  font-size: 1.45rem;
   font-weight: 900;
   color: #fde047;
 }
 
 .exp-HeroKpiCard span {
-  font-size: 0.95rem;
+  font-size: 0.88rem;
   font-weight: 700;
   color: #ffffff;
 }
@@ -277,26 +331,26 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
+  gap: 14px;
   flex-wrap: wrap;
-  margin-bottom: 28px;
+  margin-bottom: 22px;
 }
 
 .exp-BandTabs {
   display: flex;
-  gap: 10px;
+  gap: 8px;
   flex-wrap: wrap;
 }
 
 .exp-BandTab {
-  padding: 12px 22px;
-  border-radius: 16px;
+  padding: 9px 18px;
+  border-radius: 13px;
   border: 2px solid #cbd5e1;
-  border-bottom: 4px solid #94a3b8;
+  border-bottom: 3px solid #94a3b8;
   background: #ffffff;
   color: var(--ink-primary);
   font-weight: 800;
-  font-size: 1rem;
+  font-size: 0.94rem;
   cursor: pointer;
 }
 
@@ -308,11 +362,11 @@ body {
 }
 
 .exp-SearchInput {
-  padding: 14px 22px;
-  border-radius: 16px;
+  padding: 10px 18px;
+  border-radius: 13px;
   border: 2px solid #94a3b8;
-  min-width: 320px;
-  font-size: 1.05rem;
+  min-width: 280px;
+  font-size: 0.96rem;
   font-weight: 600;
   background: #ffffff;
 }
@@ -320,17 +374,17 @@ body {
 /* Big Grade Cards Grid */
 .exp-GradeGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
-  gap: 24px;
-  margin-bottom: 36px;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 18px;
+  margin-bottom: 28px;
 }
 
 .exp-GradeCard {
   background: var(--bg-surface);
-  border-radius: var(--radius-xl);
+  border-radius: var(--radius-lg);
   border: 2px solid #cbd5e1;
-  border-bottom: 6px solid #94a3b8;
-  padding: 26px;
+  border-bottom: 4px solid #94a3b8;
+  padding: 20px;
   box-shadow: var(--shadow-sm);
   display: flex;
   flex-direction: column;
@@ -339,7 +393,7 @@ body {
 }
 
 .exp-GradeCard:hover {
-  transform: translateY(-4px);
+  transform: translateY(-3px);
   box-shadow: var(--shadow-md);
 }
 
@@ -347,17 +401,17 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 14px;
+  margin-bottom: 12px;
 }
 
 .exp-GradeIcon {
-  font-size: 3.1rem;
+  font-size: 2.5rem;
 }
 
 .exp-GradeAge {
-  font-size: 0.92rem;
+  font-size: 0.88rem;
   font-weight: 800;
-  padding: 6px 14px;
+  padding: 5px 12px;
   border-radius: 999px;
   background: #eff6ff;
   color: var(--brand-blue);

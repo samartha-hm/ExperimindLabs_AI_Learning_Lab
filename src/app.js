@@ -959,7 +959,92 @@ window.ExperimindApp = (function() {
       });
     }
 
+    initZoom();
     renderApp();
+  }
+
+  var ZOOM_LEVELS = [0.75, 0.80, 0.88, 0.95, 1.00, 1.10];
+  var currentZoomIndex = 2; // Default: 0.88 (88%)
+
+  function applyZoom(zoom) {
+    document.body.style.zoom = zoom;
+    var label = document.getElementById('zoom-level-label');
+    if (label) {
+      label.textContent = '🔍 ' + Math.round(zoom * 100) + '%';
+    }
+    try {
+      localStorage.setItem('experimind_zoom', zoom.toString());
+    } catch(e) {}
+  }
+
+  function initZoom() {
+    var saved = null;
+    try {
+      saved = parseFloat(localStorage.getItem('experimind_zoom'));
+    } catch(e) {}
+    if (!isNaN(saved) && saved >= 0.70 && saved <= 1.25) {
+      for (var i = 0; i < ZOOM_LEVELS.length; i++) {
+        if (Math.abs(ZOOM_LEVELS[i] - saved) < 0.03) {
+          currentZoomIndex = i;
+          break;
+        }
+      }
+      applyZoom(ZOOM_LEVELS[currentZoomIndex]);
+    } else {
+      applyZoom(ZOOM_LEVELS[currentZoomIndex]);
+    }
+
+    var btnOut = document.getElementById('zoom-out-btn');
+    var btnIn = document.getElementById('zoom-in-btn');
+    var btnReset = document.getElementById('zoom-level-label');
+
+    if (btnOut) {
+      btnOut.addEventListener('click', function() {
+        if (currentZoomIndex > 0) {
+          currentZoomIndex--;
+          applyZoom(ZOOM_LEVELS[currentZoomIndex]);
+          if (window.ExperimindAudio) window.ExperimindAudio.click();
+        }
+      });
+    }
+
+    if (btnIn) {
+      btnIn.addEventListener('click', function() {
+        if (currentZoomIndex < ZOOM_LEVELS.length - 1) {
+          currentZoomIndex++;
+          applyZoom(ZOOM_LEVELS[currentZoomIndex]);
+          if (window.ExperimindAudio) window.ExperimindAudio.click();
+        }
+      });
+    }
+
+    if (btnReset) {
+      btnReset.addEventListener('click', function() {
+        currentZoomIndex = 2; // Default 88%
+        applyZoom(ZOOM_LEVELS[currentZoomIndex]);
+        if (window.ExperimindAudio) window.ExperimindAudio.click();
+      });
+    }
+
+    window.addEventListener('keydown', function(e) {
+      if (e.ctrlKey && (e.key === '-' || e.key === '_')) {
+        e.preventDefault();
+        if (currentZoomIndex > 0) {
+          currentZoomIndex--;
+          applyZoom(ZOOM_LEVELS[currentZoomIndex]);
+        }
+      } else if (e.ctrlKey && (e.key === '+' || e.key === '=')) {
+        e.preventDefault();
+        if (currentZoomIndex < ZOOM_LEVELS.length - 1) {
+          currentZoomIndex++;
+          applyZoom(ZOOM_LEVELS[currentZoomIndex]);
+        }
+      } else if (e.ctrlKey && e.key === '0') {
+        e.preventDefault();
+        currentZoomIndex = 2;
+        applyZoom(ZOOM_LEVELS[currentZoomIndex]);
+      }
+    });
   }
 
   return {
