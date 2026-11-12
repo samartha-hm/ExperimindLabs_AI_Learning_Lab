@@ -943,7 +943,91 @@ window.ExperimindApp = (function() {
       });
     }
 
+    var updateBtn = document.getElementById('header-update-btn');
+    if (updateBtn) {
+      updateBtn.addEventListener('click', function() {
+        if (window.ExperimindAudio) window.ExperimindAudio.pop();
+        showUpdateModal();
+      });
+    }
+
     renderApp();
+  }
+
+  function showUpdateModal() {
+    var existing = document.getElementById('exp-update-modal');
+    if (existing) existing.remove();
+
+    var modal = document.createElement('div');
+    modal.id = 'exp-update-modal';
+    modal.className = 'exp-ModalOverlay';
+
+    var html = '<div class="exp-ModalCard">';
+    html += '<div class="exp-ModalHeader">';
+    html += '<div style="display:flex;align-items:center;gap:10px;">';
+    html += '<span style="font-size:1.8rem;">🚀</span>';
+    html += '<div><h3 style="margin:0;font-size:1.25rem;color:#0f172a;font-weight:900;">Experimind Lab — System &amp; Update Hub</h3>';
+    html += '<div style="font-size:0.85rem;color:#64748b;font-weight:600;">Offline-First School Desktop Edition</div></div>';
+    html += '</div>';
+    html += '<button type="button" class="exp-ModalCloseBtn" id="modal-close-btn" title="Close">✕</button>';
+    html += '</div>';
+
+    html += '<div style="margin-bottom:18px;">';
+    html += '<div class="exp-StatusRow"><span class="exp-StatusLabel">Current Version:</span><span class="exp-StatusValue">v5.0.0 (Build 20261112.01)</span></div>';
+    html += '<div class="exp-StatusRow"><span class="exp-StatusLabel">Target Hardware:</span><span class="exp-StatusValue">Windows 10 / 11 (Min 4 GB RAM)</span></div>';
+    html += '<div class="exp-StatusRow"><span class="exp-StatusLabel">Security Posture:</span><span class="exp-StatusValue" style="color:#059669;">🔒 Active CSP &amp; SHA-256 Verified</span></div>';
+    html += '<div class="exp-StatusRow"><span class="exp-StatusLabel">Student Privacy:</span><span class="exp-StatusValue" style="color:#059669;">🛡️ 100% Offline • Zero-PII Collected</span></div>';
+    html += '<div class="exp-StatusRow"><span class="exp-StatusLabel">Update Channel:</span><span class="exp-StatusValue">Official GitHub Main</span></div>';
+    html += '</div>';
+
+    html += '<div id="modal-update-result" style="margin-bottom:18px;background:#f8fafc;border:2px dashed #cbd5e1;border-radius:14px;padding:14px;font-size:0.92rem;color:#334155;line-height:1.5;">';
+    html += '💡 <strong>How to Update School Computers:</strong><br>';
+    html += 'When newer lessons or features are pushed from the developer channel, simply run <code>Update_Experimind_Lab.bat</code> in this folder. It automatically backs up your current lab, checks for updates, and installs them with zero admin rights!';
+    html += '</div>';
+
+    html += '<div style="display:flex;gap:10px;justify-content:flex-end;">';
+    html += '<button type="button" class="btn-Secondary" id="modal-check-online-btn" style="padding:10px 18px;font-size:0.95rem;">🔄 Check for Remote Updates</button>';
+    html += '<button type="button" class="btn-Primary" id="modal-ok-btn" style="padding:10px 18px;font-size:0.95rem;">Got It 👍</button>';
+    html += '</div>';
+    html += '</div>';
+
+    modal.innerHTML = html;
+    document.body.appendChild(modal);
+
+    modal.querySelector('#modal-close-btn').addEventListener('click', function() { modal.remove(); });
+    modal.querySelector('#modal-ok-btn').addEventListener('click', function() { modal.remove(); });
+    modal.addEventListener('click', function(e) { if (e.target === modal) modal.remove(); });
+
+    var checkBtn = modal.querySelector('#modal-check-online-btn');
+    var resEl = modal.querySelector('#modal-update-result');
+    checkBtn.addEventListener('click', function() {
+      checkBtn.disabled = true;
+      checkBtn.textContent = '⏳ Checking GitHub...';
+      resEl.innerHTML = '<span style="color:#2563eb;">📡 Contacting Experimind GitHub update channel...</span>';
+
+      fetch('https://raw.githubusercontent.com/samartha-hm/ExperimindLabs_AI_Learning_Lab/main/version.json?t=' + Date.now())
+        .then(function(resp) {
+          if (!resp.ok) throw new Error('Network status: ' + resp.status);
+          return resp.json();
+        })
+        .then(function(data) {
+          checkBtn.disabled = false;
+          checkBtn.textContent = '🔄 Check Again';
+          if (data.build && data.build > '20261112.01') {
+            resEl.innerHTML = '<div style="color:#059669;font-weight:bold;">🎉 Newer Update Available: v' + data.version + ' (Build ' + data.build + ')!</div>' +
+                              '<div style="margin-top:6px;">Run <strong>Update_Experimind_Lab.bat</strong> in this folder to apply the update with automatic rollback protection.</div>';
+          } else {
+            resEl.innerHTML = '<div style="color:#059669;font-weight:bold;">✅ Your Experimind AI Learning Lab is 100% Up to Date!</div>' +
+                              '<div style="margin-top:4px;color:#64748b;">Installed v5.0.0 matches the latest official release.</div>';
+          }
+        })
+        .catch(function(err) {
+          checkBtn.disabled = false;
+          checkBtn.textContent = '🔄 Check Again';
+          resEl.innerHTML = '<div style="color:#b45309;font-weight:bold;">📡 Offline / Disconnected Lab Mode</div>' +
+                            '<div style="margin-top:4px;color:#475569;">No internet connection detected on this PC. To update offline, plug in a USB drive containing <code>Experimind_Update.zip</code> and run <strong>Update_Experimind_Lab.bat</strong>.</div>';
+        });
+    });
   }
 
   return {

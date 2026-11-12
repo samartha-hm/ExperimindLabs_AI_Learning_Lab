@@ -1,0 +1,18 @@
+﻿{
+    "productName":  "Experimind AI Learning Lab",
+    "version":  "5.0.0",
+    "build":  "20261112.1528",
+    "channel":  "stable",
+    "releaseDate":  "2026-11-12",
+    "gitCommit":  "bdd42e8",
+    "organization":  "Experimind Labs",
+    "tagline":  "Innovation for Education",
+    "repository":  "https://github.com/samartha-hm/ExperimindLabs_AI_Learning_Lab.git",
+    "updateEndpoint":  "https://raw.githubusercontent.com/samartha-hm/ExperimindLabs_AI_Learning_Lab/main/version.json",
+    "releasePackageUrl":  "https://github.com/samartha-hm/ExperimindLabs_AI_Learning_Lab/archive/refs/heads/main.zip",
+    "minimumRamGb":  4,
+    "requiredOs":  "Windows 10 / 11 (64-bit / 32-bit)",
+    "offlineFirst":  true,
+    "zeroPii":  true,
+    "checksumManifest":  "CHECKSUMS.sha256"
+}
