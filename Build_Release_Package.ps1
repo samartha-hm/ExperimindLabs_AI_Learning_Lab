@@ -61,6 +61,8 @@ $itemsToInclude = @(
   "favicon.png",
   "Launch_Experimind_Lab.bat",
   "Create_Desktop_Shortcut.bat",
+  "Sync_Latest_Updates.bat",
+  "Push_To_GitHub.bat",
   "Deploy_Lab_Enterprise_Silent.ps1",
   "Update_Experimind_Lab.bat",
   "Update_Experimind_Lab.ps1",
@@ -68,7 +70,9 @@ $itemsToInclude = @(
   "Generate_Checksums.ps1",
   "Build_Release_Package.ps1",
   "00_MASTER_REQUIREMENTS.md",
+  "AGENT.md",
   "README.md",
+  ".github",
   "10_Brand_Assets",
   "Offline_AI_Software_Installers",
   "src"

@@ -205,17 +205,6 @@ body {
   color: #1d4ed8;
 }
 
-.exp-StarBadge {
-  background: linear-gradient(135deg, #fef08a, #facc15);
-  color: #78350f;
-  border: 2px solid #f59e0b;
-  border-bottom: 3px solid #d97706;
-  padding: 8px 14px;
-  border-radius: 13px;
-  font-weight: 900;
-  font-size: 0.94rem;
-}
-
 .exp-TogglePill {
   padding: 8px 15px;
   border-radius: 13px;

@@ -1,4 +1,4 @@
-# Experimind AI Learning Lab — School Deployment & Integrity Verification Script (v5.0 Enterprise)
+﻿# Experimind AI Learning Lab — School Deployment & Integrity Verification Script (v5.0 Enterprise)
 Write-Host "=== Experimind AI Learning Lab Pre-Deployment Verification ===" -ForegroundColor Cyan
 $root = Split-Path -Parent $MyInvocation.MyCommand.Path
 $required = @(
@@ -9,6 +9,11 @@ $required = @(
   "favicon.png",
   "Launch_Experimind_Lab.bat",
   "Create_Desktop_Shortcut.bat",
+  "Sync_Latest_Updates.bat",
+  "Push_To_GitHub.bat",
+  ".github\workflows\deploy-pages.yml",
+  "AGENT.md",
+  "README.md",
   "00_MASTER_REQUIREMENTS.md",
   "10_Brand_Assets\Experimind_Labs_Official_Logo.png",
   "src\config\brand.js",

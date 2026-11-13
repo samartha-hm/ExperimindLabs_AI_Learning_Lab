@@ -1,4 +1,4 @@
-# Experimind AI Learning Lab — Cryptographic SHA-256 Checksum Generator
+﻿# Experimind AI Learning Lab — Cryptographic SHA-256 Checksum Generator
 # Generates and updates CHECKSUMS.sha256 for Zero-Trust file integrity verification.
 
 $ErrorActionPreference = "Stop"
@@ -12,6 +12,8 @@ $filesToHash = @(
   "version.json",
   "Launch_Experimind_Lab.bat",
   "Create_Desktop_Shortcut.bat",
+  "Sync_Latest_Updates.bat",
+  "Push_To_GitHub.bat",
   "Verify_Lab_Readiness.ps1",
   "favicon.ico",
   "favicon.png",
